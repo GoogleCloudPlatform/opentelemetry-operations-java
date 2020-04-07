@@ -1,0 +1,5 @@
+#Gradle
+.gradle/
+
+# IntelliJ IDEA
+.idea/
