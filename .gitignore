@@ -1,5 +1,9 @@
-#Gradle
-.gradle/
+# Gradle
+/.gradle/
+/out/
 
 # IntelliJ IDEA
-.idea/
+/.idea/
+
+# Build artifacts
+/exporters/trace/build/
