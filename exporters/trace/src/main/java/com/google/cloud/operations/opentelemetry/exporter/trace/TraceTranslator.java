@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class CloudTraceTranslator {
+class TraceTranslator {
 
   // TODO(nilebox): Extract the constant
   private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.3.0";
@@ -50,8 +50,7 @@ class CloudTraceTranslator {
   @VisibleForTesting
   static Span generateSpan(SpanData spanData,
       String projectId,
-      Map<String, AttributeValue> resourceLabels,
-      Map<String, AttributeValue> fixedAttributes) {
+      Map<String, AttributeValue> constAttributes) {
     final String traceIdHex = spanData.getTraceId().toLowerBase16();
     final String spanIdHex = spanData.getSpanId().toLowerBase16();
     SpanName spanName =
@@ -68,7 +67,7 @@ class CloudTraceTranslator {
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
             .setAttributes(
-                toAttributesProto(spanData.getAttributes(), resourceLabels, fixedAttributes))
+                toAttributesProto(spanData.getAttributes(), constAttributes))
             .setTimeEvents(
                 toTimeEventsProto(spanData.getTimedEvents()));
     io.opentelemetry.trace.Status status = spanData.getStatus();
@@ -119,15 +118,11 @@ class CloudTraceTranslator {
   // These are the attributes of the Span, where usually we may add more attributes like the agent.
   private static Attributes toAttributesProto(
       Map<String, io.opentelemetry.common.AttributeValue> attributes,
-      Map<String, AttributeValue> resourceLabels,
       Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder =
         toAttributesBuilderProto(
             attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
-    for (Map.Entry<String, AttributeValue> entry : resourceLabels.entrySet()) {
-      attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
-    }
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
       attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
     }
@@ -136,8 +131,7 @@ class CloudTraceTranslator {
 
   private static Attributes toAttributesProto(
       Map<String, io.opentelemetry.common.AttributeValue> attributes) {
-    return toAttributesProto(attributes,
-        ImmutableMap.<String, AttributeValue>of(), ImmutableMap.<String, AttributeValue>of());
+    return toAttributesProto(attributes, ImmutableMap.<String, AttributeValue>of());
   }
 
   private static Attributes.Builder toAttributesBuilderProto(
@@ -255,5 +249,5 @@ class CloudTraceTranslator {
     return AttributeValue.newBuilder().setStringValue(toTruncatableStringProto(value)).build();
   }
 
-  private CloudTraceTranslator() {}
+  private TraceTranslator() {}
 }

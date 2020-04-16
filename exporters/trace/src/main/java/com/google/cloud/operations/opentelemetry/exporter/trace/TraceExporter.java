@@ -1,6 +1,5 @@
 package com.google.cloud.operations.opentelemetry.exporter.trace;
 
-import com.google.cloud.operations.opentelemetry.exporter.util.ResourceUtils;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.ProjectName;
@@ -12,18 +11,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class CloudTraceExporter implements SpanExporter {
-
-  // Only initialize once.
-  private static final Map<String, AttributeValue> RESOURCE_LABELS =
-      CloudTraceTranslator.getResourceLabels(ResourceUtils.detectResourceLabels());
+public class TraceExporter implements SpanExporter {
 
   private final TraceServiceClient traceServiceClient;
   private final ProjectName projectName;
   private final String projectId;
   private final Map<String, AttributeValue> fixedAttributes;
 
-  public CloudTraceExporter(String projectId, TraceServiceClient traceServiceClient,
+  public TraceExporter(String projectId, TraceServiceClient traceServiceClient,
       Map<String, AttributeValue> fixedAttributes) {
     this.projectId = projectId;
     this.traceServiceClient = traceServiceClient;
@@ -35,7 +30,7 @@ public class CloudTraceExporter implements SpanExporter {
   public ResultCode export(Collection<SpanData> spanDataList) {
     List<Span> spans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
-      spans.add(CloudTraceTranslator.generateSpan(spanData, projectId, RESOURCE_LABELS, fixedAttributes));
+      spans.add(TraceTranslator.generateSpan(spanData, projectId, fixedAttributes));
     }
 
     traceServiceClient.batchWriteSpans(projectName, spans);
