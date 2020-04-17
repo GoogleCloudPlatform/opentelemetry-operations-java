@@ -1,4 +1,4 @@
-package com.google.cloud.operations.opentelemetry.exporter.trace;
+package com.google.cloud.opentelemetry.trace;
 
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.devtools.cloudtrace.v2.AttributeValue;

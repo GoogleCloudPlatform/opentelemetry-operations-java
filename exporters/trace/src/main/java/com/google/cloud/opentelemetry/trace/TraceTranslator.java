@@ -1,4 +1,4 @@
-package com.google.cloud.operations.opentelemetry.exporter.trace;
+package com.google.cloud.opentelemetry.trace;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
