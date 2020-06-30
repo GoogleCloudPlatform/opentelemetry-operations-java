@@ -1,6 +1,9 @@
 # Gradle
 /.gradle/
 /out/
+.project
+.settings
+.classpath
 
 # IntelliJ IDEA
 /.idea/
@@ -9,4 +12,5 @@
 
 # Build artifacts
 /exporters/trace/build/
+/exporters/trace/bin/
 
