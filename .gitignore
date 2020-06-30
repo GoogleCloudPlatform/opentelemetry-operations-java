@@ -5,5 +5,8 @@
 # IntelliJ IDEA
 /.idea/
 
+/.vscode/
+
 # Build artifacts
 /exporters/trace/build/
+
