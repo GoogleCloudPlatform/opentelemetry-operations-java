@@ -9,7 +9,6 @@ import java.util.HashMap;
 import org.junit.Test;
 
 @RunWith(JUnit4.class)
-
 public class TraceExporterTest {
 
   private final String PROJECT_ID = "project";
