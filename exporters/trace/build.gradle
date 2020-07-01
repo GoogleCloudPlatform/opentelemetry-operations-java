@@ -1,7 +1,3 @@
-plugins {
-    id 'java'
-}
-
 description = 'Cloud Trace Exporter for OpenTelemetry'
 
 dependencies {
