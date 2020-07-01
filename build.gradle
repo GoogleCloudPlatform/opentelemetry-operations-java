@@ -16,11 +16,13 @@ subprojects {
     ext {
         googleCloudVersion = '1.0.2'
         openTelemetryVersion = '0.3.0'
+        junitVersion = '4.13';
 
         libraries = [
                 google_cloud_trace: "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
                 opentelemetry_api:"io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk:"io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+                junit:"junit:junit:${junitVersion}"
         ]
     }
 }
