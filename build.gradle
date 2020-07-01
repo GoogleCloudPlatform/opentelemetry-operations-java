@@ -22,6 +22,8 @@ subprojects {
                 google_cloud_trace: "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
                 opentelemetry_api:"io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk:"io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+        ]
+        testLibraries = [
                 junit:"junit:junit:${junitVersion}"
         ]
     }
