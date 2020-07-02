@@ -4,4 +4,5 @@ dependencies {
     api(libraries.opentelemetry_api)
     api(libraries.opentelemetry_sdk)
     api(libraries.google_cloud_trace)
+    testImplementation(testLibraries.junit)
 }
