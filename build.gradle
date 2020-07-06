@@ -4,8 +4,8 @@ subprojects {
     group = "com.google.cloud.opentelemetry.operations"
     version = "0.0.0-SNAPSHOT" // CURRENT_VERSION
 
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     repositories {
         mavenCentral()
