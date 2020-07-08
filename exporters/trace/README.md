@@ -14,19 +14,19 @@
     
   The TraceExporter constructor takes in three parameters: String for projectId, TraceServiceClient to create a traceServiceClient instance, and Map<String, AttributeValue> for the fixed attributes of a span.  
   So, we need to import the following: 
-  ```
+  ```java
   import com.google.cloud.trace.v2.TraceServiceClient;
-import com.google.devtools.cloudtrace.v2.AttributeValue;
-import com.google.devtools.cloudtrace.v2.ProjectName;
-import com.google.devtools.cloudtrace.v2.Span;
-```
+  import com.google.devtools.cloudtrace.v2.AttributeValue;
+  import com.google.devtools.cloudtrace.v2.ProjectName;
+  import com.google.devtools.cloudtrace.v2.Span;
+  ```
   Declare and initialize the variables that will be used in the constructor parameters.  
   Then, we can create a TraceExporter with, for example:
-  ```
+  ```java
   TraceExporter exporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
   ```
   Start tracing and collecting SpanData. To export these spans, use the export method, where spanDataList is a Collection of SpanData already collected:
-  ```
+  ```java
   exporter.export(spanDataList)
   ```
 
