@@ -9,7 +9,7 @@
 
 ## Installation
   Not currently ready as a package to be imported. <a href="https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6">Issue</a> is currently being dealt with.  
-  To use presently, one would have to clone this GitHub repo. To do so, run in the command line:
+  For now, one would have to clone this GitHub repo. To do so, run in the command line:
   ```git
   git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java
   ```
