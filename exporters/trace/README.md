@@ -28,7 +28,8 @@
   Start tracing and collecting SpanData.  
   Spans can be created by importing and using global `opentelemetry-java` API packages, for example:  
   ```java
-  Span span = this.tracer.spanBuilder("operation name").startSpan();
+  String operationName = "receive"; //or whatever other operation
+  Span span = this.tracer.spanBuilder(operationName).startSpan();
   ```
   To export these spans, configure the trace provider with the exporter:
   ```java
