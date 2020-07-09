@@ -12,7 +12,7 @@
 ## Usage
   If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
     
-  The TraceExporter constructor takes in three parameters: String for projectId, TraceServiceClient to create a traceServiceClient instance, and Map<String, AttributeValue> for the fixed attributes of a span.  
+  The TraceExporter constructor takes in three parameters: `projectId: String` for your GCP project ID, `traceServiceClient: TraceServiceClient` for the trace service client to eventually batch write spans, and `fixedAttributes: Map<String, AttributeValue>` for the fixed attributes of a span.  
   So, we need to import the following: 
   ```java
   import com.google.cloud.trace.v2.TraceServiceClient;
@@ -23,25 +23,28 @@
   Declare and initialize the variables that will be used in the constructor parameters.  
   Then, we can create a TraceExporter with, for example:
   ```java
-  TraceExporter exporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
+  TraceExporter javaTraceExporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
   ```
-  Start tracing and collecting SpanData. To export these spans, use the export method, where spanDataList is a Collection of SpanData already collected:
+  Start tracing and collecting SpanData.  
+  Spans can be created by importing and using global `opentelemetry-java` API packages, for example:  
   ```java
-  exporter.export(spanDataList)
+  Span span = this.tracer.spanBuilder("operation name").startSpan();
+  ```
+  To export these spans, configure the trace provider with the exporter:
+  ```java
+  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
   ```
 
 ## Authentication
   This exporter uses <a href="https://github.com/googleapis/google-cloud-java">google-cloud-java</a>, for details about how to configure the authentication see <a href="https://github.com/googleapis/google-cloud-java#authentication">here</a>.  
     
-  In the case that there are problems creating a service account key, make sure that the constraints/iam.disableServiceAccountKeyCreation boolean variable is set to false. This can be edited on Google Cloud by clicking on Navigation Menu -> IAM & Admin -> Organization Policies -> Disable Service Account Key Creation -> Edit  
+  In the case that there are problems creating a service account key, make sure that the **constraints/iam.disableServiceAccountKeyCreation** boolean variable is set to false. This can be edited on Google Cloud by clicking on Navigation Menu -> IAM & Admin -> Organization Policies -> Disable Service Account Key Creation -> Edit  
     
-  If you are unable to edit this variable due to lack of permission, you can authenticate by running "gcloud auth application-default login" in the command line.
+  If you are unable to edit this variable due to lack of permission, you can authenticate by running `gcloud auth application-default login` in the command line.
   
 
 ## Useful Links
   - For more information on OpenTelemetry, visit: https://opentelemetry.io/  
-  - For more about OpenTelemetry Java, visit: https://github.com/GoogleCloudPlatform/opentelemetry-operations-java  
+  - For more about OpenTelemetry Java, visit: https://github.com/open-telemetry/opentelemetry-java  
   - Learn more about Google Cloud Trace at https://cloud.google.com/trace
   
-  
-
