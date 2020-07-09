@@ -2,13 +2,13 @@
 
   OpenTelemetry Google Cloud Trace Exporter allows the user to send collected traces to Google Cloud. 
   
-  <a href="https://cloud.google.com/trace">Google Cloud Trace</a> is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
+ [Google Cloud Trace](https://cloud.google.com/trace) is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
 
 ## Setup
   Google Cloud Trace is a managed service provided by Google Cloud Platform.
 
 ## Installation
-  Not currently ready as a package to be imported. <a href="https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6">Issue</a> is currently being dealt with.  
+  Not currently ready as a package to be imported. [Issue](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6) is currently being dealt with.  
   For now, one would have to clone this GitHub repo. To do so, run in the command line:
   ```git
   git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java
@@ -38,7 +38,7 @@
   ```
 
 ## Authentication
-  This exporter uses <a href="https://github.com/googleapis/google-cloud-java">google-cloud-java</a>, for details about how to configure the authentication see <a href="https://github.com/googleapis/google-cloud-java#authentication">here</a>.  
+  This exporter uses [google-cloud-java](https://github.com/googleapis/google-cloud-java), for details about how to configure the authentication see [here](https://github.com/googleapis/google-cloud-java#authentication).  
     
   In the case that there are problems creating a service account key, make sure that the **constraints/iam.disableServiceAccountKeyCreation** boolean variable is set to false. This can be edited on Google Cloud by clicking on Navigation Menu -> IAM & Admin -> Organization Policies -> Disable Service Account Key Creation -> Edit  
     
