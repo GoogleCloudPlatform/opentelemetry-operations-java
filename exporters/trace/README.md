@@ -8,7 +8,11 @@
   Google Cloud Trace is a managed service provided by Google Cloud Platform.
 
 ## Installation
-  Not currently ready as a package to be imported. To use presently, one would have to clone this GitHub repo.
+  Not currently ready as a package to be imported. <a href="https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6">Issue</a> is currently being dealt with.  
+  To use presently, one would have to clone this GitHub repo. To do so, run in the command line:
+  ```git
+  git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java
+  ```
 ## Usage
   If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
     
@@ -21,19 +25,16 @@
   import com.google.devtools.cloudtrace.v2.Span;
   ```
   Declare and initialize the variables that will be used in the constructor parameters.  
-  Then, we can create a TraceExporter with, for example:
+  Then, we can create and register TraceExporter, for example:
   ```java
   TraceExporter javaTraceExporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
+  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
   ```
   Start tracing and collecting SpanData.  
   Spans can be created by importing and using global `opentelemetry-java` API packages, for example:  
   ```java
   String operationName = "receive"; //or whatever other operation
   Span span = this.tracer.spanBuilder(operationName).startSpan();
-  ```
-  To export these spans, configure the trace provider with the exporter:
-  ```java
-  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
   ```
 
 ## Authentication
