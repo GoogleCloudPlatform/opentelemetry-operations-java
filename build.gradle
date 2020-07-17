@@ -15,7 +15,6 @@ subprojects {
 
     ext {
         autoValueVersion = '1.7.4'
-        googleAuthVersion = '0.20.0';
         googleCloudVersion = '1.0.2'
         openTelemetryVersion = '0.3.0'
         junitVersion = '4.13';

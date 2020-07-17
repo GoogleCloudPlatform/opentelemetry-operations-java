@@ -29,8 +29,7 @@ public abstract class TraceConfiguration {
     @VisibleForTesting
     static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-    TraceConfiguration() {
-    }
+    TraceConfiguration() {}
 
     /**
      * Returns the {@link Credentials}.
