@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
@@ -14,7 +15,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.time.Duration;
 import java.util.Map;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -29,9 +29,6 @@ public class TraceConfigurationTest {
     private static final String PROJECT_ID = "project";
     private static final Duration ONE_MINUTE = Duration.ofSeconds(60, 0);
     private static final Duration NEG_ONE_MINUTE = Duration.ofSeconds(-60, 0);
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void defaultConfiguration() {
@@ -64,16 +61,14 @@ public class TraceConfigurationTest {
     @Test
     public void disallowNullProjectId() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder();
-        thrown.expect(NullPointerException.class);
-        builder.setProjectId(null);
+        assertThrows(NullPointerException.class, () -> builder.setProjectId(null));
     }
 
     @Test
     public void disallowEmptyProjectId() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder();
         builder.setProjectId("");
-        thrown.expect(IllegalArgumentException.class);
-        builder.build();
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test
@@ -88,8 +83,7 @@ public class TraceConfigurationTest {
     @Test
     public void disallowNullFixedAttributes() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
-        thrown.expect(NullPointerException.class);
-        builder.setFixedAttributes(null);
+        assertThrows(NullPointerException.class, () -> builder.setFixedAttributes(null));
     }
 
     @Test
@@ -98,8 +92,7 @@ public class TraceConfigurationTest {
         Map<String, AttributeValue> attributes = Collections.singletonMap(null,
                 AttributeValue.stringAttributeValue("val"));
         builder.setFixedAttributes(attributes);
-        thrown.expect(NullPointerException.class);
-        builder.build();
+        assertThrows(NullPointerException.class, () -> builder.build());
     }
 
     @Test
@@ -107,24 +100,21 @@ public class TraceConfigurationTest {
         TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
         Map<String, AttributeValue> attributes = Collections.singletonMap("key", null);
         builder.setFixedAttributes(attributes);
-        thrown.expect(NullPointerException.class);
-        builder.build();
+        assertThrows(NullPointerException.class, () -> builder.build());
     }
 
     @Test
     public void disallowZeroDuration() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
         builder.setDeadline(TraceConfiguration.Builder.ZERO);
-        thrown.expect(IllegalArgumentException.class);
-        builder.build();
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test
     public void disallowNegativeDuration() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
         builder.setDeadline(NEG_ONE_MINUTE);
-        thrown.expect(IllegalArgumentException.class);
-        builder.build();
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
     }
 
 }
