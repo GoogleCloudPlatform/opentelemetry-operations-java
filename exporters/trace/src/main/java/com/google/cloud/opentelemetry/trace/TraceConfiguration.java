@@ -8,10 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.opentelemetry.common.AttributeValue;
-
-import java.time.Duration;
-// import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -31,7 +29,8 @@ public abstract class TraceConfiguration {
     @VisibleForTesting
     static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-    TraceConfiguration() {}
+    TraceConfiguration() {
+    }
 
     /**
      * Returns the {@link Credentials}.
@@ -86,8 +85,7 @@ public abstract class TraceConfiguration {
      */
     public static Builder builder() {
         return new AutoValue_TraceConfiguration.Builder().setProjectId(DEFAULT_PROJECT_ID)
-                .setFixedAttributes(Collections.<String, AttributeValue>emptyMap())
-                .setDeadline(DEFAULT_DEADLINE);
+                .setFixedAttributes(Collections.<String, AttributeValue>emptyMap()).setDeadline(DEFAULT_DEADLINE);
     }
 
     /**
