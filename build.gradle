@@ -29,7 +29,7 @@ subprojects {
                 opentelemetry_sdk:"io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
         ]
         testLibraries = [
-                junit:"junit:junit:${junitVersion}"
+                junit:"junit:junit:${junitVersion}",
         ]
     }
 }
