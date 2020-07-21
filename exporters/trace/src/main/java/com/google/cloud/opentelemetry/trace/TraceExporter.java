@@ -43,7 +43,7 @@ public class TraceExporter implements SpanExporter {
     return new TraceExporter(projectId, TraceServiceClient.create(builder.build()), fixedAttributes);
   }
 
-  private TraceExporter(String projectId, TraceServiceClient traceServiceClient,
+  public TraceExporter(String projectId, TraceServiceClient traceServiceClient,
       Map<String, AttributeValue> fixedAttributes) {
     this.projectId = projectId;
     this.traceServiceClient = traceServiceClient;

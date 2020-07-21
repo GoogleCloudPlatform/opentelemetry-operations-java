@@ -10,13 +10,12 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
-import io.opentelemetry.common.AttributeValue;
+import com.google.devtools.cloudtrace.v2.AttributeValue;
 import java.util.Collections;
 import java.util.Date;
 import java.time.Duration;
 import java.util.Map;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -43,19 +42,19 @@ public class TraceConfigurationTest {
         assertNotNull(configuration.getProjectId());
         assertNull(configuration.getTraceServiceStub());
         assertTrue(configuration.getFixedAttributes().isEmpty());
-        assertEquals(configuration.getDeadline(), TraceConfiguration.DEFAULT_DEADLINE);
+        assertEquals(TraceConfiguration.DEFAULT_DEADLINE, configuration.getDeadline());
     }
 
     @Test
     public void updateAll() {
         Map<String, AttributeValue> attributes = Collections.singletonMap("key",
-                AttributeValue.stringAttributeValue("val"));
+                AttributeValue.newBuilder().setBoolValue(true).build());
         TraceConfiguration configuration = TraceConfiguration.builder().setCredentials(FAKE_CREDENTIALS)
                 .setProjectId(PROJECT_ID).setFixedAttributes(attributes).setDeadline(ONE_MINUTE).build();
-        assertEquals(configuration.getCredentials(), FAKE_CREDENTIALS);
-        assertEquals(configuration.getProjectId(), PROJECT_ID);
-        assertEquals(configuration.getFixedAttributes(), attributes);
-        assertEquals(configuration.getDeadline(), ONE_MINUTE);
+        assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
+        assertEquals(PROJECT_ID, configuration.getProjectId());
+        assertEquals(attributes, configuration.getFixedAttributes());
+        assertEquals(ONE_MINUTE, configuration.getDeadline());
     }
 
     @Test
@@ -76,7 +75,7 @@ public class TraceConfigurationTest {
         String defaultProjectId = ServiceOptions.getDefaultProjectId();
         if (defaultProjectId != null) {
             TraceConfiguration configuration = TraceConfiguration.builder().build();
-            assertEquals(configuration.getProjectId(), defaultProjectId);
+            assertEquals(defaultProjectId, configuration.getProjectId());
         }
     }
 
@@ -90,7 +89,7 @@ public class TraceConfigurationTest {
     public void disallowNullFixedAttributeKey() {
         TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
         Map<String, AttributeValue> attributes = Collections.singletonMap(null,
-                AttributeValue.stringAttributeValue("val"));
+                AttributeValue.newBuilder().setBoolValue(true).build());
         builder.setFixedAttributes(attributes);
         assertThrows(NullPointerException.class, () -> builder.build());
     }
