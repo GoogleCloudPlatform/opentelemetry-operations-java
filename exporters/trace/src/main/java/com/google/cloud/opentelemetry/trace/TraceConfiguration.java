@@ -7,7 +7,7 @@ import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import io.opentelemetry.common.AttributeValue;
+import com.google.devtools.cloudtrace.v2.AttributeValue;
 import java.util.Collections;
 import java.time.Duration;
 import java.util.LinkedHashMap;
@@ -18,7 +18,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Configurations for {@link TraceConfiguration}.
  *
- * @since 0.12
  */
 @AutoValue
 @Immutable
@@ -35,7 +34,6 @@ public abstract class TraceConfiguration {
      * Returns the {@link Credentials}.
      *
      * @return the {@code Credentials}.
-     * @since 0.12
      */
     @Nullable
     public abstract Credentials getCredentials();
@@ -44,7 +42,6 @@ public abstract class TraceConfiguration {
      * Returns the cloud project id.
      *
      * @return the cloud project id.
-     * @since 0.12
      */
     public abstract String getProjectId();
 
@@ -52,7 +49,6 @@ public abstract class TraceConfiguration {
      * Returns a TraceServiceStub instance used to make RPC calls.
      *
      * @return the trace service stub.
-     * @since 0.16
      */
     @Nullable
     public abstract TraceServiceStub getTraceServiceStub();
@@ -61,7 +57,6 @@ public abstract class TraceConfiguration {
      * Returns a map of attributes that is added to all the exported spans.
      *
      * @return the map of attributes that is added to all the exported spans.
-     * @since 0.19
      */
     public abstract Map<String, AttributeValue> getFixedAttributes();
 
@@ -72,7 +67,6 @@ public abstract class TraceConfiguration {
      * Default value is 10 seconds.
      *
      * @return the export deadline.
-     * @since 0.22
      */
     public abstract Duration getDeadline();
 
@@ -80,7 +74,6 @@ public abstract class TraceConfiguration {
      * Returns a new {@link Builder}.
      *
      * @return a {@code Builder}.
-     * @since 0.12
      */
     public static Builder builder() {
         return new AutoValue_TraceConfiguration.Builder().setProjectId(DEFAULT_PROJECT_ID)
@@ -90,7 +83,6 @@ public abstract class TraceConfiguration {
     /**
      * Builder for {@link TraceConfiguration}.
      *
-     * @since 0.12
      */
     @AutoValue.Builder
     public abstract static class Builder {
@@ -106,7 +98,6 @@ public abstract class TraceConfiguration {
          *
          * @param credentials the {@code Credentials}.
          * @return this.
-         * @since 0.12
          */
         public abstract Builder setCredentials(Credentials credentials);
 
@@ -115,7 +106,6 @@ public abstract class TraceConfiguration {
          *
          * @param projectId the cloud project id.
          * @return this.
-         * @since 0.12
          */
         public abstract Builder setProjectId(String projectId);
 
@@ -124,7 +114,6 @@ public abstract class TraceConfiguration {
          *
          * @param traceServiceStub the {@code TraceServiceStub}.
          * @return this.
-         * @since 0.16
          */
         public abstract Builder setTraceServiceStub(TraceServiceStub traceServiceStub);
 
@@ -134,7 +123,6 @@ public abstract class TraceConfiguration {
          * @param fixedAttributes the map of attributes that is added to all the
          *                        exported spans.
          * @return this.
-         * @since 0.16
          */
         public abstract Builder setFixedAttributes(Map<String, AttributeValue> fixedAttributes);
 
@@ -148,7 +136,6 @@ public abstract class TraceConfiguration {
          *
          * @param deadline the export deadline.
          * @return this
-         * @since 0.22
          */
         public abstract Builder setDeadline(Duration deadline);
 
@@ -164,7 +151,6 @@ public abstract class TraceConfiguration {
          * Builds a {@link TraceConfiguration}.
          *
          * @return a {@code TraceConfiguration}.
-         * @since 0.12
          */
         public TraceConfiguration build() {
             // Make a defensive copy of fixed attributes.
