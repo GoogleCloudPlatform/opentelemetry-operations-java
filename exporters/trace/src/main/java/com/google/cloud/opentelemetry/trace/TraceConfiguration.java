@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+
 import java.util.Collections;
 import java.time.Duration;
 import java.util.LinkedHashMap;
@@ -17,7 +18,6 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Configurations for {@link TraceConfiguration}.
- *
  */
 @AutoValue
 @Immutable
@@ -28,7 +28,8 @@ public abstract class TraceConfiguration {
     @VisibleForTesting
     static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-    TraceConfiguration() {}
+    TraceConfiguration() {
+    }
 
     /**
      * Returns the {@link Credentials}.
@@ -82,7 +83,6 @@ public abstract class TraceConfiguration {
 
     /**
      * Builder for {@link TraceConfiguration}.
-     *
      */
     @AutoValue.Builder
     public abstract static class Builder {
