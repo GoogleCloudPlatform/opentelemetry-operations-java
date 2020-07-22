@@ -78,7 +78,7 @@ public abstract class TraceConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_TraceConfiguration.Builder().setProjectId(DEFAULT_PROJECT_ID)
-            .setFixedAttributes(Collections.<String, AttributeValue>emptyMap()).setDeadline(DEFAULT_DEADLINE);
+            .setFixedAttributes(Collections.emptyMap()).setDeadline(DEFAULT_DEADLINE);
   }
 
   /**
