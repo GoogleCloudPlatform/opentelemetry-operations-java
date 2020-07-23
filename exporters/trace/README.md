@@ -2,13 +2,17 @@
 
   OpenTelemetry Google Cloud Trace Exporter allows the user to send collected traces to Google Cloud. 
   
-  <a href="https://cloud.google.com/trace">Google Cloud Trace</a> is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
+ [Google Cloud Trace](https://cloud.google.com/trace) is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
 
 ## Setup
   Google Cloud Trace is a managed service provided by Google Cloud Platform.
 
 ## Installation
-  Not currently ready as a package to be imported. To use presently, one would have to clone this GitHub repo.
+  Not currently ready as a package to be imported. [Issue](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6) is currently being dealt with.  
+  For now, one would have to clone this GitHub repo. To do so, run in the command line:
+  ```git
+  git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java
+  ```
 ## Usage
   If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
     
@@ -21,9 +25,10 @@
   import com.google.devtools.cloudtrace.v2.Span;
   ```
   Declare and initialize the variables that will be used in the constructor parameters.  
-  Then, we can create a TraceExporter with, for example:
+  Then, we can create and register TraceExporter, for example:
   ```java
   TraceExporter javaTraceExporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
+  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
   ```
   Start tracing and collecting SpanData.  
   Spans can be created by importing and using global `opentelemetry-java` API packages, for example:  
@@ -31,13 +36,9 @@
   String operationName = "receive"; //or whatever other operation
   Span span = this.tracer.spanBuilder(operationName).startSpan();
   ```
-  To export these spans, configure the trace provider with the exporter:
-  ```java
-  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
-  ```
 
 ## Authentication
-  This exporter uses <a href="https://github.com/googleapis/google-cloud-java">google-cloud-java</a>, for details about how to configure the authentication see <a href="https://github.com/googleapis/google-cloud-java#authentication">here</a>.  
+  This exporter uses [google-cloud-java](https://github.com/googleapis/google-cloud-java), for details about how to configure the authentication see [here](https://github.com/googleapis/google-cloud-java#authentication).  
     
   In the case that there are problems creating a service account key, make sure that the **constraints/iam.disableServiceAccountKeyCreation** boolean variable is set to false. This can be edited on Google Cloud by clicking on Navigation Menu -> IAM & Admin -> Organization Policies -> Disable Service Account Key Creation -> Edit  
     
