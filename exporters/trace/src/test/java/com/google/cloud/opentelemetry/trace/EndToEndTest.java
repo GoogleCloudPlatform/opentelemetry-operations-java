@@ -99,12 +99,11 @@ public class EndToEndTest {
                 .setHasEnded(true)
                 .build();
 
-        //spanDataList.add(spanDataOne);
         spanDataList.add(spanDataOne);
 
-        // Some verification.
+        // Some hardcoding of expected data for span.
         List<Span> expectedSpans = new ArrayList<>();
-        Span spanTwo = Span.newBuilder()
+        Span spanOne = Span.newBuilder()
                 .setName("projects/" + PROJECT_ID + "/traces/" + TRACE_ID.toLowerBase16() + "/spans/" + SPAN_ID.toLowerBase16())
                 .setSpanId(SPAN_ID.toLowerBase16())
                 .setDisplayName(TruncatableString.newBuilder().setValue(SERVER_PREFIX + SPAN_NAME).setTruncatedByteCount(0).build())
@@ -117,8 +116,8 @@ public class EndToEndTest {
                 .setParentSpanId(PARENT_SPAN_ID.toLowerBase16())
                 .setSameProcessAsParentSpan(BoolValue.of(true))
                 .build();
-        //Span.parseFrom
-        expectedSpans.add(spanTwo);
+        //Instead of hardcoding as above, Span.parseFrom method can potentially be used to parse from a hardcoded proto
+        expectedSpans.add(spanOne);
 
         //my original try, but batchWriteSpans is void and cannot be stubbed with a return value
         //doReturn(expectedSpans).when(mockTraceServiceClient).batchWriteSpans(any(ProjectName.class), anyList());
