@@ -1,10 +1,9 @@
 description = 'Cloud Trace Exporter for OpenTelemetry'
 
-repositories { jcenter() }
 dependencies {
     api(libraries.opentelemetry_api)
     api(libraries.opentelemetry_sdk)
     api(libraries.google_cloud_trace)
     testImplementation(testLibraries.junit)
-    testCompile "org.mockito:mockito-core:2.+"
+    testCompile(testLibraries.mockito)
 }
