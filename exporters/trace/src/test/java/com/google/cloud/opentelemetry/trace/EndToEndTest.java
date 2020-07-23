@@ -9,22 +9,26 @@ import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.*;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.SpanContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
-
-//import com.google.testing.mockito.Mocks;
-
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.eq;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -32,20 +36,18 @@ public class EndToEndTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
     }
-//    @Rule
-//    public final Mocks mocks = new Mocks(this);
 
-//creating a mock TraceServiceClient so that batchWriteSpans() method won't actually be called
+    // Creating a mock TraceServiceClient so that batchWriteSpans() method won't actually be called
     TraceServiceClient mockTraceServiceClient = Mockito.mock(TraceServiceClient.class);
 
     private TraceExporter exporter;
 
     private static final String PROJECT_ID = "project-id";
-    private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>(); // Or fake some data if we want to test more.
+    private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
     private static final TraceId TRACE_ID = new TraceId(321, 123);
     private static final SpanId SPAN_ID = new SpanId(12345);
     private static final SpanId PARENT_SPAN_ID = new SpanId(54321);
-    //private static final SpanId PARENT_SPAN_ID = SpanId.fromLowerBase16("71da8d631536f5f1", 0);
+    // private static final SpanId PARENT_SPAN_ID = SpanId.fromLowerBase16("71da8d631536f5f1", 0);
     private static final TraceFlags TRACE_FLAGS = TraceFlags.builder().build();
     private static final TraceState TRACE_STATE = TraceState.builder().build();
     private static final SpanContext spanContext = SpanContext.create(TRACE_ID, SPAN_ID, TRACE_FLAGS, TRACE_STATE);
@@ -61,7 +63,7 @@ public class EndToEndTest {
     private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.3.0";
     private static final String AGENT_LABEL_VALUE_STRING = "opentelemetry-java [" + OPEN_TELEMETRY_LIBRARY_VERSION + "]";
     private static final AttributeValue AGENT_LABEL_VALUE = AttributeValue.newBuilder()
-                    .setStringValue(TruncatableString.newBuilder().setValue(AGENT_LABEL_VALUE_STRING).setTruncatedByteCount(0).build()).build();
+            .setStringValue(TruncatableString.newBuilder().setValue(AGENT_LABEL_VALUE_STRING).setTruncatedByteCount(0).build()).build();
     private static final Span.Attributes ATTRIBUTES = Span.Attributes.newBuilder()
             .setDroppedAttributesCount(0)
             .putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE)
@@ -69,7 +71,7 @@ public class EndToEndTest {
     private static final Span.TimeEvents TIME_EVENTS = Span.TimeEvents.newBuilder().build();
     private static final io.opentelemetry.trace.Status SPAN_DATA_STATUS = io.opentelemetry.trace.Status.OK;
     private static final Status SPAN_STATUS = Status.newBuilder().setCode(SPAN_DATA_STATUS.getCanonicalCode().value())
-            //.setMessage(SPAN_DATA_STATUS.getDescription())
+            // .setMessage(SPAN_DATA_STATUS.getDescription())
             .build();
     private static final Span.Links LINKS = Span.Links.newBuilder().setDroppedLinksCount(0).build();
 
@@ -81,8 +83,6 @@ public class EndToEndTest {
         // Constructs an exporter instance.
         exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
         Collection<SpanData> spanDataList = new ArrayList<>();
-
-        //SpanData spanDataOne = SpanData.newBuilder().build();
 
         SpanData spanDataOne = SpanData.newBuilder()
                 .setParentSpanId(PARENT_SPAN_ID)
@@ -99,12 +99,11 @@ public class EndToEndTest {
                 .setHasEnded(true)
                 .build();
 
-        //spanDataList.add(spanDataOne);
         spanDataList.add(spanDataOne);
 
-        // Some verification.
+        // Some hardcoding of expected data for span.
         List<Span> expectedSpans = new ArrayList<>();
-        Span spanTwo = Span.newBuilder()
+        Span spanOne = Span.newBuilder()
                 .setName("projects/" + PROJECT_ID + "/traces/" + TRACE_ID.toLowerBase16() + "/spans/" + SPAN_ID.toLowerBase16())
                 .setSpanId(SPAN_ID.toLowerBase16())
                 .setDisplayName(TruncatableString.newBuilder().setValue(SERVER_PREFIX + SPAN_NAME).setTruncatedByteCount(0).build())
@@ -117,25 +116,21 @@ public class EndToEndTest {
                 .setParentSpanId(PARENT_SPAN_ID.toLowerBase16())
                 .setSameProcessAsParentSpan(BoolValue.of(true))
                 .build();
-        //Span.parseFrom
-        expectedSpans.add(spanTwo);
+        // Instead of hardcoding as above, Span.parseFrom method can potentially be used to parse from a hardcoded proto
+        expectedSpans.add(spanOne);
 
-        //my original try, but batchWriteSpans is void and cannot be stubbed with a return value
-        //doReturn(expectedSpans).when(mockTraceServiceClient).batchWriteSpans(any(ProjectName.class), anyList());
+        // My original try, but batchWriteSpans is void and cannot be stubbed with a return value
+        // doReturn(expectedSpans).when(mockTraceServiceClient).batchWriteSpans(any(ProjectName.class), anyList());
 
-        //Instead of doReturn, doAnswer is better to deal with whenever batchWriteSpans() is called.
-        //Rather than actually call the BatchWriteSpans() method from the API, null is returned.
-        doAnswer(invocation -> {
-            //Object[] args = invocation.getArguments();
-            //Mock mock = (Mock) invocation.getMock();
-            return null;
-        })
+        // Instead of doReturn, doAnswer is better to deal with whenever batchWriteSpans() is called.
+        // Rather than actually call the BatchWriteSpans() method from the API, null is returned.
+        doAnswer(invocation -> null)
                 .when(mockTraceServiceClient).batchWriteSpans(eq(PROJECT_ID), anyList());
 
         // Invokes export();
         assertEquals((SpanExporter.ResultCode.SUCCESS), (exporter.export(spanDataList)));
 
-        //make sure that the parameters passed to batchWriteSpans() are what we expect them to be
+        // Make sure that the parameters passed to batchWriteSpans() are what we expect them to be
         verify(mockTraceServiceClient, times(1)).batchWriteSpans(eq(ProjectName.of(PROJECT_ID)),
                 eq(expectedSpans));
     }
