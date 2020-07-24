@@ -140,7 +140,7 @@ public class EndToEndTest {
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();
-    assertEquals((SpanExporter.ResultCode.SUCCESS), (exporter.export(spanDataList)));
+    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
 
     // Some verification.
     List<Span> expectedSpans = new ArrayList<>();
