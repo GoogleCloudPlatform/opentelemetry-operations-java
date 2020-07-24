@@ -9,26 +9,20 @@ import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -37,8 +31,8 @@ public class EndToEndTest {
     MockitoAnnotations.initMocks(this);
   }
 
-  // Creating a mock TraceServiceClient so that batchWriteSpans() method won't actually be called
-  TraceServiceClient mockTraceServiceClient = Mockito.mock(TraceServiceClient.class);
+  @Mock
+  TraceServiceClient mockTraceServiceClient;
 
   private TraceExporter exporter;
 
@@ -73,12 +67,8 @@ public class EndToEndTest {
           .build();
   private static final Span.Links LINKS = Span.Links.newBuilder().setDroppedLinksCount(0).build();
 
-
-  // Some test cases. Since the core function of this exporter is export(), we may focus on testing that.
-
   @Test
   public void export(){
-    // Constructs an exporter instance.
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
@@ -99,7 +89,6 @@ public class EndToEndTest {
 
     spanDataList.add(spanDataOne);
 
-    // Some hardcoding of expected data for span.
     List<Span> expectedSpans = new ArrayList<>();
     Span spanOne = Span.newBuilder()
             .setName("projects/" + PROJECT_ID + "/traces/" + TRACE_ID.toLowerBase16() + "/spans/" + SPAN_ID.toLowerBase16())
@@ -114,11 +103,7 @@ public class EndToEndTest {
             .setParentSpanId(PARENT_SPAN_ID.toLowerBase16())
             .setSameProcessAsParentSpan(BoolValue.of(true))
             .build();
-    // Instead of hardcoding as above, Span.parseFrom method can potentially be used to parse from a hardcoded proto
     expectedSpans.add(spanOne);
-
-    // My original try, but batchWriteSpans is void and cannot be stubbed with a return value
-    // doReturn(expectedSpans).when(mockTraceServiceClient).batchWriteSpans(any(ProjectName.class), anyList());
 
     // Instead of doReturn, doAnswer is better to deal with whenever batchWriteSpans() is called.
     // Rather than actually call the BatchWriteSpans() method from the API, null is returned.
@@ -135,14 +120,12 @@ public class EndToEndTest {
 
   @org.junit.Test
   public void export_EmptySpanDataList(){
-    // Constructs a exporter instance.
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();
     assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
-
-    // Some verification.
+    
     List<Span> expectedSpans = new ArrayList<>();
     verify(mockTraceServiceClient, times(1)).batchWriteSpans(eq(ProjectName.of(PROJECT_ID)),
             eq(expectedSpans));
