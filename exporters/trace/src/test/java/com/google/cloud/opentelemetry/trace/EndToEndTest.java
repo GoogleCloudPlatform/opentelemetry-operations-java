@@ -74,7 +74,7 @@ public class EndToEndTest {
   private static final Span.Links LINKS = Span.Links.newBuilder().setDroppedLinksCount(0).build();
 
 
-  // Some test cases, for example. Since the core function of this exporter is export(), we may focus on testing that.
+  // Some test cases. Since the core function of this exporter is export(), we may focus on testing that.
 
   @Test
   public void export(){
@@ -126,7 +126,7 @@ public class EndToEndTest {
             .when(mockTraceServiceClient).batchWriteSpans(eq(PROJECT_ID), anyList());
 
     // Invokes export();
-    assertEquals((SpanExporter.ResultCode.SUCCESS), (exporter.export(spanDataList)));
+    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
 
     // Make sure that the parameters passed to batchWriteSpans() are what we expect them to be
     verify(mockTraceServiceClient, times(1)).batchWriteSpans(eq(ProjectName.of(PROJECT_ID)),
