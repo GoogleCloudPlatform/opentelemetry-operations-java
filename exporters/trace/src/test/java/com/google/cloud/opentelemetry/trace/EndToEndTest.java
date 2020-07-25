@@ -9,11 +9,8 @@ import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,24 +29,12 @@ import static org.mockito.Mockito.eq;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
-  @Before
-  public void setup() {
-    MockitoAnnotations.initMocks(this);
-  }
-
-  @Mock
-  TraceServiceClient mockTraceServiceClient;
-
-  private TraceExporter exporter;
 
   private static final String PROJECT_ID = "project-id";
   private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
   private static final TraceId TRACE_ID = new TraceId(321, 123);
   private static final SpanId SPAN_ID = new SpanId(12345);
   private static final SpanId PARENT_SPAN_ID = new SpanId(54321);
-  private static final TraceFlags TRACE_FLAGS = TraceFlags.builder().build();
-  private static final TraceState TRACE_STATE = TraceState.builder().build();
-  private static final SpanContext spanContext = SpanContext.create(TRACE_ID, SPAN_ID, TRACE_FLAGS, TRACE_STATE);
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long START_SECONDS = TimeUnit.NANOSECONDS.toSeconds(START_EPOCH_NANOS);
@@ -73,8 +58,17 @@ public class EndToEndTest {
           .build();
   private static final Span.Links LINKS = Span.Links.newBuilder().setDroppedLinksCount(0).build();
 
+  @Mock
+  TraceServiceClient mockTraceServiceClient;
+  private TraceExporter exporter;
+
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+  }
+
   @Test
-  public void export(){
+  public void exportMockSpanDataList(){
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
@@ -124,8 +118,8 @@ public class EndToEndTest {
             eq(expectedSpans));
   }
 
-  @org.junit.Test
-  public void export_EmptySpanDataList(){
+  @Test
+  public void exportEmptySpanDataList(){
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
