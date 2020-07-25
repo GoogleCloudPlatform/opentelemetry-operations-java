@@ -16,14 +16,12 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-/**
- * Unit tests for {@link TraceConfiguration}.
- */
+/** Unit tests for {@link TraceConfiguration}. */
 @RunWith(JUnit4.class)
 public class TraceConfigurationTest {
 
-  private static final Credentials FAKE_CREDENTIALS = GoogleCredentials.newBuilder()
-          .setAccessToken(new AccessToken("fake", new Date(100))).build();
+  private static final Credentials FAKE_CREDENTIALS =
+      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
   private static final String PROJECT_ID = "project";
   private static final Duration ONE_MINUTE = Duration.ofSeconds(60, 0);
   private static final Duration NEG_ONE_MINUTE = Duration.ofSeconds(-60, 0);
@@ -42,12 +40,17 @@ public class TraceConfigurationTest {
 
   @Test
   public void setAllConfigurationFields() {
-    Map<String, AttributeValue> attributes = Collections.singletonMap("key",
-            AttributeValue.newBuilder().setBoolValue(true).build());
+    Map<String, AttributeValue> attributes =
+        Collections.singletonMap("key", AttributeValue.newBuilder().setBoolValue(true).build());
 
     // set all the fields different from their default values
-    TraceConfiguration configuration = TraceConfiguration.builder().setCredentials(FAKE_CREDENTIALS)
-            .setProjectId(PROJECT_ID).setFixedAttributes(attributes).setDeadline(ONE_MINUTE).build();
+    TraceConfiguration configuration =
+        TraceConfiguration.builder()
+            .setCredentials(FAKE_CREDENTIALS)
+            .setProjectId(PROJECT_ID)
+            .setFixedAttributes(attributes)
+            .setDeadline(ONE_MINUTE)
+            .build();
 
     // make sure the changes are reflected
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
@@ -94,8 +97,8 @@ public class TraceConfigurationTest {
   public void disallowNullFixedAttributeKey() {
     TraceConfiguration.Builder builder = TraceConfiguration.builder().setProjectId("test");
 
-    Map<String, AttributeValue> attributes = Collections.singletonMap(null,
-            AttributeValue.newBuilder().setBoolValue(true).build());
+    Map<String, AttributeValue> attributes =
+        Collections.singletonMap(null, AttributeValue.newBuilder().setBoolValue(true).build());
     builder.setFixedAttributes(attributes);
 
     assertThrows(NullPointerException.class, () -> builder.build());
@@ -128,5 +131,4 @@ public class TraceConfigurationTest {
 
     assertThrows(IllegalArgumentException.class, () -> builder.build());
   }
-
 }

@@ -16,20 +16,17 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Configurations for {@link TraceConfiguration}.
- */
+/** Configurations for {@link TraceConfiguration}. */
 @AutoValue
 @Immutable
 public abstract class TraceConfiguration {
 
-  private static final String DEFAULT_PROJECT_ID = Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
+  private static final String DEFAULT_PROJECT_ID =
+      Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
 
-  @VisibleForTesting
-  static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
+  @VisibleForTesting static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-  TraceConfiguration() {
-  }
+  TraceConfiguration() {}
 
   /**
    * Returns the {@link Credentials}.
@@ -64,8 +61,7 @@ public abstract class TraceConfiguration {
   /**
    * Returns the deadline for exporting to Trace backend.
    *
-   * <p>
-   * Default value is 10 seconds.
+   * <p>Default value is 10 seconds.
    *
    * @return the export deadline.
    */
@@ -77,21 +73,19 @@ public abstract class TraceConfiguration {
    * @return a {@code Builder}.
    */
   public static Builder builder() {
-    return new AutoValue_TraceConfiguration.Builder().setProjectId(DEFAULT_PROJECT_ID)
-            .setFixedAttributes(Collections.emptyMap()).setDeadline(DEFAULT_DEADLINE);
+    return new AutoValue_TraceConfiguration.Builder()
+        .setProjectId(DEFAULT_PROJECT_ID)
+        .setFixedAttributes(Collections.emptyMap())
+        .setDeadline(DEFAULT_DEADLINE);
   }
 
-  /**
-   * Builder for {@link TraceConfiguration}.
-   */
+  /** Builder for {@link TraceConfiguration}. */
   @AutoValue.Builder
   public abstract static class Builder {
 
-    @VisibleForTesting
-    static final Duration ZERO = Duration.ZERO;
+    @VisibleForTesting static final Duration ZERO = Duration.ZERO;
 
-    Builder() {
-    }
+    Builder() {}
 
     /**
      * Sets the {@link Credentials} used to authenticate API calls.
@@ -120,8 +114,7 @@ public abstract class TraceConfiguration {
     /**
      * Sets the map of attributes that is added to all the exported spans.
      *
-     * @param fixedAttributes the map of attributes that is added to all the
-     *                        exported spans.
+     * @param fixedAttributes the map of attributes that is added to all the exported spans.
      * @return this.
      */
     public abstract Builder setFixedAttributes(Map<String, AttributeValue> fixedAttributes);
@@ -129,10 +122,8 @@ public abstract class TraceConfiguration {
     /**
      * Sets the deadline for exporting to Trace backend.
      *
-     * <p>
-     * If both {@code TraceServiceStub} and {@code Deadline} are set,
-     * {@code TraceServiceStub} takes precedence and {@code Deadline} will not be
-     * respected.
+     * <p>If both {@code TraceServiceStub} and {@code Deadline} are set, {@code TraceServiceStub}
+     * takes precedence and {@code Deadline} will not be respected.
      *
      * @param deadline the export deadline.
      * @return this
@@ -155,9 +146,11 @@ public abstract class TraceConfiguration {
     public TraceConfiguration build() {
       // Make a defensive copy of fixed attributes.
       setFixedAttributes(
-              Collections.unmodifiableMap(new LinkedHashMap<String, AttributeValue>(getFixedAttributes())));
-      Preconditions.checkArgument(!Strings.isNullOrEmpty(getProjectId()),
-              "Cannot find a project ID from either configurations or application default.");
+          Collections.unmodifiableMap(
+              new LinkedHashMap<String, AttributeValue>(getFixedAttributes())));
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(getProjectId()),
+          "Cannot find a project ID from either configurations or application default.");
       for (Map.Entry<String, AttributeValue> fixedAttribute : getFixedAttributes().entrySet()) {
         Preconditions.checkNotNull(fixedAttribute.getKey(), "attribute key");
         Preconditions.checkNotNull(fixedAttribute.getValue(), "attribute value");
