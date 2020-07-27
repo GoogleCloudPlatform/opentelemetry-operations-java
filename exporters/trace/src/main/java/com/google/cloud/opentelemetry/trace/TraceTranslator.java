@@ -1,7 +1,5 @@
 package com.google.cloud.opentelemetry.trace;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
@@ -9,24 +7,27 @@ import com.google.devtools.cloudtrace.v2.Span;
 import com.google.devtools.cloudtrace.v2.Span.Attributes;
 import com.google.devtools.cloudtrace.v2.Span.Link;
 import com.google.devtools.cloudtrace.v2.Span.Links;
-import com.google.devtools.cloudtrace.v2.Span.TimeEvent;
 import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 class TraceTranslator {
 
   // TODO(nilebox): Extract the constant
-  private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.3.0";
+  private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.6.0";
   private static final String AGENT_LABEL_KEY = "g.co/agent";
   private static final String AGENT_LABEL_VALUE_STRING =
       "opentelemetry-java [" + OPEN_TELEMETRY_LIBRARY_VERSION + "]";
@@ -48,17 +49,12 @@ class TraceTranslator {
           .build();
 
   @VisibleForTesting
-  static Span generateSpan(SpanData spanData,
-      String projectId,
-      Map<String, AttributeValue> constAttributes) {
+  static Span generateSpan(
+      SpanData spanData, String projectId, Map<String, AttributeValue> constAttributes) {
     final String traceIdHex = spanData.getTraceId().toLowerBase16();
     final String spanIdHex = spanData.getSpanId().toLowerBase16();
     SpanName spanName =
-        SpanName.newBuilder()
-            .setProject(projectId)
-            .setTrace(traceIdHex)
-            .setSpan(spanIdHex)
-            .build();
+        SpanName.newBuilder().setProject(projectId).setTrace(traceIdHex).setSpan(spanIdHex).build();
     Span.Builder spanBuilder =
         Span.newBuilder()
             .setName(spanName.toString())
@@ -66,10 +62,8 @@ class TraceTranslator {
             .setDisplayName(
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
-            .setAttributes(
-                toAttributesProto(spanData.getAttributes(), constAttributes))
-            .setTimeEvents(
-                toTimeEventsProto(spanData.getTimedEvents()));
+            .setAttributes(toAttributesProto(spanData.getAttributes(), constAttributes))
+            .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     io.opentelemetry.trace.Status status = spanData.getStatus();
     if (status != null) {
       spanBuilder.setStatus(toStatusProto(status));
@@ -82,7 +76,7 @@ class TraceTranslator {
     if (spanData.getParentSpanId() != null && spanData.getParentSpanId().isValid()) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId().toLowerBase16());
     }
-    /*@Nullable*/ Boolean hasRemoteParent = spanData.getHasRemoteParent();
+    /* @Nullable */ Boolean hasRemoteParent = spanData.getHasRemoteParent();
     if (hasRemoteParent != null) {
       spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     }
@@ -109,19 +103,14 @@ class TraceTranslator {
     long seconds = TimeUnit.NANOSECONDS.toSeconds(epochNanos);
     int nanos = (int) (epochNanos - TimeUnit.SECONDS.toNanos(seconds));
 
-    return com.google.protobuf.Timestamp.newBuilder()
-        .setSeconds(seconds)
-        .setNanos(nanos)
-        .build();
+    return com.google.protobuf.Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
   }
-
-  // These are the attributes of the Span, where usually we may add more attributes like the agent.
+  
+  // These are the attributes of the Span, where usually we may add more
+  // attributes like the agent.
   private static Attributes toAttributesProto(
-      Map<String, io.opentelemetry.common.AttributeValue> attributes,
-      Map<String, AttributeValue> fixedAttributes) {
-    Attributes.Builder attributesBuilder =
-        toAttributesBuilderProto(
-            attributes);
+      ReadableAttributes attributes, Map<String, AttributeValue> fixedAttributes) {
+    Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
       attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
@@ -129,20 +118,20 @@ class TraceTranslator {
     return attributesBuilder.build();
   }
 
-  private static Attributes toAttributesProto(
-      Map<String, io.opentelemetry.common.AttributeValue> attributes) {
+  private static Attributes toAttributesProto(ReadableAttributes attributes) {
     return toAttributesProto(attributes, ImmutableMap.<String, AttributeValue>of());
   }
 
-  private static Attributes.Builder toAttributesBuilderProto(
-      Map<String, io.opentelemetry.common.AttributeValue> attributes) {
+  private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
-    for (Map.Entry<String, io.opentelemetry.common.AttributeValue> label : attributes.entrySet()) {
-      AttributeValue value = toAttributeValueProto(label.getValue());
-      attributesBuilder.putAttributeMap(mapKey(label.getKey()), value);
-    }
+    attributes.forEach(
+        (key, value) -> {
+          AttributeValue attributeValue = toAttributeValueProto(value);
+          attributesBuilder.putAttributeMap(mapKey(key), attributeValue);
+        });
+
     return attributesBuilder;
   }
 
@@ -175,18 +164,17 @@ class TraceTranslator {
     }
   }
 
-  private static Span.TimeEvents toTimeEventsProto(
-      List<TimedEvent> timedEvents) {
+  private static Span.TimeEvents toTimeEventsProto(List<Event> events) {
     Span.TimeEvents.Builder timeEventsBuilder = Span.TimeEvents.newBuilder();
 
-    for (TimedEvent timedEvent : timedEvents) {
-      timeEventsBuilder.addTimeEvent(TimeEvent.newBuilder()
-          .setTime(toTimestampProto(timedEvent.getEpochNanos()))
-          .setAnnotation(Span.TimeEvent.Annotation.newBuilder()
-              .setDescription(toTruncatableStringProto(timedEvent.getName()))
-              .setAttributes(toAttributesProto(timedEvent.getAttributes()))
-          )
-      );
+    for (Event event : events) {
+      timeEventsBuilder.addTimeEvent(
+          Span.TimeEvent.newBuilder()
+              .setTime(toTimestampProto(event.getEpochNanos()))
+              .setAnnotation(
+                  Span.TimeEvent.Annotation.newBuilder()
+                      .setDescription(toTruncatableStringProto(event.getName()))
+                      .setAttributes(toAttributesProto(event.getAttributes()))));
     }
 
     return timeEventsBuilder.build();
@@ -200,8 +188,8 @@ class TraceTranslator {
     return statusBuilder.build();
   }
 
-  private static Links toLinksProto(List<io.opentelemetry.sdk.trace.data.SpanData.Link> links,
-      int totalRecordedLinks) {
+  private static Links toLinksProto(
+      List<io.opentelemetry.sdk.trace.data.SpanData.Link> links, int totalRecordedLinks) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(Math.max(0, totalRecordedLinks - links.size()));
     for (io.opentelemetry.sdk.trace.data.SpanData.Link link : links) {
@@ -220,10 +208,8 @@ class TraceTranslator {
         .build();
   }
 
-
   @VisibleForTesting
-  static Map<String, AttributeValue> getResourceLabels(
-      Map<String, String> resource) {
+  static Map<String, AttributeValue> getResourceLabels(Map<String, String> resource) {
     if (resource == null) {
       return Collections.emptyMap();
     }
