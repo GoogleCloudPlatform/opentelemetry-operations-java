@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Configurations for {@link TraceConfiguration}. */
+/** Configurations for {@link TraceExporter}. */
 @AutoValue
 @Immutable
 public abstract class TraceConfiguration {
