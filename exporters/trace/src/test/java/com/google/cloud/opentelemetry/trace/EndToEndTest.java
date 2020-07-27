@@ -44,7 +44,7 @@ public class EndToEndTest {
   private static final int END_NANOS = (int) (END_EPOCH_NANOS - TimeUnit.SECONDS.toNanos(END_SECONDS));
   private static final String SERVER_PREFIX = "Recv.";
   private static final String AGENT_LABEL_KEY = "g.co/agent";
-  private static final String AGENT_LABEL_VALUE_STRING = "opentelemetry-java [0.3.0]";
+  private static final String AGENT_LABEL_VALUE_STRING = "opentelemetry-java [0.6.0]";
   private static final AttributeValue AGENT_LABEL_VALUE = AttributeValue.newBuilder()
           .setStringValue(TruncatableString.newBuilder().setValue(AGENT_LABEL_VALUE_STRING).setTruncatedByteCount(0).build()).build();
   private static final Span.Attributes ATTRIBUTES = Span.Attributes.newBuilder()
