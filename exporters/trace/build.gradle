@@ -8,4 +8,5 @@ dependencies {
     api(libraries.google_cloud_core)
     api(libraries.google_cloud_trace)
     testImplementation(testLibraries.junit)
+    testCompile(testLibraries.mockito)
 }
