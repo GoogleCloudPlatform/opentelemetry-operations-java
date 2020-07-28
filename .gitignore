@@ -1,16 +1,18 @@
 # Gradle
-/.gradle/
-/out/
+.gradle/
+out/
 .project
 .settings
 .classpath
 
-# IntelliJ IDEA
-/.idea/
-
-/.vscode/
+# IDE(A) files
+.idea/
+.settings/
+.vscode/
+.classpath
+.project
 
 # Build artifacts
-/exporters/trace/build/
-/exporters/trace/bin/
+build/
+bin/
 
