@@ -81,6 +81,12 @@ public class TraceExporter implements SpanExporter {
     this.fixedAttributes = fixedAttributes;
   }
 
+  // TODO @imnoahcook add support for flush
+  @Override
+  public ResultCode flush() {
+    return ResultCode.FAILURE;
+  }
+
   @Override
   public ResultCode export(Collection<SpanData> spanDataList) {
     List<Span> spans = new ArrayList<>(spanDataList.size());
