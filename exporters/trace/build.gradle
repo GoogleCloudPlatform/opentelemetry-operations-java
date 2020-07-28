@@ -1,8 +1,11 @@
 description = 'Cloud Trace Exporter for OpenTelemetry'
 
 dependencies {
+    api(libraries.auto_value_annotations)
+    annotationProcessor(libraries.auto_value)
     api(libraries.opentelemetry_api)
     api(libraries.opentelemetry_sdk)
+    api(libraries.google_cloud_core)
     api(libraries.google_cloud_trace)
     testImplementation(testLibraries.junit)
     testCompile(testLibraries.mockito)
