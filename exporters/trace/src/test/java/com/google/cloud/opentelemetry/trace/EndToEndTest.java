@@ -8,6 +8,7 @@ import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -17,15 +18,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -71,13 +70,13 @@ public class EndToEndTest {
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    SpanData spanDataOne = SpanData.newBuilder()
+    TestSpanData spanDataOne = TestSpanData.newBuilder()
             .setParentSpanId(PARENT_SPAN_ID)
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)
             .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
-            .setTimedEvents(Collections.emptyList())
+            .setEvents(Collections.emptyList())
             .setStatus(SPAN_DATA_STATUS)
             .setStartEpochNanos(START_EPOCH_NANOS)
             .setEndEpochNanos(END_EPOCH_NANOS)
