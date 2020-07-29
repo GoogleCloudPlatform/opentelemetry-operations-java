@@ -8,6 +8,7 @@ import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -71,13 +72,13 @@ public class EndToEndTest {
     exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    SpanData spanDataOne = SpanData.newBuilder()
+    TestSpanData spanDataOne = TestSpanData.newBuilder()
             .setParentSpanId(PARENT_SPAN_ID)
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)
             .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
-            .setTimedEvents(Collections.emptyList())
+            .setEvents(Collections.emptyList())
             .setStatus(SPAN_DATA_STATUS)
             .setStartEpochNanos(START_EPOCH_NANOS)
             .setEndEpochNanos(END_EPOCH_NANOS)
