@@ -8,15 +8,21 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.*;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.SpanContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(JUnit4.class)
 public class TraceTranslatorTest {
@@ -100,7 +106,7 @@ public class TraceTranslatorTest {
   public void toTimeEventsProtoTest(){
     List<SpanData.Event> events = new ArrayList<>();
     SpanData.Event eventOne = new SpanData.Event() {
-      //The SpanData.Event interfaces requires us to override these four methods
+      // The SpanData.Event interfaces requires us to override these four methods
       @Override
       public long getEpochNanos() {
         return 0;
@@ -133,8 +139,9 @@ public class TraceTranslatorTest {
     io.opentelemetry.trace.Status myStatus = io.opentelemetry.trace.Status.OK.withDescription("Status description");
     Status spanStatus = TraceTranslator.toStatusProto(myStatus);
 
-    //The int representation is 0 for canonical code "OK".
-    assertEquals(0, spanStatus.getCode());
+    // The int representation is 0 for canonical code "OK".
+    assertEquals(0,myStatus.getCanonicalCode().value());
+    assertEquals(io.opentelemetry.trace.Status.CanonicalCode.OK, myStatus.getCanonicalCode());
     assertEquals("Status description", spanStatus.getMessage());
   }
   
@@ -167,7 +174,7 @@ public class TraceTranslatorTest {
 
     assertEquals(traceIdOne.toLowerBase16(), finalLinks.getLink(0).getTraceId());
     assertEquals(spanIdOne.toLowerBase16(), finalLinks.getLink(0).getSpanId());
-    //the int representation is 0 for (Link.Type.TYPE_UNSPECIFIED), which is given in TraceTranslator.
+    // The int representation is 0 for (Link.Type.TYPE_UNSPECIFIED), which is given in TraceTranslator.
     assertEquals(0, finalLinks.getLink(0).getTypeValue());
     assertTrue(finalLinks.getLink(0).getAttributes().containsAttributeMap("key"));
 
