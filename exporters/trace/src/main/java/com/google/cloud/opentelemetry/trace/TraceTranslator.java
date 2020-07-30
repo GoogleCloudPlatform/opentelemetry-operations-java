@@ -83,7 +83,8 @@ class TraceTranslator {
     return spanBuilder.build();
   }
 
-  private static String toDisplayName(String spanName, @javax.annotation.Nullable Kind spanKind) {
+  @VisibleForTesting
+  static String toDisplayName(String spanName, @javax.annotation.Nullable Kind spanKind) {
     if (spanKind == Kind.SERVER && !spanName.startsWith(SERVER_PREFIX)) {
       return SERVER_PREFIX + spanName;
     }
@@ -95,11 +96,13 @@ class TraceTranslator {
     return spanName;
   }
 
-  private static TruncatableString toTruncatableStringProto(String string) {
+  @VisibleForTesting
+  static TruncatableString toTruncatableStringProto(String string) {
     return TruncatableString.newBuilder().setValue(string).setTruncatedByteCount(0).build();
   }
 
-  private static com.google.protobuf.Timestamp toTimestampProto(long epochNanos) {
+  @VisibleForTesting
+  static com.google.protobuf.Timestamp toTimestampProto(long epochNanos) {
     long seconds = TimeUnit.NANOSECONDS.toSeconds(epochNanos);
     int nanos = (int) (epochNanos - TimeUnit.SECONDS.toNanos(seconds));
 
@@ -108,7 +111,8 @@ class TraceTranslator {
   
   // These are the attributes of the Span, where usually we may add more
   // attributes like the agent.
-  private static Attributes toAttributesProto(
+  @VisibleForTesting
+  static Attributes toAttributesProto(
       ReadableAttributes attributes, Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
@@ -164,7 +168,8 @@ class TraceTranslator {
     }
   }
 
-  private static Span.TimeEvents toTimeEventsProto(List<Event> events) {
+  @VisibleForTesting
+  static Span.TimeEvents toTimeEventsProto(List<Event> events) {
     Span.TimeEvents.Builder timeEventsBuilder = Span.TimeEvents.newBuilder();
 
     for (Event event : events) {
@@ -180,7 +185,8 @@ class TraceTranslator {
     return timeEventsBuilder.build();
   }
 
-  private static Status toStatusProto(io.opentelemetry.trace.Status status) {
+  @VisibleForTesting
+  static Status toStatusProto(io.opentelemetry.trace.Status status) {
     Status.Builder statusBuilder = Status.newBuilder().setCode(status.getCanonicalCode().value());
     if (status.getDescription() != null) {
       statusBuilder.setMessage(status.getDescription());
@@ -188,7 +194,8 @@ class TraceTranslator {
     return statusBuilder.build();
   }
 
-  private static Links toLinksProto(
+  @VisibleForTesting
+  static Links toLinksProto(
       List<io.opentelemetry.sdk.trace.data.SpanData.Link> links, int totalRecordedLinks) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(Math.max(0, totalRecordedLinks - links.size()));
