@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
@@ -28,29 +28,26 @@ import static org.junit.Assert.assertFalse;
 public class TraceTranslatorTest {
 
   @Test
-  public void toDisplayNameTest(){
+  public void testToDisplayName(){
     String serverPrefixSpanName = "Recv. mySpanName";
     String clientPrefixSpanName = "Sent. mySpanName";
     String regularSpanName = "regularSpanName";
     Kind serverSpanKind = Kind.SERVER;
     Kind clientSpanKind = Kind.CLIENT;
 
-    assertEquals("Recv. mySpanName", TraceTranslator.toDisplayName(serverPrefixSpanName, serverSpanKind));
-    assertEquals("Sent. mySpanName", TraceTranslator.toDisplayName(clientPrefixSpanName, clientSpanKind));
+    assertEquals(serverPrefixSpanName, TraceTranslator.toDisplayName(serverPrefixSpanName, serverSpanKind));
+    assertEquals(clientPrefixSpanName, TraceTranslator.toDisplayName(clientPrefixSpanName, clientSpanKind));
     assertEquals("Recv.regularSpanName", TraceTranslator.toDisplayName(regularSpanName, serverSpanKind));
     assertEquals("Sent.regularSpanName", TraceTranslator.toDisplayName(regularSpanName, clientSpanKind));
   }
 
   @Test(expected = NullPointerException.class)
-  public void nullTruncatableStringProtoTest(){
-    TruncatableString nullTruncatable = TraceTranslator.toTruncatableStringProto(null);
-
-    assertNull(nullTruncatable.getValue());
-    assertEquals(0, nullTruncatable.getTruncatedByteCount());
+  public void testNullTruncatableStringProto(){
+    assertThrows(NullPointerException.class, () -> TraceTranslator.toTruncatableStringProto(null));
   }
 
   @Test
-  public void toTruncatableStringProtoTest(){
+  public void testToTruncatableStringProto(){
     String truncatableString = "myTruncatableString";
     TruncatableString testTruncatable = TraceTranslator.toTruncatableStringProto(truncatableString);
 
@@ -59,7 +56,7 @@ public class TraceTranslatorTest {
   }
 
   @Test
-  public void toTimestampProtoTest(){
+  public void testToTimestampProto(){
     long epochNanos = TimeUnit.SECONDS.toNanos(3001) + 255;
     com.google.protobuf.Timestamp timestamp = TraceTranslator.toTimestampProto(epochNanos);
 
@@ -68,12 +65,17 @@ public class TraceTranslatorTest {
   }
 
   @Test
-  public void toAttributesProtoTest(){
+  public void testToAttributesProto(){
+    String stringkey = "myValue";
+    boolean boolKey = true;
+    long longKey = 100;
+    double doubleKey = 3.14;
+
     ReadableAttributes attributes = Attributes.newBuilder()
-            .setAttribute("myKey", "myValue")
-            .setAttribute("http.status_code", true)
-            .setAttribute("anotherKey", 100)
-            .setAttribute("http.host", 3.14)
+            .setAttribute("myKey", stringkey)
+            .setAttribute("http.status_code", boolKey)
+            .setAttribute("anotherKey", longKey)
+            .setAttribute("http.host", doubleKey)
             .build();
     Map<String, AttributeValue> fixedAttributes = new LinkedHashMap<>();
     fixedAttributes.put("fixed", AttributeValue.newBuilder().setStringValue
@@ -81,29 +83,34 @@ public class TraceTranslatorTest {
     fixedAttributes.put("another", AttributeValue.newBuilder().setStringValue
         (TruncatableString.newBuilder().setValue("entry").setTruncatedByteCount(0).build()).build());
 
-    Span.Attributes.Builder attributesBuilder = Span.Attributes.newBuilder().setDroppedAttributesCount(0)
-        .putAttributeMap("myKey", AttributeValue.newBuilder().setStringValue
-            (TruncatableString.newBuilder().setValue("myValue").setTruncatedByteCount(0)).build())
-        .putAttributeMap("/http/host", AttributeValue.newBuilder().setStringValue
-            (TruncatableString.newBuilder().setValue(String.valueOf(3.14)).setTruncatedByteCount(0)).build())
-        .putAttributeMap("/http/status_code", AttributeValue.newBuilder().setBoolValue
-            (true).build())
-        .putAttributeMap("anotherKey", AttributeValue.newBuilder().setIntValue
-            (100).build())
-        .putAttributeMap("g.co/agent", AttributeValue.newBuilder().setStringValue
-            (TruncatableString.newBuilder().setValue("opentelemetry-java [0.6.0]").setTruncatedByteCount(0)).build());
-    for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
-      attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
-    }
+    Span.Attributes translatedAttributes = TraceTranslator.toAttributesProto(attributes, fixedAttributes);
 
-    Span.Attributes allAtributes = attributesBuilder.build();
+    // Because order in a hash map cannot be guaranteed, the test manually checks each entry
 
-    assertEquals(allAtributes, TraceTranslator.toAttributesProto(attributes, fixedAttributes));
+    assertTrue(translatedAttributes.containsAttributeMap("myKey"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("myKey").getStringValue().getValue(), "myValue");
 
+    assertTrue(translatedAttributes.containsAttributeMap("/http/host"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("/http/host").getStringValue().getValue(), "3.14");
+
+    assertTrue(translatedAttributes.containsAttributeMap("/http/status_code"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("/http/status_code").getBoolValue(), true);
+
+    assertTrue(translatedAttributes.containsAttributeMap("anotherKey"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("anotherKey").getIntValue(), 100);
+
+    assertTrue(translatedAttributes.containsAttributeMap("fixed"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("fixed").getStringValue().getValue(), "attributes");
+
+    assertTrue(translatedAttributes.containsAttributeMap("another"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("another").getStringValue().getValue(), "entry");
+
+    assertTrue(translatedAttributes.containsAttributeMap("g.co/agent"));
+    assertEquals(translatedAttributes.getAttributeMapMap().get("g.co/agent").getStringValue().getValue(), "opentelemetry-java [0.6.0]");
   }
 
   @Test
-  public void toTimeEventsProtoTest(){
+  public void testToTimeEventsProto(){
     List<SpanData.Event> events = new ArrayList<>();
     SpanData.Event eventOne = new SpanData.Event() {
       // The SpanData.Event interfaces requires us to override these four methods
@@ -131,39 +138,31 @@ public class TraceTranslatorTest {
 
     Span.TimeEvents timeEvents = TraceTranslator.toTimeEventsProto(events);
     assertEquals(1, timeEvents.getTimeEventCount());
-    //TODO: Figure out how to use timeEvents to call SpanData.Event methods to ensure those are working properly
   }
 
   @Test
-  public void toStatusProtoTest(){
+  public void testToStatusProto(){
     io.opentelemetry.trace.Status myStatus = io.opentelemetry.trace.Status.OK.withDescription("Status description");
     Status spanStatus = TraceTranslator.toStatusProto(myStatus);
 
     // The int representation is 0 for canonical code "OK".
-    assertEquals(0,myStatus.getCanonicalCode().value());
-    assertEquals(io.opentelemetry.trace.Status.CanonicalCode.OK, myStatus.getCanonicalCode());
+    assertEquals(0,spanStatus.getCode());
     assertEquals("Status description", spanStatus.getMessage());
   }
   
   @Test
-  public void toLinksProtoTest(){
-    List<io.opentelemetry.sdk.trace.data.SpanData.Link> links = new ArrayList<>();
+  public void testToLinksProto(){
+    List<SpanData.Link> links = new ArrayList<>();
 
     TraceId traceIdOne = new TraceId(321, 123);
     SpanId spanIdOne = new SpanId(12345);
-    TraceFlags traceFlagsOne = TraceFlags.builder().build();
-    TraceState traceStateOne = TraceState.builder().build();
-    SpanContext spanContextOne = SpanContext.create(traceIdOne, spanIdOne, traceFlagsOne, traceStateOne);
-    Attributes attributesOne = Attributes.newBuilder().setAttribute("key", "value").build();
-    io.opentelemetry.sdk.trace.data.SpanData.Link linkOne =  io.opentelemetry.sdk.trace.data.SpanData.Link.create(spanContextOne, attributesOne);
-
     TraceId traceIdTwo = new TraceId(32473, 24893);
     SpanId spanIdTwo = new SpanId(54321);
-    TraceFlags traceFlagsTwo = TraceFlags.builder().build();
-    TraceState traceStateTwo = TraceState.builder().build();
-    SpanContext spanContextTwo = SpanContext.create(traceIdTwo, spanIdTwo, traceFlagsTwo, traceStateTwo);
-    Attributes attributesTwo = Attributes.newBuilder().setAttribute("random string", "another random string").build();
-    io.opentelemetry.sdk.trace.data.SpanData.Link linkTwo =  io.opentelemetry.sdk.trace.data.SpanData.Link.create(spanContextTwo, attributesTwo);
+
+    SpanData.Link linkOne = createLink(traceIdOne, spanIdOne, TraceFlags.builder().build(),
+            TraceState.builder().build(), Attributes.newBuilder().setAttribute("key", "value").build());
+    SpanData.Link linkTwo = createLink(traceIdTwo, spanIdTwo, TraceFlags.builder().build(),
+            TraceState.builder().build(), Attributes.newBuilder().setAttribute("random string", "another string").build());
 
     links.add(linkOne);
     links.add(linkTwo);
@@ -185,9 +184,19 @@ public class TraceTranslatorTest {
     assertFalse(finalLinks.getLink(1).getAttributes().containsAttributeMap("key"));
   }
 
+  public SpanData.Link createLink(TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState, Attributes attributes){
+    SpanContext spanContext = SpanContext.create(traceId, spanId, traceFlags, traceState);
+    return SpanData.Link.create(spanContext, attributes);
+  }
+
   @Test
-  public void getResourceLabelsTest(){
+  public void testNullResourceLabels(){
     Map<String, String> nullResources = new HashMap<>();
+    assertEquals(Collections.emptyMap(), TraceTranslator.getResourceLabels(nullResources));
+  }
+
+  @Test
+  public void testGetResourceLabels(){
     Map<String, String> resources = new HashMap<>();
     resources.put("testOne", "testTwo");
     resources.put("another", "entry");
@@ -198,7 +207,6 @@ public class TraceTranslatorTest {
     resourceLabels.put("g.co/r/another", AttributeValue.newBuilder().setStringValue
             (TruncatableString.newBuilder().setValue("entry").setTruncatedByteCount(0).build()).build());
 
-    assertEquals(Collections.emptyMap(), TraceTranslator.getResourceLabels(nullResources));
     assertEquals(Collections.unmodifiableMap(resourceLabels), TraceTranslator.getResourceLabels(resources));
   }
 
