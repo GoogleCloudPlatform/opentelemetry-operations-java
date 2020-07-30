@@ -72,7 +72,7 @@ public class TraceExporter implements SpanExporter {
         projectId, TraceServiceClient.create(builder.build()), fixedAttributes);
   }
 
-  // Constructor used ONLY for testing. Uses a mock trace service client.
+  // Constructor used ONLY for testing. Uses a MockTraceServiceClient.
   TraceExporter(
           String projectId,
           MockTraceServiceClient mockTraceServiceClient,

@@ -9,6 +9,7 @@ import io.grpc.ManagedChannelBuilder;
 
 import java.util.List;
 
+// A simplified version of TraceServiceClient, used ONLY for testing purposes.
 public class MockTraceServiceClient {
 
     TraceServiceGrpc.TraceServiceBlockingStub blockingStub;

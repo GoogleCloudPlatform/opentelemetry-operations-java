@@ -28,9 +28,11 @@ class TraceTranslator {
 
   // TODO(nilebox): Extract the constant
   private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.6.0";
+  private static final String EXPORTER_VERSION = "0.1.0";
   private static final String AGENT_LABEL_KEY = "g.co/agent";
   private static final String AGENT_LABEL_VALUE_STRING =
-      "opentelemetry-java [" + OPEN_TELEMETRY_LIBRARY_VERSION + "]";
+      "opentelemetry-java " + OPEN_TELEMETRY_LIBRARY_VERSION +
+              "; google-cloud-trace-exporter " + EXPORTER_VERSION;
   private static final AttributeValue AGENT_LABEL_VALUE =
       AttributeValue.newBuilder()
           .setStringValue(toTruncatableStringProto(AGENT_LABEL_VALUE_STRING))
