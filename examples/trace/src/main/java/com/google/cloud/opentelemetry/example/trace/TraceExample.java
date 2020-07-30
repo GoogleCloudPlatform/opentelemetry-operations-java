@@ -2,12 +2,12 @@ package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import com.google.cloud.trace.v2.TraceServiceClient;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-//import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Tracer;
+import java.time.Duration;
 
 import java.io.IOException;
 
@@ -19,11 +19,18 @@ public class TraceExample {
 
   private void setupTraceExporter() {
     
-    // using default configuration
-    TraceConfiguration configuration = TraceConfiguration.builder().build();
+    // using default project ID
+    TraceConfiguration configuration = TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
 
-//    OpenTelemetrySdk.getTracerProvider()
-//            .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.traceExporter).build());
+    try {
+      this.traceExporter = TraceExporter.createWithConfiguration(configuration);
+    } catch(IOException e) {
+      System.out.println("Uncaught Excetption");
+    }
+
+    OpenTelemetrySdk.getTracerProvider()
+            .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
+    System.out.println("Done");
   }
 
   private void myUseCase() {
@@ -46,6 +53,12 @@ public class TraceExample {
   public static void main(String[] args) {
     TraceExample example = new TraceExample();
     example.setupTraceExporter();
-    // System.out.println("TODO: create some spans");
+
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+    }
+    System.out.println("Done");
+
   }
 }
