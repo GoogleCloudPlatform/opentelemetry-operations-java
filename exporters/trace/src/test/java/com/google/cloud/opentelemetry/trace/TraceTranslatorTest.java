@@ -41,7 +41,7 @@ public class TraceTranslatorTest {
     assertEquals("Sent.regularSpanName", TraceTranslator.toDisplayName(regularSpanName, clientSpanKind));
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void testNullTruncatableStringProto(){
     assertThrows(NullPointerException.class, () -> TraceTranslator.toTruncatableStringProto(null));
   }
@@ -94,7 +94,7 @@ public class TraceTranslatorTest {
     assertEquals(translatedAttributes.getAttributeMapMap().get("/http/host").getStringValue().getValue(), "3.14");
 
     assertTrue(translatedAttributes.containsAttributeMap("/http/status_code"));
-    assertEquals(translatedAttributes.getAttributeMapMap().get("/http/status_code").getBoolValue(), true);
+    assertTrue(translatedAttributes.getAttributeMapMap().get("/http/status_code").getBoolValue());
 
     assertTrue(translatedAttributes.containsAttributeMap("anotherKey"));
     assertEquals(translatedAttributes.getAttributeMapMap().get("anotherKey").getIntValue(), 100);
@@ -121,7 +121,7 @@ public class TraceTranslatorTest {
 
       @Override
       public int getTotalAttributeCount() {
-        return 0;
+        return 1;
       }
 
       @Override
@@ -138,6 +138,17 @@ public class TraceTranslatorTest {
 
     Span.TimeEvents timeEvents = TraceTranslator.toTimeEventsProto(events);
     assertEquals(1, timeEvents.getTimeEventCount());
+
+    Span.TimeEvent timeEvent = timeEvents.getTimeEvent(0);
+    Span.TimeEvent.Annotation annotation = timeEvent.getAnnotation();
+    assertEquals("eventOne", annotation.getDescription().getValue());
+
+    Span.Attributes attributes = annotation.getAttributes();
+    assertEquals(2, attributes.getAttributeMapCount());
+
+    Map<String, AttributeValue> attributeMap = attributes.getAttributeMapMap();
+    assertEquals("value", attributeMap.get("key").getStringValue().getValue());
+    assertEquals("opentelemetry-java [0.6.0]", attributeMap.get("g.co/agent").getStringValue().getValue());
   }
 
   @Test
