@@ -10,15 +10,15 @@ import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 
 // A simplified version of TraceServiceClient, used ONLY for testing purposes.
-public class MockCloudTraceClient implements CloudTraceClient{
+class MockCloudTraceClient implements CloudTraceClient{
 
-    TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
+    private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
 
-    public MockCloudTraceClient(String host, int port) {
+    MockCloudTraceClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
     }
 
-    public MockCloudTraceClient(ManagedChannelBuilder<?> channelBuilder) {
+    private MockCloudTraceClient(ManagedChannelBuilder<?> channelBuilder) {
         Channel channel = channelBuilder.build();
         blockingStub = TraceServiceGrpc.newBlockingStub(channel);
     }
