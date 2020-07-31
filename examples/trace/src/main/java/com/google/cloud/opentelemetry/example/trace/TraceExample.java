@@ -4,12 +4,12 @@ import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import java.time.Duration;
 
 import java.io.IOException;
+import java.time.Duration;
 
 public class TraceExample {
   private TraceExporter traceExporter;
@@ -18,17 +18,17 @@ public class TraceExample {
 
   private void setupTraceExporter() {
     // using default project ID
-    TraceConfiguration configuration = TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
+    TraceConfiguration configuration =
+        TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
 
     try {
       this.traceExporter = TraceExporter.createWithConfiguration(configuration);
 
       OpenTelemetrySdk.getTracerProvider()
-              .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
-    } catch(IOException e) {
+          .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
+    } catch (IOException e) {
       System.out.println("Uncaught Excetption");
     }
-
   }
 
   private void myUseCase() {
@@ -52,7 +52,7 @@ public class TraceExample {
     TraceExample example = new TraceExample();
     example.setupTraceExporter();
 
-    while(true) {
+    while (true) {
       example.myUseCase();
       try {
         // one hour
@@ -60,6 +60,5 @@ public class TraceExample {
       } catch (InterruptedException e) {
       }
     }
-
   }
 }
