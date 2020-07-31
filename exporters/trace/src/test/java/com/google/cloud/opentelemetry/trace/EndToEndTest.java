@@ -40,7 +40,7 @@ public class EndToEndTest {
   private static final Status SPAN_DATA_STATUS = Status.OK;
   private static final String LOCALHOST = "127.0.0.1";
 
-  private MockTraceServiceClient mockTraceServiceClient;
+  private MockCloudTraceClient mockCloudTraceClient;
   private TraceExporter exporter;
   private Process mockServerProcess;
 
@@ -61,7 +61,7 @@ public class EndToEndTest {
     mockServerProcess = pb.start();
 
     // Setup the mock trace client.
-    mockTraceServiceClient = new MockTraceServiceClient(LOCALHOST, port);
+    mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
 
     // Block until the mock server starts (it will output the address after starting).
     BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
@@ -75,7 +75,7 @@ public class EndToEndTest {
 
   @Test
   public void exportMockSpanDataList(){
-    exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
+    exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne = TestSpanData.newBuilder()
@@ -101,7 +101,7 @@ public class EndToEndTest {
 
   @Test
   public void exportEmptySpanDataList(){
-    exporter = new TraceExporter(PROJECT_ID, mockTraceServiceClient, FIXED_ATTRIBUTES);
+    exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();
