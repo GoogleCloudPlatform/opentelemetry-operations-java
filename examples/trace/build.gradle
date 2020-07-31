@@ -2,6 +2,19 @@ plugins {
     id 'java'
 }
 
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.google.cloud.opentelemetry.example.trace.TraceExample'
+    }
+    archiveClassifier = "all"
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
 description = 'Examples for Cloud Trace Exporter'
 
 dependencies {

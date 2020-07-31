@@ -2,6 +2,7 @@ package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
+import com.google.cloud.trace.v2.TraceServiceClient;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.trace.Span;
@@ -30,7 +31,7 @@ public class TraceExample {
 
     OpenTelemetrySdk.getTracerProvider()
             .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
-    System.out.println("Done");
+    System.out.println("Set up");
   }
 
   private void myUseCase() {
