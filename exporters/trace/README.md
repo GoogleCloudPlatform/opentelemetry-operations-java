@@ -18,7 +18,7 @@
 
 ### Installation
   Not currently ready as a package to be imported. [Issue](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6) is currently being dealt with.  
-  For now, one would have to clone this GitHub repo and import it as a seperate project (see example). To do so, run in the command line:
+  For now, one would have to clone this GitHub repo and import it as a separate project (see example). To do so, run in the command line:
   ```sh
   git clone git@github.com:GoogleCloudPlatform/opentelemetry-operations-java.git
   ```
