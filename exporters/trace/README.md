@@ -39,6 +39,19 @@ public class MyMainClass {
 }
 ```
 
+Or you can customize it with a TraceConfiguration object
+```java
+public class MyMainClass {
+  public static void main(String[] args) throws Exception {
+    this.traceExporter = TraceExporter.createWithConfiguration(
+      TraceConfiguration.builder().setProjectId("myCoolGcpProject").build()
+    );
+    // ...
+  }
+}
+```
+
+
   Then, we can connect TraceExporter to OpenTelemetry, for example:
   ```java
   OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
