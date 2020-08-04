@@ -28,6 +28,11 @@ public class TraceExporter implements SpanExporter {
   private final String projectId;
   private final Map<String, AttributeValue> fixedAttributes;
 
+  public static TraceExporter createWithDefaultConfiguration() throws IOException {
+    TraceConfiguration configuration = TraceConfiguration.builder().build();
+    return TraceExporter.createWithConfiguration(configuration);
+  }
+
   public static TraceExporter createWithConfiguration(TraceConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
