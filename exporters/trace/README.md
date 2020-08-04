@@ -33,8 +33,7 @@ This uses the default configuration for authentication and project ID.
 ```java
 public class MyMainClass {
   public static void main(String[] args) throws Exception {
-    this.traceExporter = TraceExporter.createWithConfiguration(
-        TraceConfiguration.builder().build());
+    this.traceExporter = TraceExporter.createWithDefaultConfiguration();
     // ...
   }
 }
