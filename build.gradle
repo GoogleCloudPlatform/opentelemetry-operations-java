@@ -8,7 +8,6 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     repositories {
-        jcenter()
         mavenCentral()
         mavenLocal()
         maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
@@ -17,7 +16,6 @@ subprojects {
     ext {
         autoValueVersion = '1.7.4'
         googleCloudVersion = '1.0.2'
-        mockitoVersion = '2.+'
         openTelemetryVersion = '0.6.0'
         junitVersion = '4.13';
 
@@ -25,14 +23,13 @@ subprojects {
                 auto_value_annotations: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
                 google_cloud_core: "com.google.cloud:google-cloud-core:${googleCloudVersion}",
+                google_cloud_grpc: "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
                 google_cloud_trace: "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
                 opentelemetry_api:"io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk:"io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
         ]
         testLibraries = [
                 junit:"junit:junit:${junitVersion}",
-                mockito:"org.mockito:mockito-core:${mockitoVersion}",
-
         ]
     }
 }

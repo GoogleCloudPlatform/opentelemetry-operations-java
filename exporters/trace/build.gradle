@@ -7,6 +7,6 @@ dependencies {
     api(libraries.opentelemetry_sdk)
     api(libraries.google_cloud_core)
     api(libraries.google_cloud_trace)
+    api(libraries.google_cloud_grpc)
     testImplementation(testLibraries.junit)
-    testCompile(testLibraries.mockito)
 }
