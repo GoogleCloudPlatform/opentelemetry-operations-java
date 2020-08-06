@@ -28,4 +28,7 @@ class MockCloudTraceClient implements CloudTraceClient {
         BatchWriteSpansRequest.newBuilder().setName(name.toString()).addAllSpans(spans).build();
     blockingStub.batchWriteSpans(request);
   }
+
+  // Empty because not being tested
+  public final void shutdown() {}
 }
