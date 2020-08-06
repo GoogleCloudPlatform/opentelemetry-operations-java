@@ -28,35 +28,23 @@
 
 #### Create the exporter
 
-This uses the default configuration for authentication and project ID.
+create exporter and register it in the OpenTelemetry SDK.
+This uses the default project ID and Configuration
 
 ```java
-public class MyMainClass {
-  public static void main(String[] args) throws Exception {
-    this.traceExporter = TraceExporter.createWithDefaultConfiguration();
+    TraceExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
     // ...
-  }
-}
 ```
 
-Or you can customize it with a TraceConfiguration object
+Or you can the configuration with a TraceConfiguration object
 ```java
-public class MyMainClass {
-  public static void main(String[] args) throws Exception {
-    this.traceExporter = TraceExporter.createWithConfiguration(
+    TraceExporter traceExporter = TraceExporter.createWithConfiguration(
       TraceConfiguration.builder().setProjectId("myCoolGcpProject").build()
     );
-    // ...
-  }
-}
+    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
+
 ```
-
-
-  Then, we can connect TraceExporter to OpenTelemetry, for example:
-  ```java
-  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
-  ```
-
 
 #### Specifying a project ID
 This exporter uses [google-cloud-java](https://github.com/GoogleCloudPlatform/google-cloud-java),
