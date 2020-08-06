@@ -28,22 +28,19 @@
 
 #### Create the exporter
 
-create exporter and register it in the OpenTelemetry SDK.
-This uses the default project ID and Configuration
+You can create exporter and register it in the OpenTelemetry SDK using the default configuration as follows:
 
 ```java
     TraceExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
-    // ...
 ```
 
-Or you can the configuration with a TraceConfiguration object
+You can also customize the configuration using a TraceConfiguration object
 ```java
     TraceExporter traceExporter = TraceExporter.createWithConfiguration(
       TraceConfiguration.builder().setProjectId("myCoolGcpProject").build()
     );
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
-
 ```
 
 #### Specifying a project ID
