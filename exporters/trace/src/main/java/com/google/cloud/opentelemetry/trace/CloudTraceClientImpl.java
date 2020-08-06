@@ -7,13 +7,13 @@ import com.google.devtools.cloudtrace.v2.Span;
 import java.util.List;
 
 public class CloudTraceClientImpl implements CloudTraceClient {
-    private final TraceServiceClient traceServiceClient;
+  private final TraceServiceClient traceServiceClient;
 
-    public CloudTraceClientImpl(TraceServiceClient traceServiceClient) {
-        this.traceServiceClient = traceServiceClient;
-    }
+  public CloudTraceClientImpl(TraceServiceClient traceServiceClient) {
+    this.traceServiceClient = traceServiceClient;
+  }
 
-    public final void batchWriteSpans(ProjectName name, List<Span> spans) {
-        traceServiceClient.batchWriteSpans(name, spans);
-    }
+  public final void batchWriteSpans(ProjectName name, List<Span> spans) {
+    this.traceServiceClient.batchWriteSpans(name, spans);
+  }
 }

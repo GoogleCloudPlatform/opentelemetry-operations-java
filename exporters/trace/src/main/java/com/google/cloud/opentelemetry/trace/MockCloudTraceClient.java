@@ -10,25 +10,22 @@ import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 
 // A simplified version of TraceServiceClient, used ONLY for testing purposes.
-class MockCloudTraceClient implements CloudTraceClient{
+class MockCloudTraceClient implements CloudTraceClient {
 
-    private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
+  private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
 
-    MockCloudTraceClient(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
-    }
+  MockCloudTraceClient(String host, int port) {
+    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
+  }
 
-    private MockCloudTraceClient(ManagedChannelBuilder<?> channelBuilder) {
-        Channel channel = channelBuilder.build();
-        blockingStub = TraceServiceGrpc.newBlockingStub(channel);
-    }
+  private MockCloudTraceClient(ManagedChannelBuilder<?> channelBuilder) {
+    Channel channel = channelBuilder.build();
+    blockingStub = TraceServiceGrpc.newBlockingStub(channel);
+  }
 
-    public final void batchWriteSpans(ProjectName name, List<Span> spans) {
-        BatchWriteSpansRequest request =
-                BatchWriteSpansRequest.newBuilder()
-                        .setName(name.toString())
-                        .addAllSpans(spans)
-                        .build();
-        blockingStub.batchWriteSpans(request);
-    }
+  public final void batchWriteSpans(ProjectName name, List<Span> spans) {
+    BatchWriteSpansRequest request =
+        BatchWriteSpansRequest.newBuilder().setName(name.toString()).addAllSpans(spans).build();
+    blockingStub.batchWriteSpans(request);
+  }
 }
