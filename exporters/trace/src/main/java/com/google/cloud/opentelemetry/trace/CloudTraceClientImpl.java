@@ -16,4 +16,8 @@ public class CloudTraceClientImpl implements CloudTraceClient {
   public final void batchWriteSpans(ProjectName name, List<Span> spans) {
     this.traceServiceClient.batchWriteSpans(name, spans);
   }
+
+  public final void shutdown() {
+    this.traceServiceClient.shutdown();
+  }
 }
