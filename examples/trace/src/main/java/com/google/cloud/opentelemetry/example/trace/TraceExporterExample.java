@@ -11,10 +11,10 @@ import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.time.Duration;
 
-public class TraceExample {
+public class TraceExporterExample {
   private TraceExporter traceExporter;
 
-  private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.TraceExample");
+  private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
 
   private void setupTraceExporter() {
     // using default project ID
@@ -32,10 +32,10 @@ public class TraceExample {
   }
 
   private void myUseCase() {
-    // generate a span
+    // Generate a span
     Span span = this.tracer.spanBuilder("Start my use case").startSpan();
     span.addEvent("Event 0");
-    // simulate work
+    // Simulate work
     doWork();
     span.addEvent("Event 1");
     span.end();
@@ -49,16 +49,8 @@ public class TraceExample {
   }
 
   public static void main(String[] args) {
-    TraceExample example = new TraceExample();
+    TraceExporterExample example = new TraceExporterExample();
     example.setupTraceExporter();
-
-    while (true) {
-      example.myUseCase();
-      try {
-        // one hour
-        Thread.sleep(1000 * 60 * 60);
-      } catch (InterruptedException e) {
-      }
-    }
+    example.myUseCase();
   }
 }
