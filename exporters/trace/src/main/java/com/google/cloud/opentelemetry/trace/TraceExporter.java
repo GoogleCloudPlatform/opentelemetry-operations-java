@@ -105,6 +105,6 @@ public class TraceExporter implements SpanExporter {
 
   @Override
   public void shutdown() {
-    throw new UnsupportedOperationException();
+    this.cloudTraceClient.shutdown();
   }
 }
