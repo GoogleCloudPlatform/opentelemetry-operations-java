@@ -5,44 +5,73 @@
  [Google Cloud Trace](https://cloud.google.com/trace) is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
 
 ## Setup
+
+### Prerequisites
   Google Cloud Trace is a managed service provided by Google Cloud Platform.
+  To use this exporter, you must have an application that you'd like to trace. The app can be on Google Cloud Platform, on-premise, or another cloud platform.
+  
+  In order to be able to push your traces to Trace, you must:
+  
+1. [Create a Cloud project](https://support.google.com/cloud/answer/6251787?hl=en).
+2. [Enable billing](https://support.google.com/cloud/answer/6288653#new-billing).
+3. [Enable the Trace API](https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview).
 
-## Installation
+### Installation
   Not currently ready as a package to be imported. [Issue](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/6) is currently being dealt with.  
-  For now, one would have to clone this GitHub repo. To do so, run in the command line:
-  ```git
-  git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java
-  ```
-## Usage
-  If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
-    
-  The TraceExporter constructor takes in three parameters: `projectId: String` for your GCP project ID, `traceServiceClient: TraceServiceClient` for the trace service client to eventually batch write spans, and `fixedAttributes: Map<String, AttributeValue>` for the fixed attributes of a span.  
-  So, we need to import the following: 
-  ```java
-  import com.google.cloud.trace.v2.TraceServiceClient;
-  import com.google.devtools.cloudtrace.v2.AttributeValue;
-  import com.google.devtools.cloudtrace.v2.ProjectName;
-  import com.google.devtools.cloudtrace.v2.Span;
-  ```
-  Declare and initialize the variables that will be used in the constructor parameters.  
-  Then, we can create and register TraceExporter, for example:
-  ```java
-  TraceExporter javaTraceExporter = new TraceExporter(projectId, traceServiceClient, fixedAttributes);
-  OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(this.javaTraceExporter).build());
-  ```
-  Start tracing and collecting SpanData.  
-  Spans can be created by importing and using global `opentelemetry-java` API packages, for example:  
-  ```java
-  String operationName = "receive"; //or whatever other operation
-  Span span = this.tracer.spanBuilder(operationName).startSpan();
+  For now, one would have to clone this GitHub repo and import it as a separate project (see example). To do so, run in the command line:
+  ```sh
+  git clone git@github.com:GoogleCloudPlatform/opentelemetry-operations-java.git
   ```
 
-## Authentication
+### Usage
+  If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
+
+#### Create the exporter
+
+You can create exporter and register it in the OpenTelemetry SDK using the default configuration as follows:
+
+```java
+    TraceExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
+```
+
+You can also customize the configuration using a TraceConfiguration object
+```java
+    TraceExporter traceExporter = TraceExporter.createWithConfiguration(
+      TraceConfiguration.builder().setProjectId("myCoolGcpProject").build()
+    );
+    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
+```
+
+#### Specifying a project ID
+This exporter uses [google-cloud-java](https://github.com/GoogleCloudPlatform/google-cloud-java),
+for details about how to configure the project ID see [here](https://github.com/GoogleCloudPlatform/google-cloud-java#specifying-a-project-id).
+
+If you prefer to manually set the project ID, change it in the TraceConfiguration:
+```java
+TraceConfiguration.builder().setProjectId("MyProjectId").build();
+```
+before passing it in to the constructor
+#### Authentication
   This exporter uses [google-cloud-java](https://github.com/googleapis/google-cloud-java), for details about how to configure the authentication see [here](https://github.com/googleapis/google-cloud-java#authentication).  
+
+
+If you prefer to manually set the credentials use:
+```java
+TraceConfiguration.builder()
+    .setCredentials(new GoogleCredentials(new AccessToken(accessToken, expirationTime)))
+    .setProjectId( "MyProjectId")
+    .build();
+```
+before passing it into the TraceExporter constructor
+
     
   In the case that there are problems creating a service account key, make sure that the **constraints/iam.disableServiceAccountKeyCreation** boolean variable is set to false. This can be edited on Google Cloud by clicking on Navigation Menu -> IAM & Admin -> Organization Policies -> Disable Service Account Key Creation -> Edit  
     
   If you are unable to edit this variable due to lack of permission, you can authenticate by running `gcloud auth application-default login` in the command line.
+
+#### Java Versions
+Java 8 or above is required for using this exporter.
   
 
 ## Useful Links
