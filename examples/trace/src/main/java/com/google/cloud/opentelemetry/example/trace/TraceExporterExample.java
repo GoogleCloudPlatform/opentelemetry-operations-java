@@ -17,17 +17,18 @@ public class TraceExporterExample {
   private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
 
   private void setupTraceExporter() {
-    // using default project ID
+    // Using default project ID and Credentials
     TraceConfiguration configuration =
         TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
 
     try {
       this.traceExporter = TraceExporter.createWithConfiguration(configuration);
 
+      // Register the TraceExporter with OpenTelemetry
       OpenTelemetrySdk.getTracerProvider()
           .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
     } catch (IOException e) {
-      System.out.println("Uncaught Excetption");
+      System.out.println("Uncaught Exception");
     }
   }
 
@@ -35,8 +36,9 @@ public class TraceExporterExample {
     // Generate a span
     Span span = this.tracer.spanBuilder("Start my use case").startSpan();
     span.addEvent("Event 0");
-    // Simulate work
+    // Simulate work: this could be simulating a network request or an expensive disk operation
     doWork();
+
     span.addEvent("Event 1");
     span.end();
   }
@@ -45,6 +47,7 @@ public class TraceExporterExample {
     try {
       Thread.sleep((int) (Math.random() * 1000) + 1000);
     } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 
