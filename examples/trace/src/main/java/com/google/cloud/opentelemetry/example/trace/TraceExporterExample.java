@@ -4,7 +4,7 @@ import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 
@@ -26,7 +26,7 @@ public class TraceExporterExample {
 
       // Register the TraceExporter with OpenTelemetry
       OpenTelemetrySdk.getTracerProvider()
-          .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.traceExporter).build());
+          .addSpanProcessor(BatchSpanProcessor.newBuilder(this.traceExporter).build());
     } catch (IOException e) {
       System.out.println("Uncaught Exception");
     }
