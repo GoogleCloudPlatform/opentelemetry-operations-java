@@ -1,5 +1,7 @@
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
     group = "com.google.cloud.opentelemetry.operations"
     version = "0.0.0-SNAPSHOT" // CURRENT_VERSION
@@ -21,15 +23,80 @@ subprojects {
 
         libraries = [
                 auto_value_annotations: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-                auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
-                google_cloud_core: "com.google.cloud:google-cloud-core:${googleCloudVersion}",
-                google_cloud_grpc: "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
-                google_cloud_trace: "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
-                opentelemetry_api:"io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
-                opentelemetry_sdk:"io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+                auto_value            : "com.google.auto.value:auto-value:${autoValueVersion}",
+                google_cloud_core     : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
+                google_cloud_grpc     : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
+                google_cloud_trace    : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
+                opentelemetry_api     : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
+                opentelemetry_sdk     : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
         ]
         testLibraries = [
-                junit:"junit:junit:${junitVersion}",
+                junit: "junit:junit:${junitVersion}",
         ]
+    }
+
+    task javadocJar(type: Jar) {
+        archiveClassifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        archiveClassifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                def configureAuth = {
+                    if (rootProject.hasProperty('ossrhUsername') && rootProject.hasProperty('ossrhPassword')) {
+                        authentication(userName: rootProject.ossrhUsername, password: rootProject.ossrhPassword)
+                    }
+                }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/")
+
+                pom.project {
+                    name 'Opentelemetry Operations Java'
+                    packaging 'jar'
+                    url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+
+                    scm {
+                        connection 'scm:svn:http://foo.googlecode.com/svn/trunk/'
+                        developerConnection 'scm:svn:https://foo.googlecode.com/svn/trunk/'
+                        url 'http://foo.googlecode.com/svn/trunk/'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'io.opentelemetry'
+                            name 'Opentelemetry Contributors'
+                            email 'opentelemetry-team@google.com'
+                            organization = 'OpenTelemetry Authors'
+                            organizationUrl 'https://www.opentelemetry.io'
+                        }
+                    }
+                }
+            }
+        }
     }
 }
