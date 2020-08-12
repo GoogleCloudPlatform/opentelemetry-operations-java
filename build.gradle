@@ -19,7 +19,7 @@ subprojects {
         autoValueVersion = '1.7.4'
         googleCloudVersion = '1.0.2'
         openTelemetryVersion = '0.6.0'
-        junitVersion = '4.13';
+        junitVersion = '4.13'
 
         libraries = [
                 auto_value_annotations: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
@@ -36,12 +36,12 @@ subprojects {
     }
 
     task javadocJar(type: Jar) {
-        archiveClassifier = 'javadoc'
+        archiveClassifier.set('javadoc')
         from javadoc
     }
 
     task sourcesJar(type: Jar) {
-        archiveClassifier = 'sources'
+        archiveClassifier.set('sources')
         from sourceSets.main.allSource
     }
 
@@ -64,9 +64,9 @@ subprojects {
                     }
                 }
 
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", configureAuth)
 
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/")
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/", configureAuth)
 
                 pom.project {
                     name 'Opentelemetry Operations Java'
