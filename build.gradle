@@ -74,9 +74,9 @@ subprojects {
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
                     scm {
-                        connection 'scm:svn:http://foo.googlecode.com/svn/trunk/'
-                        developerConnection 'scm:svn:https://foo.googlecode.com/svn/trunk/'
-                        url 'http://foo.googlecode.com/svn/trunk/'
+                        connection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        developerConnection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                     }
 
                     licenses {
