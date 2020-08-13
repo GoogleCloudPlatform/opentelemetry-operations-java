@@ -3,7 +3,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'signing'
 
-    group = "com.google.cloud.opentelemetry.operations"
+    group = "com.google.cloud.opentelemetry"
     version = "0.0.0-SNAPSHOT" // CURRENT_VERSION
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -50,6 +50,7 @@ subprojects {
     }
 
     signing {
+        required false
         sign configurations.archives
     }
 
