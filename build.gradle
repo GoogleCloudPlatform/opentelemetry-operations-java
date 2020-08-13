@@ -89,11 +89,11 @@ subprojects {
 
                     developers {
                         developer {
-                            id 'io.opentelemetry'
-                            name 'Opentelemetry Contributors'
+                            id 'com.google.cloud.opentelemetry'
+                            name 'OpenTelemetry Operations Contributors'
                             email 'opentelemetry-team@google.com'
-                            organization = 'OpenTelemetry Authors'
-                            organizationUrl 'https://www.opentelemetry.io'
+                            organization = 'Google Inc'
+                            organizationUrl 'https://cloud.google.com/products/operations'
                         }
                     }
                 }
