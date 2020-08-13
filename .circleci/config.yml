@@ -4,15 +4,9 @@ language: java
 orbs:
   gradle: circleci/gradle@2.2.0
 
-jobs:
-  create-test-results-dir:
-    environment:
-      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
-    steps:
-      - run: mkdir -p $TEST_RESULTS # create the test results directory
-
 workflows:
   checkout-build-test:
     jobs:
-      - create-test-results-dir
-      - gradle/test
+      - gradle/test:
+          store_artifacts: build/reports/
+          test_results_path: build/test-results/
