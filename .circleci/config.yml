@@ -8,3 +8,4 @@ workflows:
   checkout-build-test:
     jobs:
       - gradle/test
+      - collect_test_results
