@@ -1,0 +1,32 @@
+# Orb 'circleci/gradle@2.2.0' resolved to 'circleci/gradle@2.2.0'
+version: 2
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:13.0
+
+    steps:
+      - checkout
+
+      - run:
+          command: find . -name 'build.gradle' | sort | xargs cat | shasum | awk '{print $1}' > /tmp/gradle_cache_seed
+          name: Generate Cache Checksum
+
+      - restore_cache:
+          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+
+      - run:
+          cache_checksum_file: build.gradle
+          cache_key: v1
+          command: ./gradlew test
+          name: Run Tests
+          working_directory: ''
+
+      - save_cache:
+          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+
+      - store_test_results:
+          path: .
