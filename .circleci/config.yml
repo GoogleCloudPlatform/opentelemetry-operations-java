@@ -1,20 +1,32 @@
-version: 2.1
-language: java
-
-orbs:
-  gradle: circleci/gradle@2.2.0
-
+# Orb 'circleci/gradle@2.2.0' resolved to 'circleci/gradle@2.2.0'
+version: 2
 jobs:
-  create-test-dir:
+  build-and-test:
     docker:
-      - image: circleci/openjdk:11.0.3-jdk-stretch
-    environment:
-      TEST_RESULTS: /build/test-results # path to where test results will be saved
-    steps:
-      - run: mkdir -p $TEST_RESULTS # create the test results directory
+      - image: cimg/openjdk:13.0
 
-workflows:
-  checkout-build-test:
-    jobs:
-      - create-test-dir
-      - gradle/test
+    steps:
+      - checkout
+
+      - run:
+          command: find . -name 'build.gradle' | sort | xargs cat | shasum | awk '{print $1}' > /tmp/gradle_cache_seed
+          name: Generate Cache Checksum
+
+      - restore_cache:
+          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+
+      - run:
+          cache_checksum_file: build.gradle
+          cache_key: v1
+          command: ./gradlew test
+          name: Run Tests
+          working_directory: ''
+
+      - save_cache:
+          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+
+      - store_test_results:
+          path: .
