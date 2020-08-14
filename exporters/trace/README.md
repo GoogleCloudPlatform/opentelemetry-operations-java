@@ -1,5 +1,7 @@
 # Cloud Trace Exporter for OpenTelemetry
 
+[![Build Status][circleci-image]][circleci-url]
+
   OpenTelemetry Google Cloud Trace Exporter allows the user to send collected traces to Google Cloud. 
   
  [Google Cloud Trace](https://cloud.google.com/trace) is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
