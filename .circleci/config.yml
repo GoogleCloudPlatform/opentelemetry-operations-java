@@ -1,7 +1,7 @@
 # Orb 'circleci/gradle@2.2.0' resolved to 'circleci/gradle@2.2.0'
 version: 2
 jobs:
-  build-and-test:
+  build:
     docker:
       - image: cimg/openjdk:13.0
 
