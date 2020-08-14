@@ -17,11 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -55,7 +51,7 @@ public class EndToEndTest {
 
     // Start the mock server. This assumes the binary is present and in $PATH.
     // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[]{"mock_server", "-address", address};
+    String[] cmdArray = new String[]{"/bin/bash", "-c", "mock_server", "-address", address};
     ProcessBuilder pb = new ProcessBuilder(cmdArray);
     pb.redirectErrorStream(true);
     mockServerProcess = pb.start();

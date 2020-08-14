@@ -16,6 +16,10 @@ jobs:
           key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
 
       - run:
+          command: chmod +x ./get_mock_server.sh && ./get_mock_server.sh
+          name: Get mock server for integration tests
+
+      - run:
           cache_checksum_file: build.gradle
           cache_key: v1
           command: ./gradlew test
