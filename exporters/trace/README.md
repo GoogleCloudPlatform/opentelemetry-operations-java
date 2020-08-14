@@ -81,3 +81,5 @@ Java 8 or above is required for using this exporter.
   - For more about OpenTelemetry Java, visit: https://github.com/open-telemetry/opentelemetry-java  
   - Learn more about Google Cloud Trace at https://cloud.google.com/trace
   
+[circleci-image]: https://circleci.com/gh/GoogleCloudPlatform/opentelemetry-operations-java.svg?style=shield 
+[circleci-url]: https://circleci.com/gh/GoogleCloudPlatform/opentelemetry-operations-java
