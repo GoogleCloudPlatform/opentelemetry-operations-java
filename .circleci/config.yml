@@ -6,8 +6,10 @@ orbs:
 
 jobs:
   create-test-dir:
+    docker:
+      - image: circleci/openjdk:11.0.3-jdk-stretch
     environment:
-      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
+      TEST_RESULTS: /build/test-results # path to where test results will be saved
     steps:
       - run: mkdir -p $TEST_RESULTS # create the test results directory
 
