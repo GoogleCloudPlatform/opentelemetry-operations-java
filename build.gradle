@@ -48,6 +48,11 @@ subprojects {
 
     test {
         systemProperty 'mock.server.path', System.getProperty('mock.server.path')
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
     }
 
     artifacts {
