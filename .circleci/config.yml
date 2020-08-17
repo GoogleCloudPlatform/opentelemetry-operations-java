@@ -22,7 +22,7 @@ jobs:
       - run:
           cache_checksum_file: build.gradle
           cache_key: v1
-          command: ./gradlew test
+          command: ./gradlew test -Dmock.server.path=/home/circleci/project/mock_server
           name: Run Tests
           working_directory: ''
 

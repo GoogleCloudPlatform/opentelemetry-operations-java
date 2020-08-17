@@ -46,6 +46,10 @@ subprojects {
         from sourceSets.main.allSource
     }
 
+    test {
+        systemProperty 'mock.server.path', System.getProperty('mock.server.path')
+    }
+
     artifacts {
         archives javadocJar, sourcesJar
     }
