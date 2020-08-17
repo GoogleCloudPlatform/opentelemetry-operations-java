@@ -34,3 +34,6 @@ jobs:
 
       - store_test_results:
           path: .
+
+      - store_artifacts:
+          path: /home/circleci/project/exporters/trace/build/reports/jacoco/test
