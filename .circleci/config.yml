@@ -16,9 +16,13 @@ jobs:
           key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
 
       - run:
+          command: chmod +x ./get_mock_server.sh && ./get_mock_server.sh
+          name: Get mock server for integration tests
+
+      - run:
           cache_checksum_file: build.gradle
           cache_key: v1
-          command: ./gradlew test
+          command: ./gradlew test -Dmock.server.path=/home/circleci/project/mock_server
           name: Run Tests
           working_directory: ''
 
@@ -30,3 +34,6 @@ jobs:
 
       - store_test_results:
           path: .
+
+      - store_artifacts:
+          path: /home/circleci/project/exporters/trace/build/reports/jacoco/test

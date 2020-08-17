@@ -55,7 +55,7 @@ public class EndToEndTest {
 
     // Start the mock server. This assumes the binary is present and in $PATH.
     // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[]{"mock_server", "-address", address};
+    String[] cmdArray = new String[]{System.getProperty("mock.server.path"), "-address", address};
     ProcessBuilder pb = new ProcessBuilder(cmdArray);
     pb.redirectErrorStream(true);
     mockServerProcess = pb.start();

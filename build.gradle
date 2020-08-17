@@ -1,4 +1,5 @@
 subprojects {
+    apply plugin: 'jacoco'
     apply plugin: 'java-library'
     apply plugin: 'maven'
     apply plugin: 'signing'
@@ -43,6 +44,15 @@ subprojects {
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
         from sourceSets.main.allSource
+    }
+
+    test {
+        systemProperty 'mock.server.path', System.getProperty('mock.server.path')
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
     }
 
     artifacts {
