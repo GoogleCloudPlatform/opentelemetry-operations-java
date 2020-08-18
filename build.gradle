@@ -81,6 +81,7 @@ subprojects {
 
                 pom.project {
                     name 'Opentelemetry Operations Java'
+                    description 'Opentelemetry exporters to Google Cloud Trace and Google Cloud Monitoring'
                     packaging 'jar'
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
