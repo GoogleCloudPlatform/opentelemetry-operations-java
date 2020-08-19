@@ -80,8 +80,8 @@ subprojects {
                 snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/", configureAuth)
 
                 pom.project {
-                    name 'Opentelemetry Operations Java'
-                    description 'Opentelemetry exporters to Google Cloud Trace and Google Cloud Monitoring'
+                    name 'OpenTelemetry Operations Java'
+                    description 'OpenTelemetry exporters to Google Cloud Trace and Google Cloud Monitoring'
                     packaging 'jar'
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
