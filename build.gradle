@@ -19,7 +19,7 @@ subprojects {
     ext {
         autoValueVersion = '1.7.4'
         googleCloudVersion = '1.0.2'
-        openTelemetryVersion = '0.6.0'
+        openTelemetryVersion = '0.7.0'
         junitVersion = '4.13'
 
         libraries = [
@@ -80,7 +80,8 @@ subprojects {
                 snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/", configureAuth)
 
                 pom.project {
-                    name 'Opentelemetry Operations Java'
+                    name 'OpenTelemetry Operations Java'
+                    description 'OpenTelemetry exporters to Google Cloud Trace and Google Cloud Monitoring'
                     packaging 'jar'
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
