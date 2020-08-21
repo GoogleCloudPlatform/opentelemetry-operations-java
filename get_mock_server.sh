@@ -7,3 +7,4 @@ if ! [ -e $BINARY ]; then
 fi
 
 ln -sf $PWD/$BINARY mock_server
+export MOCKSERVER=$PWD/$BINARY

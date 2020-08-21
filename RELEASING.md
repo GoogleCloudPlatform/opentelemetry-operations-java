@@ -2,9 +2,7 @@
 
 ## Build Environments  
 
-We deploy OpenTelemetry Operations Java to Maven Central under Ubuntu 14.04.
-
-Other systems may also work, however the system used for build and deploy must
+The system used for build and deploy must
 be able to run the [mock
 server](https://github.com/googleinterns/cloud-operations-api-mock).
 
@@ -27,7 +25,7 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     pair](http://central.sonatype.org/pages/working-with-pgp-signatures.html#generating-a-key-pair).
     You'll also need to [publish your public
     key](http://central.sonatype.org/pages/working-with-pgp-signatures.html#distributing-your-public-key)
-    to make it visible to the Sonatype servers.
+    to make it visible to the Sonatype servers. For gpg 2.1 or newer, you also need to [export the keys](https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials) with command `gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg`.
 - Put your GnuPG key password and OSSRH account information in
   `<your-home-directory>/.gradle/gradle.properties`:
 
@@ -44,16 +42,12 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
 
 ## Download the mock server
 
-- Download the [mock server
+- Run the `get_mock_server.sh` script, which downloads the [mock server
   executable](https://github.com/googleinterns/cloud-operations-api-mock/releases),
-  and save the path.
+  and saves the path.
 
     ```bash
-    $ VERSION=v2-alpha
-    $ BINARY=mock_server-x64-linux-$VERSION
-    $ curl -L -o $BINARY https://github.com/googleinterns/cloud-operations-api-mock/releases/download/$VERSION/$BINARY
-    $ chmod +x $BINARY
-    $ MOCKSERVER=$PWD/$BINARY
+    $ source ./get_mock_server.sh
     ```
 
 ## Tagging the Release
