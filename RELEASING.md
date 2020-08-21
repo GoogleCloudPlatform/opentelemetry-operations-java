@@ -2,8 +2,7 @@
 
 ## Build Environments  
 
-The system used for build and deploy must
-be able to run the [mock
+The system used for build and deploy must be able to run the [mock
 server](https://github.com/googleinterns/cloud-operations-api-mock).
 
 ## Prerequisites
@@ -25,7 +24,11 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     pair](http://central.sonatype.org/pages/working-with-pgp-signatures.html#generating-a-key-pair).
     You'll also need to [publish your public
     key](http://central.sonatype.org/pages/working-with-pgp-signatures.html#distributing-your-public-key)
-    to make it visible to the Sonatype servers. For gpg 2.1 or newer, you also need to [export the keys](https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials) with command `gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg`.
+    to make it visible to the Sonatype servers. For gpg 2.1 or newer, you also
+    need to [export the
+    keys](https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials)
+    with command `gpg --keyring secring.gpg --export-secret-keys >
+    ~/.gnupg/secring.gpg`.
 - Put your GnuPG key password and OSSRH account information in
   `<your-home-directory>/.gradle/gradle.properties`:
 
@@ -74,6 +77,11 @@ token](https://help.github.com/articles/creating-a-personal-access-token-for-the
 
 2. Prepare `master` for the next development cycle by changing the build file to
         the next minor snapshot (e.g. `0.5.0-SNAPSHOT`).
+
+    _If there are breaking changes in this release, and the example project code
+    must be changed before the build would pass, you can skip `./gradlew build`
+    for now and fix the example code after you complete the remaining steps in
+    this document._
 
     ```bash
     $ git checkout -b bump-version master
