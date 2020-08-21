@@ -10,7 +10,6 @@ jar {
     }
 }
 
-
 task fatJar(type: Jar) {
     manifest.from jar.manifest
     archiveClassifier = 'all'
@@ -24,12 +23,11 @@ task fatJar(type: Jar) {
     with jar
 }
 
-
 description = 'Examples for Cloud Trace Exporter'
 
 dependencies {
     compile(libraries.opentelemetry_api)
     compile(libraries.opentelemetry_sdk)
     compile(libraries.google_cloud_trace)
-    compile project(':exporter-trace')
+    compile(libraries.opentelemetry_operations_java)
 }

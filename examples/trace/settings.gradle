@@ -1,2 +1,0 @@
-include "exporter-trace"
-project('exporter-trace').projectDir = new File('../../exporters/trace')
