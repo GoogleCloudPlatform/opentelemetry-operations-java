@@ -21,7 +21,7 @@ subprojects {
         googleCloudVersion = '1.0.2'
         openTelemetryVersion = '0.7.0'
         junitVersion = '4.13'
-        opentelemetryOperationsVersion = "0.7.1"  // current release version
+        opentelemetryOperationsVersion = "0.7.1"  // CURRENT_RELEASE_VERSION
 
         libraries = [
                 auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
