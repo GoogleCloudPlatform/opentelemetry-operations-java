@@ -19,6 +19,7 @@ subprojects {
     ext {
         autoValueVersion = '1.7.4'
         googleCloudVersion = '1.0.2'
+        cloudMonitoringVersion = '2.0.1'
         openTelemetryVersion = '0.7.0'
         junitVersion = '4.13'
         opentelemetryOperationsVersion = "0.7.1"  // CURRENT_RELEASE_VERSION
@@ -29,6 +30,7 @@ subprojects {
                 google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
                 google_cloud_grpc            : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
                 google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
+                google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
                 opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
                 opentelemetry_operations_java: "com.google.cloud.opentelemetry:exporter-trace:${opentelemetryOperationsVersion}"
