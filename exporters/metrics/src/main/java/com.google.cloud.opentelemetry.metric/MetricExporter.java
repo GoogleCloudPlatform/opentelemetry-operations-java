@@ -16,11 +16,12 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
+import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
@@ -34,9 +35,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -45,23 +48,22 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
   private static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
   private static final long WRITE_INTERVAL_SECOND = 10;
+  private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
 
-  private static final ImmutableSet<MetricData.Descriptor.Type> GAUGE_TYPES = ImmutableSet
-      .of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
-  private static final ImmutableSet<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
+  private static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
+  private static final Set<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
       .of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
-  private static final ImmutableSet<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet
-      .of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
-  private static final ImmutableSet<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
+  private static final Set<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
+  private static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
   private static final Logger logger = Logger.getLogger(MetricExporter.class.getName());
 
   private final MetricServiceClient metricServiceClient;
   private final String projectId;
-  private final Instant startTime;
-  private final Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
+  private final Instant exporterStartTime;
+  private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
   private String uniqueIdentifier = null;
 
   MetricExporter(
@@ -74,7 +76,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     if (addUniqueIdentifier) {
       this.uniqueIdentifier = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
     }
-    this.startTime = Instant.now();
+    this.exporterStartTime = Instant.now();
   }
 
   public static MetricExporter createWithDefaultConfiguration() throws IOException {
@@ -119,7 +121,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   @Override
   public ResultCode export(Collection<MetricData> metrics) {
-    ArrayList<TimeSeries> allTimesSeries = new ArrayList<>();
+    List<TimeSeries> allTimesSeries = new ArrayList<>();
 
     for (MetricData metric : metrics) {
       MetricDescriptor descriptor = createMetricDescriptor(metricServiceClient, metric, projectId, uniqueIdentifier);
@@ -129,19 +131,32 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
       MetricWithLabels updateKey = new MetricWithLabels(descriptor.getType(),
           metric.getDescriptor().getConstantLabels());
-      long lastUpdatedTime = MoreObjects.firstNonNull(this.lastUpdated.get(updateKey), 0L);
-      Optional<MetricData.Point> lastPoint = metric.getPoints().stream()
+
+      // We are expecting one point per MetricData
+      Optional<MetricData.Point> point = metric.getPoints().stream()
           .reduce((first, second) -> second);
-      long metricUpdateTime = lastPoint.map(MetricData.Point::getEpochNanos).orElse(0L);
-      if (metricUpdateTime <= lastUpdatedTime / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
+      if (!point.isPresent()) {
+        logger.log(WARNING, "No point found in metric {}", metric);
+        continue;
+      }
+
+      // Cloud Monitoring API allows, for any combination of labels and
+      // metric name, one update per WRITE_INTERVAL seconds
+      long pointCollectionTime = point.get().getEpochNanos();
+      if (this.lastUpdatedTime.containsKey(updateKey)
+          && pointCollectionTime <= this.lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
         continue;
       }
 
       Metric.Builder metricBuilder = Metric.newBuilder().setType(descriptor.getType());
+
+      // Add labels to the metric
       metric.getDescriptor().getConstantLabels().forEach(metricBuilder::putLabels);
       if (uniqueIdentifier != null) {
         metricBuilder.putLabels(UNIQUE_IDENTIFIER_KEY, uniqueIdentifier);
       }
+
+      // Add point value to the metric
       Point.Builder pointBuilder = Point.newBuilder();
       Type type = metric.getDescriptor().getType();
       if (LONG_TYPES.contains(type)) {
@@ -155,14 +170,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      setStartEndTimes(lastUpdated, startTime, pointBuilder, metric, lastPoint, updateKey);
+      setStartEndTimes(lastUpdatedTime, pointBuilder, updateKey, type, this.exporterStartTime, pointCollectionTime);
+
+      // TODO (zoe): add Google resource specific information (e.g. instance id, region)
       allTimesSeries.add(
-          TimeSeries.newBuilder().setMetric(metricBuilder.build()).addPoints(pointBuilder.build())
-              .build());
+          TimeSeries.newBuilder().setMetric(metricBuilder.build()).addPoints(pointBuilder.build()).build());
     }
 
-    // TODO (zoe): limit 200 for createTimeSeries()
-    this.metricServiceClient.createTimeSeries(ProjectName.of(projectId), allTimesSeries);
+    createTimeSeriesBatch(this.metricServiceClient, ProjectName.of(projectId), allTimesSeries);
     return ResultCode.SUCCESS;
   }
 
@@ -212,31 +227,33 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
             .build());
   }
 
-  private void setStartEndTimes(Map<MetricWithLabels, Long> lastUpdated, Instant startTime, Point.Builder pointBuilder,
-      MetricData metric, Optional<MetricData.Point> lastPoint, MetricWithLabels updateKey) {
+  private void setStartEndTimes(Map<MetricWithLabels, Long> lastUpdatedTime, Builder pointBuilder,
+      MetricWithLabels updateKey, Type descriptorType, Instant exporterStartTime, long pointCollectionTime) {
     long seconds = 0;
     int nanos = 0;
-    if (CUMULATIVE_TYPES.contains(metric.getDescriptor().getType())) {
-      if (!lastUpdated.containsKey(updateKey)) {
+    if (CUMULATIVE_TYPES.contains(descriptorType)) {
+      if (!lastUpdatedTime.containsKey(updateKey)) {
         // The aggregation has not reset since the exporter
         // has started up, so that is the start time
-        seconds = startTime.getEpochSecond();
-        nanos = startTime.getNano();
+        seconds = exporterStartTime.getEpochSecond();
+        nanos = exporterStartTime.getNano();
       } else {
         // The aggregation reset the last time it was exported
         // Add 1ms to guarantee there is no overlap from the previous export
         // (see https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#timeinterval)
-        long lastUpdatedNanos = lastUpdated.get(updateKey) + (long) 1e6;
+        long lastUpdatedNanos = lastUpdatedTime.get(updateKey) + (long) 1e6;
         seconds = lastUpdatedNanos / NANO_PER_SECOND;
         nanos = (int) (lastUpdatedNanos % NANO_PER_SECOND);
       }
-    } else if (lastPoint.isPresent()) {
-      seconds = lastPoint.get().getEpochNanos() / NANO_PER_SECOND;
-      nanos = (int) (lastPoint.get().getEpochNanos() % NANO_PER_SECOND);
+    } else {
+      seconds = pointCollectionTime / NANO_PER_SECOND;
+      nanos = (int) (pointCollectionTime % NANO_PER_SECOND);
     }
-    Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
-    pointBuilder.setInterval(TimeInterval.newBuilder().setStartTime(timestamp).setEndTime(timestamp).build());
-    lastPoint.ifPresent(point -> lastUpdated.put(updateKey, point.getEpochNanos()));
+    Timestamp startTime = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+    Timestamp endTime = Timestamp.newBuilder().setSeconds(pointCollectionTime / NANO_PER_SECOND)
+        .setNanos((int) (pointCollectionTime % NANO_PER_SECOND)).build();
+    pointBuilder.setInterval(TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build());
+    lastUpdatedTime.put(updateKey, pointCollectionTime);
   }
 
   private static LabelDescriptor mapConstantLabel(String key, String value) {
@@ -251,8 +268,15 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return builder.build();
   }
 
-  private static class MetricWithLabels {
+  private static void createTimeSeriesBatch(MetricServiceClient metricServiceClient, ProjectName projectName,
+      List<TimeSeries> allTimesSeries) {
+    List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
+    for (List<TimeSeries> timeSeries : batches) {
+      metricServiceClient.createTimeSeries(projectName, timeSeries);
+    }
+  }
 
+  private static class MetricWithLabels {
     private final String metricType;
     private final Labels labels;
 
