@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
-import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
@@ -191,11 +190,12 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         logger.log(WARNING, "Type {} not supported", type);
         continue;
       }
+      pointBuilder.setInterval(
+          mapInterval(lastUpdatedTime, updateKey, type, exporterStartTime, pointCollectionTime));
 
-      setStartEndTimes(lastUpdatedTime, pointBuilder, updateKey, type, exporterStartTime, pointCollectionTime);
       allTimesSeries.add(
           TimeSeries.newBuilder().setMetric(metricBuilder.build()).addPoints(pointBuilder.build())
-              .setResource(mapToGcpMonitoredResource(metric.getResource()))
+              .setResource(mapGcpMonitoredResource(metric.getResource()))
               .build());
     }
 
@@ -250,7 +250,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
             .build());
   }
 
-  private void setStartEndTimes(Map<MetricWithLabels, Long> lastUpdatedTime, Builder pointBuilder,
+  private TimeInterval mapInterval(Map<MetricWithLabels, Long> lastUpdatedTime,
       MetricWithLabels updateKey, Type descriptorType, Instant exporterStartTime, long pointCollectionTime) {
     long seconds;
     int nanos;
@@ -275,8 +275,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     Timestamp startTime = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
     Timestamp endTime = Timestamp.newBuilder().setSeconds(pointCollectionTime / NANO_PER_SECOND)
         .setNanos((int) (pointCollectionTime % NANO_PER_SECOND)).build();
-    pointBuilder.setInterval(TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build());
     lastUpdatedTime.put(updateKey, pointCollectionTime);
+    return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 
   private static LabelDescriptor mapConstantLabel(String key, String value) {
@@ -291,7 +291,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return builder.build();
   }
 
-  private MonitoredResource mapToGcpMonitoredResource(Resource resource) {
+  private MonitoredResource mapGcpMonitoredResource(Resource resource) {
     ReadableAttributes attributes = resource.getAttributes();
     if (attributes.get("cloud.provider") != null &&
         !attributes.get("cloud.provider").getStringValue().equals("gcp")) {
