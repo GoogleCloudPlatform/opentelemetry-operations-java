@@ -252,8 +252,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   private void setStartEndTimes(Map<MetricWithLabels, Long> lastUpdatedTime, Builder pointBuilder,
       MetricWithLabels updateKey, Type descriptorType, Instant exporterStartTime, long pointCollectionTime) {
-    long seconds = 0;
-    int nanos = 0;
+    long seconds;
+    int nanos;
     if (CUMULATIVE_TYPES.contains(descriptorType)) {
       if (!lastUpdatedTime.containsKey(updateKey)) {
         // The aggregation has not reset since the exporter
