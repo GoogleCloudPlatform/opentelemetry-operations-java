@@ -10,12 +10,14 @@ import static java.util.logging.Level.WARNING;
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
+import com.google.api.MonitoredResource;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -28,8 +30,10 @@ import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -47,6 +51,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   private static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
   private static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  private static final String PROJECT_NAME_PREFIX = "projects/";
   private static final long WRITE_INTERVAL_SECOND = 10;
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
@@ -57,6 +62,23 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private static final Set<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
   private static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
+
+  private static final Map<String, Map<String, String>> OTEL_TO_GCP_LABELS = ImmutableMap.<String, Map<String, String>>builder()
+      .put("gce_instance", ImmutableMap.<String, String>builder()
+          .put("host.id", "instance_id")
+          .put("cloud.account.id", "project_id")
+          .put("cloud.zone", "zone")
+          .build())
+      .put("gke_container", ImmutableMap.<String, String>builder()
+          .put("k8s.cluster.name", "cluster_name")
+          .put("k8s.namespace.name", "namespace_id")
+          .put("k8s.pod.name", "pod_id")
+          .put("host.id", "instance_id")
+          .put("container.name", "container_name")
+          .put("cloud.account.id", "project_id")
+          .put("cloud.zone", "zone")
+          .build())
+      .build();
 
   private static final Logger logger = Logger.getLogger(MetricExporter.class.getName());
 
@@ -143,8 +165,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       // Cloud Monitoring API allows, for any combination of labels and
       // metric name, one update per WRITE_INTERVAL seconds
       long pointCollectionTime = point.get().getEpochNanos();
-      if (this.lastUpdatedTime.containsKey(updateKey)
-          && pointCollectionTime <= this.lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
+      if (lastUpdatedTime.containsKey(updateKey)
+          && pointCollectionTime <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
         continue;
       }
 
@@ -170,14 +192,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      setStartEndTimes(lastUpdatedTime, pointBuilder, updateKey, type, this.exporterStartTime, pointCollectionTime);
-
-      // TODO (zoe): add Google resource specific information (e.g. instance id, region)
+      setStartEndTimes(lastUpdatedTime, pointBuilder, updateKey, type, exporterStartTime, pointCollectionTime);
       allTimesSeries.add(
-          TimeSeries.newBuilder().setMetric(metricBuilder.build()).addPoints(pointBuilder.build()).build());
+          TimeSeries.newBuilder().setMetric(metricBuilder.build()).addPoints(pointBuilder.build())
+              .setResource(mapToGcpMonitoredResource(metric.getResource()))
+              .build());
     }
 
-    createTimeSeriesBatch(this.metricServiceClient, ProjectName.of(projectId), allTimesSeries);
+    createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
     return ResultCode.SUCCESS;
   }
 
@@ -189,7 +211,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   @Override
   public void shutdown() {
-    this.metricServiceClient.shutdown();
+    metricServiceClient.shutdown();
   }
 
   private static MetricDescriptor createMetricDescriptor(
@@ -223,7 +245,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       return null;
     }
     return metricServiceClient.createMetricDescriptor(
-        CreateMetricDescriptorRequest.newBuilder().setName("projects/" + projectId).setMetricDescriptor(builder.build())
+        CreateMetricDescriptorRequest.newBuilder().setName(PROJECT_NAME_PREFIX + projectId)
+            .setMetricDescriptor(builder.build())
             .build());
   }
 
@@ -268,6 +291,28 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return builder.build();
   }
 
+  private MonitoredResource mapToGcpMonitoredResource(Resource resource) {
+    ReadableAttributes attributes = resource.getAttributes();
+    if (attributes.get("cloud.provider") != null &&
+        !attributes.get("cloud.provider").getStringValue().equals("gcp")) {
+      return null;
+    }
+    String resourceType = attributes.get("gcp.resource_type").getStringValue();
+    if (!(resourceType.equalsIgnoreCase("gce_instance") || resourceType.equalsIgnoreCase("gke_container"))) {
+      return null;
+    }
+
+    MonitoredResource.Builder builder = MonitoredResource.newBuilder().setType(resourceType);
+    for (Map.Entry<String, String> labels : OTEL_TO_GCP_LABELS.get(resourceType).entrySet()) {
+      if (attributes.get(labels.getKey()) == null) {
+        logger.log(WARNING, "Missing monitored resource value for {}", labels.getKey());
+        continue;
+      }
+      builder.putLabels(labels.getValue(), attributes.get(labels.getKey()).getStringValue());
+    }
+    return builder.build();
+  }
+
   private static void createTimeSeriesBatch(MetricServiceClient metricServiceClient, ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
@@ -277,6 +322,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   private static class MetricWithLabels {
+
     private final String metricType;
     private final Labels labels;
 
