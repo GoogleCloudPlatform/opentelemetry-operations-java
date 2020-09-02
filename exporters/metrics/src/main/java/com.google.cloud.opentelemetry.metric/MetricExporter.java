@@ -135,7 +135,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      Metric metric = mapMetric(metricData, descriptor, uniqueIdentifier);
+      Metric metric = mapMetric(metricData, descriptor.getType(), uniqueIdentifier);
       Point point = mapPoint(lastUpdatedTime, metricData, updateKey, exporterStartTime, pointCollectionTime);
       if (point == null) {
         continue;
@@ -175,7 +175,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     private final String metricType;
     private final Labels labels;
 
-    private MetricWithLabels(String metricType, Labels labels) {
+    MetricWithLabels(String metricType, Labels labels) {
       this.metricType = metricType;
       this.labels = labels;
     }

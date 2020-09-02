@@ -14,11 +14,13 @@ import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
@@ -27,23 +29,24 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class MetricTranslator {
 
   private static final Logger logger = Logger.getLogger(MetricTranslator.class.getName());
 
-  private static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
-  private static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
-  private static final long NANO_PER_SECOND = (long) 1e9;
+  static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
+  static final long NANO_PER_SECOND = (long) 1e9;
 
-  private static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
-  private static final Set<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
+  static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
+  static final Set<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
       .of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
-  private static final Set<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
-  private static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
+  static final Set<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
+  static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
-  private static final Map<String, Map<String, String>> OTEL_TO_GCP_LABELS = ImmutableMap.<String, Map<String, String>>builder()
+  static final Map<String, Map<String, String>> OTEL_TO_GCP_LABELS = ImmutableMap.<String, Map<String, String>>builder()
       .put("gce_instance", ImmutableMap.<String, String>builder()
           .put("host.id", "instance_id")
           .put("cloud.account.id", "project_id")
@@ -61,8 +64,8 @@ public class MetricTranslator {
       .build();
 
 
-  static Metric mapMetric(MetricData metric, MetricDescriptor descriptor, String uniqueIdentifier) {
-    Metric.Builder metricBuilder = Metric.newBuilder().setType(descriptor.getType());
+  static Metric mapMetric(MetricData metric, String type, String uniqueIdentifier) {
+    Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
     metric.getDescriptor().getConstantLabels().forEach(metricBuilder::putLabels);
     if (uniqueIdentifier != null) {
       metricBuilder.putLabels(UNIQUE_IDENTIFIER_KEY, uniqueIdentifier);
@@ -103,7 +106,7 @@ public class MetricTranslator {
 
   static MonitoredResource mapGcpMonitoredResource(Resource resource) {
     ReadableAttributes attributes = resource.getAttributes();
-    if (attributes.get("cloud.provider") != null &&
+    if (attributes.get("cloud.provider") == null ||
         !attributes.get("cloud.provider").getStringValue().equals("gcp")) {
       return null;
     }
@@ -118,16 +121,42 @@ public class MetricTranslator {
         logger.log(WARNING, "Missing monitored resource value for {}", labels.getKey());
         continue;
       }
-      builder.putLabels(labels.getValue(), attributes.get(labels.getKey()).getStringValue());
+      builder.putLabels(labels.getValue(), mapAttributeValueToString(attributes.get(labels.getKey())));
     }
     return builder.build();
+  }
+
+  static String mapAttributeValueToString(AttributeValue value) {
+    switch (value.getType()) {
+      case STRING:
+        return value.getStringValue();
+      case LONG:
+        return value.getLongValue() + "";
+      case DOUBLE:
+        return value.getDoubleValue() + "";
+      case BOOLEAN:
+        return value.getBooleanValue() + "";
+      case STRING_ARRAY:
+        return String.join(", ", value.getStringArrayValue());
+      case LONG_ARRAY:
+        return value.getLongArrayValue().stream().map(Object::toString)
+            .collect(Collectors.joining(", "));
+      case DOUBLE_ARRAY:
+        return value.getDoubleArrayValue().stream().map(Object::toString)
+            .collect(Collectors.joining(", "));
+      case BOOLEAN_ARRAY:
+        return value.getBooleanArrayValue().stream().map(Object::toString)
+            .collect(Collectors.joining(", "));
+      default:
+        return null;
+    }
   }
 
   static LabelDescriptor mapConstantLabel(String key, String value) {
     LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key);
     if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
       builder.setValueType(LabelDescriptor.ValueType.BOOL);
-    } else if (Ints.tryParse(value) != null) {
+    } else if (Longs.tryParse(value) != null) {
       builder.setValueType(LabelDescriptor.ValueType.INT64);
     } else {
       builder.setValueType(LabelDescriptor.ValueType.STRING);
