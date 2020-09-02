@@ -47,7 +47,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final String projectId;
   private final Instant exporterStartTime;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
-  private String uniqueIdentifier = null;
+  private String uniqueIdentifier;
 
   MetricExporter(
       String projectId,

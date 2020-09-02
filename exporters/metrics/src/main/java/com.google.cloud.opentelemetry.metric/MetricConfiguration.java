@@ -3,11 +3,9 @@ package com.google.cloud.opentelemetry.metric;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
-import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,13 +36,6 @@ public abstract class MetricConfiguration {
     public abstract String getProjectId();
 
     /**
-     * Returns the client.
-     *
-     * @return the client.
-     */
-    public abstract MetricServiceClient getClient();
-
-    /**
      * Returns whether a unique identifier will be added.
      *
      * @return whether a unique identifier will be added.
@@ -60,7 +51,9 @@ public abstract class MetricConfiguration {
     public abstract MetricServiceStub getMetricServiceStub();
 
     public static Builder builder() {
-        return new AutoValue_MetricConfiguration.Builder();
+        return new AutoValue_MetricConfiguration.Builder()
+            .setProjectId(DEFAULT_PROJECT_ID)
+            .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER);
     }
 
     /** Builder for {@link MetricConfiguration}. */
@@ -71,15 +64,17 @@ public abstract class MetricConfiguration {
 
         abstract String getProjectId();
 
-        abstract MetricServiceClient getClient();
-
         abstract boolean getAddUniqueIdentifier();
 
+        public abstract Builder setProjectId(String projectId);
+
+        public abstract Builder setCredentials(Credentials newCredentials);
+
+        public abstract Builder setAddUniqueIdentifier(boolean newAddUniqueIdentifier);
+
+        public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
+
         abstract MetricConfiguration autoBuild();
-
-        public abstract Builder setProjectId(String newProjectId);
-
-        public abstract Builder setClient(MetricServiceClient newClient);
 
         /**
          * Builds a {@link MetricConfiguration}.
