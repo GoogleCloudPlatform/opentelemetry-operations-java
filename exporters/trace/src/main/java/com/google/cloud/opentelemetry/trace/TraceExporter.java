@@ -9,6 +9,7 @@ import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import com.google.devtools.cloudtrace.v2.Span;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
@@ -88,23 +89,24 @@ public class TraceExporter implements SpanExporter {
 
   // TODO @imnoahcook add support for flush
   @Override
-  public ResultCode flush() {
-    return ResultCode.FAILURE;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofFailure();
   }
 
   @Override
-  public ResultCode export(Collection<SpanData> spanDataList) {
+  public CompletableResultCode export(Collection<SpanData> spanDataList) {
     List<Span> spans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
       spans.add(TraceTranslator.generateSpan(spanData, projectId, fixedAttributes));
     }
 
     cloudTraceClient.batchWriteSpans(projectName, spans);
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     this.cloudTraceClient.shutdown();
+    return CompletableResultCode.ofSuccess();
   }
 }
