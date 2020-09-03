@@ -1,5 +1,8 @@
 package com.google.cloud.opentelemetry.metric;
 
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.sun.tools.javac.util.List;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
@@ -11,10 +14,16 @@ import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.Date;
 
 public class FakeData {
 
   static final long NANO_PER_SECOND = (long) 1e9;
+
+  static final String aFakeProjectId = "TestProjectId";
+
+  static final Credentials aFakeCredential =
+      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
   static String anUniqueIdentifier = "UniqueIdentifier123";
 

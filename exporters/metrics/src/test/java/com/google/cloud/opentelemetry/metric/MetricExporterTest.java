@@ -1,5 +1,7 @@
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
+import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -45,10 +47,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class MetricExporterTest {
 
-  private static final String PROJECT_ID = "TestProjectId";
-  private static final Credentials FAKE_CREDENTIALS =
-      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
-
   @Mock
   private MetricServiceClient mockClient;
 
@@ -70,8 +68,8 @@ public class MetricExporterTest {
 
   @Test
   public void testCreateWithConfigurationSucceeds() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(PROJECT_ID)
-        .setCredentials(FAKE_CREDENTIALS).build();
+    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(aFakeProjectId)
+        .setCredentials(aFakeCredential).build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
@@ -87,12 +85,12 @@ public class MetricExporterTest {
         .setValueType(MetricDescriptor.ValueType.INT64)
         .build();
     CreateMetricDescriptorRequest expectedRequest = CreateMetricDescriptorRequest.newBuilder()
-        .setName(PROJECT_NAME_PREFIX + PROJECT_ID)
+        .setName(PROJECT_NAME_PREFIX + aFakeProjectId)
         .setMetricDescriptor(expectedDescriptor)
         .build();
-    ProjectName expectedProjectName = ProjectName.of(PROJECT_ID);
+    ProjectName expectedProjectName = ProjectName.of(aFakeProjectId);
 
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient, false);
+    MetricExporter exporter = MetricExporter.createWithClient(aFakeProjectId, mockClient, false);
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
@@ -113,7 +111,7 @@ public class MetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeDoesNothing() {
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient, false);
+    MetricExporter exporter = MetricExporter.createWithClient(aFakeProjectId, mockClient, false);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
             someLabels);
