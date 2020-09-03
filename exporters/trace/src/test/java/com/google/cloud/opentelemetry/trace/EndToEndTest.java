@@ -1,6 +1,7 @@
 package com.google.cloud.opentelemetry.trace;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,42 +25,42 @@ import static org.junit.Assert.assertTrue;
 class TestSpanData implements SpanData {
   @Override
   public TraceId getTraceId() {
-    return null;
+    return new TraceId(321, 123);
   }
 
   @Override
   public SpanId getSpanId() {
-    return null;
+    return new SpanId(12345);
   }
 
   @Override
   public TraceFlags getTraceFlags() {
-    return null;
+    return TraceFlags.getDefault();
   }
 
   @Override
   public TraceState getTraceState() {
-    return null;
+    return TraceState.getDefault();
   }
 
   @Override
   public SpanId getParentSpanId() {
-    return null;
+    return new SpanId(54321);
   }
 
   @Override
   public Resource getResource() {
-    return null;
+    return Resource.getEmpty();
   }
 
   @Override
   public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return null;
+    return InstrumentationLibraryInfo.getEmpty();
   }
 
   @Override
   public String getName() {
-    return null;
+    return "MySpanName";
   }
 
   @Override
@@ -69,32 +70,32 @@ class TestSpanData implements SpanData {
 
   @Override
   public long getStartEpochNanos() {
-    return 0;
+    return TimeUnit.SECONDS.toNanos(3000) + 200;
   }
 
   @Override
   public ReadableAttributes getAttributes() {
-    return null;
+    return Attributes.empty();
   }
 
   @Override
   public List<Event> getEvents() {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public List<Link> getLinks() {
-    return null;
+    return Collections.emptyList();
   }
 
   @Override
   public Status getStatus() {
-    return null;
+    return Status.OK;
   }
 
   @Override
   public long getEndEpochNanos() {
-    return 0;
+    return TimeUnit.SECONDS.toNanos(3000) + 255;
   }
 
   @Override
@@ -128,13 +129,6 @@ public class EndToEndTest {
 
   private static final String PROJECT_ID = "project-id";
   private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
-  private static final TraceId TRACE_ID = new TraceId(321, 123);
-  private static final SpanId SPAN_ID = new SpanId(12345);
-  private static final SpanId PARENT_SPAN_ID = new SpanId(54321);
-  private static final String SPAN_NAME = "MySpanName";
-  private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
-  private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  private static final Status SPAN_DATA_STATUS = Status.OK;
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
@@ -175,9 +169,7 @@ public class EndToEndTest {
     exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    TestSpanData spanDataOne = new TestSpanData();
-
-    spanDataList.add(spanDataOne);
+    spanDataList.add(new TestSpanData());
 
     // Invokes export();
     assertTrue(exporter.export(spanDataList).isSuccess());
