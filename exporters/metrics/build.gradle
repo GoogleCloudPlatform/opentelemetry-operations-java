@@ -9,4 +9,5 @@ dependencies {
     api(libraries.google_cloud_monitoring)
     api(libraries.google_cloud_grpc)
     testImplementation(testLibraries.junit)
+    testImplementation(testLibraries.mockito)
 }

@@ -61,7 +61,7 @@ public class MetricTranslatorTest {
   public void testMapMetricWithoutUniqueIdentifierSucceeds() {
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
-    String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
+    String type = DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
     metricData.getDescriptor().getConstantLabels().forEach(expectedMetricBuilder::putLabels);

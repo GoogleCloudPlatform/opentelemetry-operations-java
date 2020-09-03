@@ -19,99 +19,99 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricConfiguration {
 
-    private static final String DEFAULT_PROJECT_ID =
-        Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
-    private static final boolean DEFAULT_ADD_UNIQUE_IDENTIFIER = false;
-    private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
+  private static final String DEFAULT_PROJECT_ID =
+      Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
+  private static final boolean DEFAULT_ADD_UNIQUE_IDENTIFIER = false;
+  private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-    MetricConfiguration() {
+  MetricConfiguration() {
+  }
+
+  /**
+   * Returns the {@link Credentials}.
+   *
+   * @return the {@code Credentials}.
+   */
+  @Nullable
+  public abstract Credentials getCredentials();
+
+  /**
+   * Returns the cloud project id.
+   *
+   * @return the cloud project id.
+   */
+  public abstract String getProjectId();
+
+  /**
+   * Returns whether a unique identifier will be added.
+   *
+   * @return whether a unique identifier will be added.
+   */
+  public abstract boolean getAddUniqueIdentifier();
+
+  /**
+   * Returns a MetricsServiceStub instance used to make RPC calls.
+   *
+   * @return the metrics service stub.
+   */
+  @Nullable
+  public abstract MetricServiceStub getMetricServiceStub();
+
+  /**
+   * Returns the deadline for exporting to Cloud Monitoring backend.
+   *
+   * <p>Default value is 10 seconds.
+   *
+   * @return the export deadline.
+   */
+  public abstract Duration getDeadline();
+
+  public static Builder builder() {
+    return new AutoValue_MetricConfiguration.Builder()
+        .setProjectId(DEFAULT_PROJECT_ID)
+        .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER)
+        .setDeadline(DEFAULT_DEADLINE);
+  }
+
+  /**
+   * Builder for {@link MetricConfiguration}.
+   */
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    Builder() {
     }
 
-    /**
-     * Returns the {@link Credentials}.
-     *
-     * @return the {@code Credentials}.
-     */
-    @Nullable
-    public abstract Credentials getCredentials();
+    abstract String getProjectId();
+
+    abstract boolean getAddUniqueIdentifier();
+
+    abstract Duration getDeadline();
+
+    public abstract Builder setProjectId(String projectId);
+
+    public abstract Builder setCredentials(Credentials newCredentials);
+
+    public abstract Builder setAddUniqueIdentifier(boolean newAddUniqueIdentifier);
+
+    public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
+
+    public abstract Builder setDeadline(Duration deadline);
+
+    abstract MetricConfiguration autoBuild();
 
     /**
-     * Returns the cloud project id.
+     * Builds a {@link MetricConfiguration}.
      *
-     * @return the cloud project id.
+     * @return a {@code MetricsConfiguration}.
      */
-    public abstract String getProjectId();
-
-    /**
-     * Returns whether a unique identifier will be added.
-     *
-     * @return whether a unique identifier will be added.
-     */
-    public abstract boolean getAddUniqueIdentifier();
-
-    /**
-     * Returns a MetricsServiceStub instance used to make RPC calls.
-     *
-     * @return the metrics service stub.
-     */
-    @Nullable
-    public abstract MetricServiceStub getMetricServiceStub();
-
-    /**
-     * Returns the deadline for exporting to Cloud Monitoring backend.
-     *
-     * <p>Default value is 10 seconds.
-     *
-     * @return the export deadline.
-     */
-    public abstract Duration getDeadline();
-
-    public static Builder builder() {
-        return new AutoValue_MetricConfiguration.Builder()
-            .setProjectId(DEFAULT_PROJECT_ID)
-            .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER)
-            .setDeadline(DEFAULT_DEADLINE);
+    public MetricConfiguration build() {
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(getProjectId()),
+          "Cannot find a project ID from either configurations or application default.");
+      Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
+      return autoBuild();
     }
-
-    /**
-     * Builder for {@link MetricConfiguration}.
-     */
-    @AutoValue.Builder
-    public abstract static class Builder {
-
-        Builder() {
-        }
-
-        abstract String getProjectId();
-
-        abstract boolean getAddUniqueIdentifier();
-
-        abstract Duration getDeadline();
-
-        public abstract Builder setProjectId(String projectId);
-
-        public abstract Builder setCredentials(Credentials newCredentials);
-
-        public abstract Builder setAddUniqueIdentifier(boolean newAddUniqueIdentifier);
-
-        public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
-
-        public abstract Builder setDeadline(Duration deadline);
-
-        abstract MetricConfiguration autoBuild();
-
-        /**
-         * Builds a {@link MetricConfiguration}.
-         *
-         * @return a {@code MetricsConfiguration}.
-         */
-        public MetricConfiguration build() {
-            Preconditions.checkArgument(
-                !Strings.isNullOrEmpty(getProjectId()),
-                "Cannot find a project ID from either configurations or application default.");
-            Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
-            return autoBuild();
-        }
-    }
+  }
 
 }

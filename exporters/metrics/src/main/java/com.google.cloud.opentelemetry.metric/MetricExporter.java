@@ -15,6 +15,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
@@ -37,7 +38,9 @@ import java.util.logging.Logger;
 
 public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
-  private static final String PROJECT_NAME_PREFIX = "projects/";
+  @VisibleForTesting
+  static final String PROJECT_NAME_PREFIX = "projects/";
+
   private static final long WRITE_INTERVAL_SECOND = 10;
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
@@ -46,7 +49,10 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   private final MetricServiceClient metricServiceClient;
   private final String projectId;
-  private final Instant exporterStartTime;
+
+  @VisibleForTesting
+  final Instant exporterStartTime;
+
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
   private String uniqueIdentifier;
 
@@ -87,7 +93,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         configuration.getAddUniqueIdentifier());
   }
 
-  private static MetricExporter createWithClient(
+  @VisibleForTesting
+  static MetricExporter createWithClient(
       String projectId,
       MetricServiceClient metricServiceClient,
       boolean addUniqueIdentifier) {
