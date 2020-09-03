@@ -18,6 +18,9 @@ import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
@@ -29,6 +32,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +46,8 @@ import org.mockito.MockitoAnnotations;
 public class MetricExporterTest {
 
   private static final String PROJECT_ID = "TestProjectId";
+  private static final Credentials FAKE_CREDENTIALS =
+      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
   @Mock
   private MetricServiceClient mockClient;
@@ -64,7 +70,8 @@ public class MetricExporterTest {
 
   @Test
   public void testCreateWithConfigurationSucceeds() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(PROJECT_ID).build();
+    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(PROJECT_ID)
+        .setCredentials(FAKE_CREDENTIALS).build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
