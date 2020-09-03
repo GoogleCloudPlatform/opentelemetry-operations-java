@@ -1,12 +1,11 @@
 package com.google.cloud.opentelemetry.trace;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.test.TestSpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.SpanData;;
+import io.opentelemetry.trace.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,14 +16,112 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+class TestSpanData implements SpanData {
+  @Override
+  public TraceId getTraceId() {
+    return null;
+  }
+
+  @Override
+  public SpanId getSpanId() {
+    return null;
+  }
+
+  @Override
+  public TraceFlags getTraceFlags() {
+    return null;
+  }
+
+  @Override
+  public TraceState getTraceState() {
+    return null;
+  }
+
+  @Override
+  public SpanId getParentSpanId() {
+    return null;
+  }
+
+  @Override
+  public Resource getResource() {
+    return null;
+  }
+
+  @Override
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return null;
+  }
+
+  @Override
+  public String getName() {
+    return null;
+  }
+
+  @Override
+  public Span.Kind getKind() {
+    return null;
+  }
+
+  @Override
+  public long getStartEpochNanos() {
+    return 0;
+  }
+
+  @Override
+  public ReadableAttributes getAttributes() {
+    return null;
+  }
+
+  @Override
+  public List<Event> getEvents() {
+    return null;
+  }
+
+  @Override
+  public List<Link> getLinks() {
+    return null;
+  }
+
+  @Override
+  public Status getStatus() {
+    return null;
+  }
+
+  @Override
+  public long getEndEpochNanos() {
+    return 0;
+  }
+
+  @Override
+  public boolean getHasRemoteParent() {
+    return false;
+  }
+
+  @Override
+  public boolean getHasEnded() {
+    return false;
+  }
+
+  @Override
+  public int getTotalRecordedEvents() {
+    return 0;
+  }
+
+  @Override
+  public int getTotalRecordedLinks() {
+    return 0;
+  }
+
+  @Override
+  public int getTotalAttributeCount() {
+    return 0;
+  }
+}
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -78,25 +175,12 @@ public class EndToEndTest {
     exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    TestSpanData spanDataOne = TestSpanData.newBuilder()
-            .setParentSpanId(PARENT_SPAN_ID)
-            .setSpanId(SPAN_ID)
-            .setTraceId(TRACE_ID)
-            .setName(SPAN_NAME)
-            .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
-            .setEvents(Collections.emptyList())
-            .setStatus(SPAN_DATA_STATUS)
-            .setStartEpochNanos(START_EPOCH_NANOS)
-            .setEndEpochNanos(END_EPOCH_NANOS)
-            .setTotalRecordedLinks(0)
-            .setHasRemoteParent(false)
-            .setHasEnded(true)
-            .build();
+    TestSpanData spanDataOne = new TestSpanData();
 
     spanDataList.add(spanDataOne);
 
     // Invokes export();
-    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
+    assertTrue(exporter.export(spanDataList).isSuccess());
   }
 
   @Test
@@ -105,6 +189,6 @@ public class EndToEndTest {
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();
-    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
+    assertTrue(exporter.export(spanDataList).isSuccess());
   }
 }
