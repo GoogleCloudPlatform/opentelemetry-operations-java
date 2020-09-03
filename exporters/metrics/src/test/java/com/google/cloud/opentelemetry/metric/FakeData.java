@@ -28,7 +28,7 @@ public class FakeData {
       .create("Descriptor Name", "Descriptor description", "Unit", Type.NON_MONOTONIC_DOUBLE,
           someLabels);
 
-  static Attributes someAttributes = Attributes.newBuilder()
+  static Attributes someGceAttributes = Attributes.newBuilder()
       .setAttribute("cloud.account.id", 123)
       .setAttribute("host.id", "host")
       .setAttribute("cloud.zone", "US")
@@ -38,7 +38,20 @@ public class FakeData {
       .setAttribute("not_gcp_resource", "value")
       .build();
 
-  static Resource aResource = Resource.create(someAttributes);
+  static Attributes someGkeAttributes = Attributes.newBuilder()
+      .setAttribute("cloud.account.id", 123)
+      .setAttribute("host.id", "host")
+      .setAttribute("cloud.zone", "US")
+      .setAttribute("cloud.provider", "gcp")
+      .setAttribute("gcp.resource_type", "gke_container")
+      .setAttribute("k8s.cluster.name", "my_k8s_cluster")
+      .setAttribute("k8s.namespace.name", "my_k8s_namespace")
+      .setAttribute("k8s.pod.name", "my_pod_123")
+      .setAttribute("container.name", "otel_container_1")
+      .setAttribute("extra_info", "extra")
+      .build();
+
+  static Resource aGceResource = Resource.create(someGceAttributes);
 
   static InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
       .create("InstrumentName", "Instrument version 0");

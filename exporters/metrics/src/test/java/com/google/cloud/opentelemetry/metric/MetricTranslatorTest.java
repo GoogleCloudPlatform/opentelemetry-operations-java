@@ -1,12 +1,13 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.NANO_PER_SECOND;
+import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.aNonMonotonicDoubleDescriptor;
-import static com.google.cloud.opentelemetry.metric.FakeData.aResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.anUniqueIdentifier;
 import static com.google.cloud.opentelemetry.metric.FakeData.someDoublePoints;
+import static com.google.cloud.opentelemetry.metric.FakeData.someGkeAttributes;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLongPoints;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
@@ -44,7 +45,7 @@ public class MetricTranslatorTest {
   @Test
   public void testMapMetricWithUniqueIdentifierSucceeds() {
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
     String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type)
@@ -59,7 +60,7 @@ public class MetricTranslatorTest {
   @Test
   public void testMapMetricWithoutUniqueIdentifierSucceeds() {
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
     String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
@@ -72,7 +73,7 @@ public class MetricTranslatorTest {
   @Test
   public void testMapMetricDescriptorWithUniqueIdentifierSucceeds() {
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
     MetricDescriptor.Builder expectedDescriptor = MetricDescriptor.newBuilder()
         .setDisplayName(anInstrumentationLibraryInfo.getName())
@@ -90,7 +91,7 @@ public class MetricTranslatorTest {
   @Test
   public void testMapMetricDescriptorWithoutUniqueIdentifierSucceeds() {
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
     MetricDescriptor.Builder expectedDescriptor = MetricDescriptor.newBuilder()
         .setDisplayName(anInstrumentationLibraryInfo.getName())
@@ -109,7 +110,7 @@ public class MetricTranslatorTest {
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
             someLabels);
-    MetricData metricData = MetricData.create(summaryDescriptor, aResource, anInstrumentationLibraryInfo,
+    MetricData metricData = MetricData.create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo,
         someLongPoints);
 
     MetricDescriptor actualDescriptor = MetricTranslator.mapMetricDescriptor(metricData, null);
@@ -124,18 +125,14 @@ public class MetricTranslatorTest {
         .putLabels("project_id", "123")
         .putLabels("zone", "US")
         .build();
-    MonitoredResource actualResource = MetricTranslator.mapGcpMonitoredResource(aResource);
+    MonitoredResource actualResource = MetricTranslator.mapGcpMonitoredResource(aGceResource);
     assertEquals(expectedResource, actualResource);
   }
 
   @Test
   public void testMapGcpMonitoredResourceWithNonGcpProviderReturnsNull() {
     Attributes someAttributes = Attributes.newBuilder()
-        .setAttribute("cloud.account.id", 123)
-        .setAttribute("host.id", "host")
-        .setAttribute("cloud.zone", "US")
         .setAttribute("cloud.provider", "anotherProvider")
-        .setAttribute("extra_info", "extra")
         .setAttribute("gcp.resource_type", "gce_instance")
         .build();
     Resource aResource = Resource.create(someAttributes);
@@ -147,17 +144,29 @@ public class MetricTranslatorTest {
   @Test
   public void testMapGcpMonitoredResourceWithNonGcpResourceTypeReturnsNull() {
     Attributes someAttributes = Attributes.newBuilder()
-        .setAttribute("cloud.account.id", 123)
-        .setAttribute("host.id", "host")
-        .setAttribute("cloud.zone", "US")
         .setAttribute("cloud.provider", "gcp")
-        .setAttribute("extra_info", "extra")
         .setAttribute("gcp.resource_type", "random_instance")
         .build();
     Resource aResource = Resource.create(someAttributes);
 
     MonitoredResource actualResource = MetricTranslator.mapGcpMonitoredResource(aResource);
     assertNull(actualResource);
+  }
+
+  @Test
+  public void testMapGcpMonitoredResourceWithGkeTypeSucceeds() {
+    MonitoredResource expectedResource = MonitoredResource.newBuilder()
+        .setType("gke_container")
+        .putLabels("cluster_name", "my_k8s_cluster")
+        .putLabels("namespace_id", "my_k8s_namespace")
+        .putLabels("pod_id", "my_pod_123")
+        .putLabels("instance_id", "host")
+        .putLabels("container_name", "otel_container_1")
+        .putLabels("project_id", "123")
+        .putLabels("zone", "US")
+        .build();
+    MonitoredResource actualResource = MetricTranslator.mapGcpMonitoredResource(Resource.create(someGkeAttributes));
+    assertEquals(expectedResource, actualResource);
   }
 
   @Test
@@ -196,7 +205,7 @@ public class MetricTranslatorTest {
     Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
     lastUpdated.put(metricWithLabels, 1599032114L);
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
     long expectedStartNano = lastUpdated.get(metricWithLabels) + (long) 1e6;
     Timestamp expectedStartTime = Timestamp.newBuilder().setSeconds(expectedStartNano / NANO_PER_SECOND).setNanos(
@@ -223,7 +232,7 @@ public class MetricTranslatorTest {
         someLabels);
     Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
     Timestamp expectedStartTime = Timestamp.newBuilder().setSeconds(exporterStartTime.getEpochSecond()).setNanos(
         exporterStartTime.getNano()).build();
@@ -249,7 +258,7 @@ public class MetricTranslatorTest {
         someLabels);
     Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
     MetricData metricData = MetricData
-        .create(aNonMonotonicDoubleDescriptor, aResource, anInstrumentationLibraryInfo, someDoublePoints);
+        .create(aNonMonotonicDoubleDescriptor, aGceResource, anInstrumentationLibraryInfo, someDoublePoints);
 
     Timestamp expectedStartEndTime = Timestamp.newBuilder().setSeconds(pointCollectionTime / NANO_PER_SECOND)
         .setNanos((int) (pointCollectionTime % NANO_PER_SECOND)).build();
