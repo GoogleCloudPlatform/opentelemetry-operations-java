@@ -23,6 +23,7 @@ import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +80,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
               : configuration.getCredentials();
 
       return MetricExporter.createWithCredentials(
-          projectId, credentials);
+          projectId, credentials, configuration.getDeadline());
     }
     return MetricExporter.createWithClient(
         projectId, MetricServiceClient.create(stub),
@@ -95,10 +96,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   private static MetricExporter createWithCredentials(
       String projectId,
-      Credentials credentials) throws IOException {
+      Credentials credentials,
+      Duration deadline) throws IOException {
     MetricServiceSettings.Builder builder =
-        MetricServiceSettings.newBuilder().setCredentialsProvider(
-            FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
+        MetricServiceSettings.newBuilder()
+            .setCredentialsProvider(
+                FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
+    builder.createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
     return new MetricExporter(projectId, MetricServiceClient.create(builder.build()), false);
   }
 
@@ -123,7 +128,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       Optional<MetricData.Point> metricPoint = metricData.getPoints().stream()
           .reduce((first, second) -> second);
       if (!metricPoint.isPresent()) {
-        logger.log(WARNING, "No point found in metric {}", metricData);
+        logger.log(WARNING, "No point found in metric {0}", metricData);
         continue;
       }
 
@@ -155,7 +160,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {
-      metricServiceClient.createTimeSeries(projectName, timeSeries);
+      metricServiceClient.createTimeSeries(projectName, new ArrayList<>(timeSeries));
     }
   }
 

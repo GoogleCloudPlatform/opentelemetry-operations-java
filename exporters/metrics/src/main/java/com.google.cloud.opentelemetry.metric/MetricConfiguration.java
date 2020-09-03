@@ -1,24 +1,31 @@
 package com.google.cloud.opentelemetry.metric;
 
+import static java.time.Duration.ZERO;
+
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.time.Duration;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** Configurations for {@link MetricExporter}. */
+/**
+ * Configurations for {@link MetricExporter}.
+ */
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
 
     private static final String DEFAULT_PROJECT_ID =
-            Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
+        Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
     private static final boolean DEFAULT_ADD_UNIQUE_IDENTIFIER = false;
+    private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-    MetricConfiguration() {}
+    MetricConfiguration() {
+    }
 
     /**
      * Returns the {@link Credentials}.
@@ -50,21 +57,36 @@ public abstract class MetricConfiguration {
     @Nullable
     public abstract MetricServiceStub getMetricServiceStub();
 
+    /**
+     * Returns the deadline for exporting to Cloud Monitoring backend.
+     *
+     * <p>Default value is 10 seconds.
+     *
+     * @return the export deadline.
+     */
+    public abstract Duration getDeadline();
+
     public static Builder builder() {
         return new AutoValue_MetricConfiguration.Builder()
             .setProjectId(DEFAULT_PROJECT_ID)
-            .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER);
+            .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER)
+            .setDeadline(DEFAULT_DEADLINE);
     }
 
-    /** Builder for {@link MetricConfiguration}. */
+    /**
+     * Builder for {@link MetricConfiguration}.
+     */
     @AutoValue.Builder
     public abstract static class Builder {
 
-        Builder() {}
+        Builder() {
+        }
 
         abstract String getProjectId();
 
         abstract boolean getAddUniqueIdentifier();
+
+        abstract Duration getDeadline();
 
         public abstract Builder setProjectId(String projectId);
 
@@ -73,6 +95,8 @@ public abstract class MetricConfiguration {
         public abstract Builder setAddUniqueIdentifier(boolean newAddUniqueIdentifier);
 
         public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
+
+        public abstract Builder setDeadline(Duration deadline);
 
         abstract MetricConfiguration autoBuild();
 
@@ -83,9 +107,9 @@ public abstract class MetricConfiguration {
          */
         public MetricConfiguration build() {
             Preconditions.checkArgument(
-                    !Strings.isNullOrEmpty(getProjectId()),
-                    "Cannot find a project ID from either configurations or application default.");
-
+                !Strings.isNullOrEmpty(getProjectId()),
+                "Cannot find a project ID from either configurations or application default.");
+            Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
             return autoBuild();
         }
     }
