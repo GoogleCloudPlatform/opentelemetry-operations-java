@@ -1,10 +1,13 @@
 # Orb 'circleci/gradle@2.2.0' resolved to 'circleci/gradle@2.2.0'
-version: 2
-jobs:
-  build:
+version: 2.1
+
+executors:
+  jdk:
     docker:
       - image: cimg/openjdk:13.0
 
+commands:
+  setup:
     steps:
       - checkout
 
@@ -14,6 +17,21 @@ jobs:
 
       - restore_cache:
           key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+
+  teardown:
+    steps:
+      - save_cache:
+          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+
+jobs:
+  build:
+    executor: jdk
+
+    steps:
+      - setup
 
       - run:
           command: chmod +x ./get_mock_server.sh && ./get_mock_server.sh
@@ -26,11 +44,7 @@ jobs:
           name: Run Tests
           working_directory: ''
 
-      - save_cache:
-          key: gradle-v1-{{ checksum "/tmp/gradle_cache_seed" }}-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - ~/.gradle/caches
-            - ~/.gradle/wrapper
+      - teardown
 
       - store_test_results:
           path: .
