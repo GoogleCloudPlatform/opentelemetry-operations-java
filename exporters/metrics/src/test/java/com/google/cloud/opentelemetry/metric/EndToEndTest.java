@@ -2,8 +2,14 @@ package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
+import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
+import static com.google.cloud.opentelemetry.metric.FakeData.someLongPoints;
 import static org.junit.Assert.assertEquals;
 
+import com.sun.tools.javac.util.List;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,6 +53,19 @@ public class EndToEndTest {
   @After
   public void tearDown() {
     mockServerProcess.destroy();
+  }
+
+  @Test
+  public void testExportMockMetricsDataList() throws IOException {
+    exporter = MetricExporter.createWithConfiguration(
+        MetricConfiguration.builder()
+            .setProjectId(aFakeProjectId)
+            .setCredentials(aFakeCredential)
+            .build());
+
+    MetricData metricData = MetricData
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
+    assertEquals(ResultCode.SUCCESS, exporter.export(List.of(metricData)));
   }
 
   @Test
