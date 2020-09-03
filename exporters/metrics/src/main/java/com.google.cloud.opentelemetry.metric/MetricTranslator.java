@@ -13,7 +13,6 @@ import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.Point.Builder;
@@ -90,7 +89,7 @@ public class MetricTranslator {
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
     } else {
-      logger.log(WARNING, "Metric type {} not supported", metricType);
+      logger.log(WARNING, "Metric type {0} not supported", metricType);
       return null;
     }
     if (LONG_TYPES.contains(metricType)) {
@@ -98,7 +97,7 @@ public class MetricTranslator {
     } else if (DOUBLE_TYPES.contains(metricType)) {
       builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
     } else {
-      logger.log(WARNING, "Metric type {} not supported", metricType);
+      logger.log(WARNING, "Metric type {0} not supported", metricType);
       return null;
     }
     return builder.build();
@@ -118,7 +117,7 @@ public class MetricTranslator {
     MonitoredResource.Builder builder = MonitoredResource.newBuilder().setType(resourceType);
     for (Map.Entry<String, String> labels : OTEL_TO_GCP_LABELS.get(resourceType).entrySet()) {
       if (attributes.get(labels.getKey()) == null) {
-        logger.log(WARNING, "Missing monitored resource value for {}", labels.getKey());
+        logger.log(WARNING, "Missing monitored resource value for {0}", labels.getKey());
         continue;
       }
       builder.putLabels(labels.getValue(), mapAttributeValueToString(attributes.get(labels.getKey())));
@@ -175,7 +174,7 @@ public class MetricTranslator {
       pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(
           ((MetricData.DoublePoint) metric.getPoints().iterator().next()).getValue()));
     } else {
-      logger.log(WARNING, "Type {} not supported", type);
+      logger.log(WARNING, "Type {0} not supported", type);
       return null;
     }
     pointBuilder.setInterval(
