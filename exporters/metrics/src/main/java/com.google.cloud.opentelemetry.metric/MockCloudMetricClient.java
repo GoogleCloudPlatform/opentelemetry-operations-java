@@ -20,8 +20,7 @@ class MockCloudMetricClient implements CloudMetricClient {
   MockCloudMetricClient(String address, Credentials credentials) throws IOException {
     stub = GrpcMetricServiceStub.create(
         MetricServiceStubSettings.newBuilder().setEndpoint(address)
-            .setCredentialsProvider(FixedCredentialsProvider.create(
-                credentials)).build());
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build());
   }
 
   public final MetricDescriptor createMetricDescriptor(CreateMetricDescriptorRequest request) {

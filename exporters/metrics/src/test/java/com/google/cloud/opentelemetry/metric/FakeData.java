@@ -3,7 +3,7 @@ package com.google.cloud.opentelemetry.metric;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.sun.tools.javac.util.List;
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -65,10 +65,10 @@ public class FakeData {
   static InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
       .create("InstrumentName", "Instrument version 0");
 
-  static Collection<Point> someLongPoints = List
+  static Collection<Point> someLongPoints = ImmutableList
       .of(LongPoint.create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32L));
 
-  static Collection<Point> someDoublePoints = List
+  static Collection<Point> someDoublePoints = ImmutableList
       .of(DoublePoint.create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32.35));
 
 }
