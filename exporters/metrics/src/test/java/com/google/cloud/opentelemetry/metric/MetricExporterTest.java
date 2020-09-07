@@ -22,10 +22,10 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
+import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import com.sun.tools.javac.util.List;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
@@ -96,7 +96,7 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
-    ResultCode result = exporter.export(List.of(metricData));
+    ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1)).createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
 
@@ -120,7 +120,7 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
-    ResultCode result = exporter.export(List.of(metricData));
+    ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 
