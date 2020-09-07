@@ -5,7 +5,6 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapGcpMonit
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
-import static java.util.logging.Level.WARNING;
 
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
@@ -32,20 +31,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
   @VisibleForTesting
   static final String PROJECT_NAME_PREFIX = "projects/";
 
-  private static final long WRITE_INTERVAL_SECOND = 10;
+  private static final long WRITE_INTERVAL_SECOND = 12;
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
 
-  private static final Logger logger = Logger.getLogger(MetricExporter.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
 
   private final CloudMetricClient metricServiceClient;
   private final String projectId;
@@ -132,16 +131,16 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           metricData.getDescriptor().getConstantLabels());
 
       // We are expecting one point per MetricData
-      Optional<MetricData.Point> metricPoint = metricData.getPoints().stream()
-          .reduce((first, second) -> second);
-      if (!metricPoint.isPresent()) {
-        logger.log(WARNING, "No point found in metric {0}", metricData);
+      if (metricData.getPoints().size() != 1) {
+        logger.error("There should be exactly one point in each metricData, found {}",
+            metricData.getPoints().size());
         continue;
       }
+      MetricData.Point metricPoint = metricData.getPoints().iterator().next();
 
       // Cloud Monitoring API allows, for any combination of labels and
       // metric name, one update per WRITE_INTERVAL seconds
-      long pointCollectionTime = metricPoint.get().getEpochNanos();
+      long pointCollectionTime = metricPoint.getEpochNanos();
       if (lastUpdatedTime.containsKey(updateKey)
           && pointCollectionTime <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
         continue;
@@ -171,10 +170,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     }
   }
 
+  /**
+   * The exporter does not batch metrics, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
   @Override
   public ResultCode flush() {
-    // TODO (zoe): add support for flush
-    return ResultCode.FAILURE;
+    return ResultCode.SUCCESS;
   }
 
   @Override

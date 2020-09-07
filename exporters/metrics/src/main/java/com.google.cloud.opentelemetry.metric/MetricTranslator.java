@@ -4,13 +4,13 @@ import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOT
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOTONIC_LONG;
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_LONG;
-import static java.util.logging.Level.WARNING;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
@@ -25,16 +25,20 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricTranslator {
 
-  private static final Logger logger = Logger.getLogger(MetricTranslator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
   static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  static final List<String> KNOWN_DOMAINS = ImmutableList
+      .of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
   static final long NANO_PER_SECOND = (long) 1e9;
 
@@ -45,20 +49,28 @@ public class MetricTranslator {
   static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
+  static final String GCP_HOST_ID_KEY = "instance_id";
+  static final String GCP_ACCOUNT_ID_KEY = "project_id";
+  static final String GCP_ZONE_KEY = "zone";
+  static final String GCP_CLUSTER_NAME_KEY = "cluster_name";
+  static final String GCP_NAMESPACE_KEY = "namespace_id";
+  static final String GCP_POD_KEY = "pod_id";
+  static final String GCP_CONTAINER_KEY = "container_name";
+
   static final Map<String, Map<String, String>> OTEL_TO_GCP_LABELS = ImmutableMap.<String, Map<String, String>>builder()
       .put("gce_instance", ImmutableMap.<String, String>builder()
-          .put("host.id", "instance_id")
-          .put("cloud.account.id", "project_id")
-          .put("cloud.zone", "zone")
+          .put("host.id", GCP_HOST_ID_KEY)
+          .put("cloud.account.id", GCP_ACCOUNT_ID_KEY)
+          .put("cloud.zone", GCP_ZONE_KEY)
           .build())
       .put("gke_container", ImmutableMap.<String, String>builder()
-          .put("k8s.cluster.name", "cluster_name")
-          .put("k8s.namespace.name", "namespace_id")
-          .put("k8s.pod.name", "pod_id")
-          .put("host.id", "instance_id")
-          .put("container.name", "container_name")
-          .put("cloud.account.id", "project_id")
-          .put("cloud.zone", "zone")
+          .put("k8s.cluster.name", GCP_CLUSTER_NAME_KEY)
+          .put("k8s.namespace.name", GCP_NAMESPACE_KEY)
+          .put("k8s.pod.name", GCP_POD_KEY)
+          .put("host.id", GCP_HOST_ID_KEY)
+          .put("container.name", GCP_CONTAINER_KEY)
+          .put("cloud.account.id", GCP_ACCOUNT_ID_KEY)
+          .put("cloud.zone", GCP_ZONE_KEY)
           .build())
       .build();
 
@@ -75,7 +87,7 @@ public class MetricTranslator {
   static MetricDescriptor mapMetricDescriptor(MetricData metric, String uniqueIdentifier) {
     String instrumentName = metric.getInstrumentationLibraryInfo().getName();
     MetricDescriptor.Builder builder = MetricDescriptor.newBuilder().setDisplayName(instrumentName)
-        .setType(DESCRIPTOR_TYPE_URL + instrumentName);
+        .setType(mapMetricType(instrumentName));
     metric.getDescriptor().getConstantLabels().forEach((key, value) -> builder.addLabels(mapConstantLabel(key, value)));
     if (uniqueIdentifier != null) {
       builder.addLabels(
@@ -89,7 +101,7 @@ public class MetricTranslator {
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
     } else {
-      logger.log(WARNING, "Metric type {0} not supported", metricType);
+      logger.error("Metric type {} not supported", metricType);
       return null;
     }
     if (LONG_TYPES.contains(metricType)) {
@@ -97,10 +109,19 @@ public class MetricTranslator {
     } else if (DOUBLE_TYPES.contains(metricType)) {
       builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
     } else {
-      logger.log(WARNING, "Metric type {0} not supported", metricType);
+      logger.error("Metric type {} not supported", metricType);
       return null;
     }
     return builder.build();
+  }
+
+  private static String mapMetricType(String instrumentName) {
+    for (String domain : KNOWN_DOMAINS) {
+      if (instrumentName.contains(domain)) {
+        return instrumentName;
+      }
+    }
+    return DESCRIPTOR_TYPE_URL + instrumentName;
   }
 
   static MonitoredResource mapGcpMonitoredResource(Resource resource) {
@@ -110,14 +131,14 @@ public class MetricTranslator {
       return null;
     }
     String resourceType = attributes.get("gcp.resource_type").getStringValue();
-    if (!(resourceType.equalsIgnoreCase("gce_instance") || resourceType.equalsIgnoreCase("gke_container"))) {
+    if (!OTEL_TO_GCP_LABELS.containsKey(resourceType)) {
       return null;
     }
 
     MonitoredResource.Builder builder = MonitoredResource.newBuilder().setType(resourceType);
     for (Map.Entry<String, String> labels : OTEL_TO_GCP_LABELS.get(resourceType).entrySet()) {
       if (attributes.get(labels.getKey()) == null) {
-        logger.log(WARNING, "Missing monitored resource value for {0}", labels.getKey());
+        logger.error("Missing monitored resource value for {}", labels.getKey());
         continue;
       }
       builder.putLabels(labels.getValue(), mapAttributeValueToString(attributes.get(labels.getKey())));
@@ -130,21 +151,21 @@ public class MetricTranslator {
       case STRING:
         return value.getStringValue();
       case LONG:
-        return value.getLongValue() + "";
+        return Long.toString(value.getLongValue());
       case DOUBLE:
-        return value.getDoubleValue() + "";
+        return String.format("%f", value.getDoubleValue());
       case BOOLEAN:
-        return value.getBooleanValue() + "";
+        return Boolean.toString(value.getBooleanValue());
       case STRING_ARRAY:
         return String.join(", ", value.getStringArrayValue());
       case LONG_ARRAY:
-        return value.getLongArrayValue().stream().map(Object::toString)
+        return value.getLongArrayValue().stream().map(el -> Long.toString(el))
             .collect(Collectors.joining(", "));
       case DOUBLE_ARRAY:
-        return value.getDoubleArrayValue().stream().map(Object::toString)
+        return value.getDoubleArrayValue().stream().map(el -> String.format("%f", el))
             .collect(Collectors.joining(", "));
       case BOOLEAN_ARRAY:
-        return value.getBooleanArrayValue().stream().map(Object::toString)
+        return value.getBooleanArrayValue().stream().map(el -> Boolean.toString(el))
             .collect(Collectors.joining(", "));
       default:
         return null;
@@ -174,7 +195,7 @@ public class MetricTranslator {
       pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(
           ((MetricData.DoublePoint) metric.getPoints().iterator().next()).getValue()));
     } else {
-      logger.log(WARNING, "Type {0} not supported", type);
+      logger.error("Type {} not supported", type);
       return null;
     }
     pointBuilder.setInterval(
