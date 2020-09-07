@@ -1,6 +1,5 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
@@ -29,6 +28,7 @@ public class EndToEndTest {
 
   private Process mockServerProcess;
   private MetricExporter exporter;
+  MockCloudMetricClient mockClient;
 
   @Before
   public void setup() throws IOException {
@@ -45,6 +45,9 @@ public class EndToEndTest {
     pb.redirectErrorStream(true);
     mockServerProcess = pb.start();
 
+    // Setup the mock metric client
+    mockClient = new MockCloudMetricClient(address);
+
     // Block until the mock server starts (it will output the address after starting).
     BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
     br.readLine();
@@ -57,11 +60,7 @@ public class EndToEndTest {
 
   @Test
   public void testExportMockMetricsDataList() throws IOException {
-    exporter = MetricExporter.createWithConfiguration(
-        MetricConfiguration.builder()
-            .setProjectId(aFakeProjectId)
-            .setCredentials(aFakeCredential)
-            .build());
+    exporter = new MetricExporter(aFakeProjectId, mockClient, false);
 
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
@@ -70,11 +69,8 @@ public class EndToEndTest {
 
   @Test
   public void testExportEmptyMetricsList() throws IOException {
-    exporter = MetricExporter.createWithConfiguration(
-        MetricConfiguration.builder()
-            .setProjectId(aFakeProjectId)
-            .setCredentials(aFakeCredential)
-            .build());
+    exporter = new MetricExporter(aFakeProjectId, mockClient, false);
+
     assertEquals(ResultCode.SUCCESS, exporter.export(new ArrayList<>()));
   }
 }
