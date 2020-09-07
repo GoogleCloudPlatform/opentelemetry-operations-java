@@ -18,6 +18,7 @@ subprojects {
 
     ext {
         autoValueVersion = '1.7.4'
+        slf4jVersion = '1.7.30'
         googleCloudVersion = '1.0.2'
         cloudMonitoringVersion = '2.0.1'
         openTelemetryVersion = '0.7.0'
@@ -28,9 +29,11 @@ subprojects {
                 auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
                 auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
                 google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
-                google_cloud_grpc            : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
                 google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
+                google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
                 google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
+                google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
+                slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
                 opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
                 opentelemetry_operations_java: "com.google.cloud.opentelemetry:exporter-trace:${opentelemetryOperationsVersion}"
