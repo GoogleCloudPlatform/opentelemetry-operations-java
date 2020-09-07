@@ -20,8 +20,6 @@ import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
@@ -34,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
@@ -170,10 +170,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     }
   }
 
+  /**
+   * The exporter does not batch metrics, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
   @Override
   public ResultCode flush() {
-    // TODO (@zoercai): add support for flush
-    return ResultCode.FAILURE;
+    return ResultCode.SUCCESS;
   }
 
   @Override
