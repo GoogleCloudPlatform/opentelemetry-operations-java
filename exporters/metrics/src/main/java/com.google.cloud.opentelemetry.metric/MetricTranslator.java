@@ -4,7 +4,6 @@ import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOT
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOTONIC_LONG;
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
 import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_LONG;
-import static java.util.logging.Level.WARNING;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
@@ -19,6 +18,8 @@ import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
+import com.sun.org.slf4j.internal.Logger;
+import com.sun.org.slf4j.internal.LoggerFactory;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -27,12 +28,11 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class MetricTranslator {
 
-  private static final Logger logger = Logger.getLogger(MetricTranslator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
   static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
   static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
@@ -89,7 +89,7 @@ public class MetricTranslator {
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
     } else {
-      logger.log(WARNING, "Metric type {0} not supported", metricType);
+      logger.error("Metric type {} not supported", metricType);
       return null;
     }
     if (LONG_TYPES.contains(metricType)) {
@@ -97,7 +97,7 @@ public class MetricTranslator {
     } else if (DOUBLE_TYPES.contains(metricType)) {
       builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
     } else {
-      logger.log(WARNING, "Metric type {0} not supported", metricType);
+      logger.error("Metric type {} not supported", metricType);
       return null;
     }
     return builder.build();
@@ -110,14 +110,14 @@ public class MetricTranslator {
       return null;
     }
     String resourceType = attributes.get("gcp.resource_type").getStringValue();
-    if (!(resourceType.equalsIgnoreCase("gce_instance") || resourceType.equalsIgnoreCase("gke_container"))) {
+    if (!OTEL_TO_GCP_LABELS.containsKey(resourceType)) {
       return null;
     }
 
     MonitoredResource.Builder builder = MonitoredResource.newBuilder().setType(resourceType);
     for (Map.Entry<String, String> labels : OTEL_TO_GCP_LABELS.get(resourceType).entrySet()) {
       if (attributes.get(labels.getKey()) == null) {
-        logger.log(WARNING, "Missing monitored resource value for {0}", labels.getKey());
+        logger.error("Missing monitored resource value for {}", labels.getKey());
         continue;
       }
       builder.putLabels(labels.getValue(), mapAttributeValueToString(attributes.get(labels.getKey())));
@@ -130,21 +130,21 @@ public class MetricTranslator {
       case STRING:
         return value.getStringValue();
       case LONG:
-        return value.getLongValue() + "";
+        return Long.toString(value.getLongValue());
       case DOUBLE:
-        return value.getDoubleValue() + "";
+        return String.format("%f", value.getDoubleValue());
       case BOOLEAN:
-        return value.getBooleanValue() + "";
+        return Boolean.toString(value.getBooleanValue());
       case STRING_ARRAY:
         return String.join(", ", value.getStringArrayValue());
       case LONG_ARRAY:
-        return value.getLongArrayValue().stream().map(Object::toString)
+        return value.getLongArrayValue().stream().map(el -> Long.toString(el))
             .collect(Collectors.joining(", "));
       case DOUBLE_ARRAY:
-        return value.getDoubleArrayValue().stream().map(Object::toString)
+        return value.getDoubleArrayValue().stream().map(el -> String.format("%f", el))
             .collect(Collectors.joining(", "));
       case BOOLEAN_ARRAY:
-        return value.getBooleanArrayValue().stream().map(Object::toString)
+        return value.getBooleanArrayValue().stream().map(el -> Boolean.toString(el))
             .collect(Collectors.joining(", "));
       default:
         return null;
@@ -174,7 +174,7 @@ public class MetricTranslator {
       pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(
           ((MetricData.DoublePoint) metric.getPoints().iterator().next()).getValue()));
     } else {
-      logger.log(WARNING, "Type {0} not supported", type);
+      logger.error("Type {} not supported", type);
       return null;
     }
     pointBuilder.setInterval(
