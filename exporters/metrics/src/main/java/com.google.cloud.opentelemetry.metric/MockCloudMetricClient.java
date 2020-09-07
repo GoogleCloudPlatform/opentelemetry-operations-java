@@ -1,6 +1,8 @@
 package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.monitoring.v3.stub.GrpcMetricServiceStub;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
@@ -15,9 +17,11 @@ class MockCloudMetricClient implements CloudMetricClient {
 
   private final GrpcMetricServiceStub stub;
 
-  MockCloudMetricClient(String address) throws IOException {
+  MockCloudMetricClient(String address, Credentials credentials) throws IOException {
     stub = GrpcMetricServiceStub.create(
-        MetricServiceStubSettings.newBuilder().setEndpoint(address).build());
+        MetricServiceStubSettings.newBuilder().setEndpoint(address)
+            .setCredentialsProvider(FixedCredentialsProvider.create(
+                credentials)).build());
   }
 
   public final MetricDescriptor createMetricDescriptor(CreateMetricDescriptorRequest request) {
