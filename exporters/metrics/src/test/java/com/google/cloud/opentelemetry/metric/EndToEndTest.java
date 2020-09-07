@@ -28,7 +28,7 @@ public class EndToEndTest {
 
   private Process mockServerProcess;
   private MetricExporter exporter;
-  MockCloudMetricClient mockClient;
+  private MockCloudMetricClient mockClient;
 
   @Before
   public void setup() throws IOException {
@@ -46,7 +46,7 @@ public class EndToEndTest {
     mockServerProcess = pb.start();
 
     // Setup the mock metric client
-    mockClient = new MockCloudMetricClient(LOCALHOST, port);
+    mockClient = new MockCloudMetricClient(address);
 
     // Block until the mock server starts (it will output the address after starting).
     BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
