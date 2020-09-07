@@ -23,6 +23,7 @@ subprojects {
         cloudMonitoringVersion = '2.0.1'
         openTelemetryVersion = '0.7.0'
         junitVersion = '4.13'
+        mockitoVersion = '3.5.10'
         opentelemetryOperationsVersion = "0.7.1"  // CURRENT_RELEASE_VERSION
 
         libraries = [

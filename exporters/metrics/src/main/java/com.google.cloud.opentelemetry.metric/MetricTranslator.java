@@ -10,6 +10,7 @@ import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,6 +37,8 @@ public class MetricTranslator {
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
   static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  static final List<String> KNOWN_DOMAINS = ImmutableList
+      .of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final String UNIQUE_IDENTIFIER_KEY = "opentelemetry_id";
   static final long NANO_PER_SECOND = (long) 1e9;
 
@@ -45,20 +49,28 @@ public class MetricTranslator {
   static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
+  static final String GCP_HOST_ID_KEY = "instance_id";
+  static final String GCP_ACCOUNT_ID_KEY = "project_id";
+  static final String GCP_ZONE_KEY = "zone";
+  static final String GCP_CLUSTER_NAME_KEY = "cluster_name";
+  static final String GCP_NAMESPACE_KEY = "namespace_id";
+  static final String GCP_POD_KEY = "pod_id";
+  static final String GCP_CONTAINER_KEY = "container_name";
+
   static final Map<String, Map<String, String>> OTEL_TO_GCP_LABELS = ImmutableMap.<String, Map<String, String>>builder()
       .put("gce_instance", ImmutableMap.<String, String>builder()
-          .put("host.id", "instance_id")
-          .put("cloud.account.id", "project_id")
-          .put("cloud.zone", "zone")
+          .put("host.id", GCP_HOST_ID_KEY)
+          .put("cloud.account.id", GCP_ACCOUNT_ID_KEY)
+          .put("cloud.zone", GCP_ZONE_KEY)
           .build())
       .put("gke_container", ImmutableMap.<String, String>builder()
-          .put("k8s.cluster.name", "cluster_name")
-          .put("k8s.namespace.name", "namespace_id")
-          .put("k8s.pod.name", "pod_id")
-          .put("host.id", "instance_id")
-          .put("container.name", "container_name")
-          .put("cloud.account.id", "project_id")
-          .put("cloud.zone", "zone")
+          .put("k8s.cluster.name", GCP_CLUSTER_NAME_KEY)
+          .put("k8s.namespace.name", GCP_NAMESPACE_KEY)
+          .put("k8s.pod.name", GCP_POD_KEY)
+          .put("host.id", GCP_HOST_ID_KEY)
+          .put("container.name", GCP_CONTAINER_KEY)
+          .put("cloud.account.id", GCP_ACCOUNT_ID_KEY)
+          .put("cloud.zone", GCP_ZONE_KEY)
           .build())
       .build();
 
@@ -75,7 +87,7 @@ public class MetricTranslator {
   static MetricDescriptor mapMetricDescriptor(MetricData metric, String uniqueIdentifier) {
     String instrumentName = metric.getInstrumentationLibraryInfo().getName();
     MetricDescriptor.Builder builder = MetricDescriptor.newBuilder().setDisplayName(instrumentName)
-        .setType(DESCRIPTOR_TYPE_URL + instrumentName);
+        .setType(mapMetricType(instrumentName));
     metric.getDescriptor().getConstantLabels().forEach((key, value) -> builder.addLabels(mapConstantLabel(key, value)));
     if (uniqueIdentifier != null) {
       builder.addLabels(
@@ -101,6 +113,15 @@ public class MetricTranslator {
       return null;
     }
     return builder.build();
+  }
+
+  private static String mapMetricType(String instrumentName) {
+    for (String domain : KNOWN_DOMAINS) {
+      if (instrumentName.contains(domain)) {
+        return instrumentName;
+      }
+    }
+    return DESCRIPTOR_TYPE_URL + instrumentName;
   }
 
   static MonitoredResource mapGcpMonitoredResource(Resource resource) {

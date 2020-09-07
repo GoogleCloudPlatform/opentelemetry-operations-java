@@ -163,10 +163,14 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     }
   }
 
+  /**
+   * The exporter does not batch metrics, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
   @Override
   public ResultCode flush() {
-    // TODO (@zoercai): add support for flush
-    return ResultCode.FAILURE;
+    return ResultCode.SUCCESS;
   }
 
   @Override
