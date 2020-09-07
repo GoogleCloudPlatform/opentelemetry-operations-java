@@ -20,21 +20,16 @@ import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.monitoring.v3.MetricServiceClient;
+import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import com.sun.tools.javac.util.List;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +43,7 @@ import org.mockito.MockitoAnnotations;
 public class MetricExporterTest {
 
   @Mock
-  private MetricServiceClient mockClient;
+  private CloudMetricClientImpl mockClient;
 
   @Captor
   private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
@@ -94,7 +89,7 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
-    ResultCode result = exporter.export(List.of(metricData));
+    ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1)).createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
 
@@ -118,7 +113,7 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
 
-    ResultCode result = exporter.export(List.of(metricData));
+    ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 

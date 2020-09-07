@@ -7,7 +7,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLi
 import static com.google.cloud.opentelemetry.metric.FakeData.someLongPoints;
 import static org.junit.Assert.assertEquals;
 
-import com.sun.tools.javac.util.List;
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.BufferedReader;
@@ -64,7 +64,7 @@ public class EndToEndTest {
 
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
-    assertEquals(ResultCode.SUCCESS, exporter.export(List.of(metricData)));
+    assertEquals(ResultCode.SUCCESS, exporter.export(ImmutableList.of(metricData)));
   }
 
   @Test
