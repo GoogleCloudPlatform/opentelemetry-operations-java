@@ -18,8 +18,6 @@ import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -29,6 +27,8 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetricTranslator {
 
