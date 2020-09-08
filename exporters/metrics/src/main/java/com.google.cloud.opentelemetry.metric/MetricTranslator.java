@@ -112,6 +112,7 @@ public class MetricTranslator {
       logger.error("Metric type {} not supported", metricType);
       return null;
     }
+    builder.setUnit("ns").setDescription("description");
     return builder.build();
   }
 

@@ -63,7 +63,7 @@ public class FakeData {
   static Resource aGceResource = Resource.create(someGceAttributes);
 
   static InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
-      .create("InstrumentName", "Instrument version 0");
+      .create("instrument name", "0");
 
   static Collection<Point> someLongPoints = ImmutableList
       .of(LongPoint.create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32L));
