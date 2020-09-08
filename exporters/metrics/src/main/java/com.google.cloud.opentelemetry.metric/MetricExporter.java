@@ -1,7 +1,6 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapGcpMonitoredResource;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
@@ -30,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,18 +45,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final String projectId;
   private final Instant exporterStartTime;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
-  private String uniqueIdentifier;
 
   MetricExporter(
       String projectId,
-      MetricServiceClient client,
-      boolean addUniqueIdentifier
+      MetricServiceClient client
   ) {
     this.projectId = projectId;
     this.metricServiceClient = client;
-    if (addUniqueIdentifier) {
-      this.uniqueIdentifier = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
-    }
     this.exporterStartTime = Instant.now();
   }
 
@@ -82,15 +75,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           projectId, credentials, configuration.getDeadline());
     }
     return MetricExporter.createWithClient(
-        projectId, MetricServiceClient.create(stub),
-        configuration.getAddUniqueIdentifier());
+        projectId, MetricServiceClient.create(stub));
   }
 
   private static MetricExporter createWithClient(
       String projectId,
-      MetricServiceClient metricServiceClient,
-      boolean addUniqueIdentifier) {
-    return new MetricExporter(projectId, metricServiceClient, addUniqueIdentifier);
+      MetricServiceClient metricServiceClient) {
+    return new MetricExporter(projectId, metricServiceClient);
   }
 
   private static MetricExporter createWithCredentials(
@@ -103,7 +94,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
                 FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
     builder.createMetricDescriptorSettings()
         .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(projectId, MetricServiceClient.create(builder.build()), false);
+    return new MetricExporter(projectId, MetricServiceClient.create(builder.build()));
   }
 
   @Override
@@ -111,7 +102,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     List<TimeSeries> allTimesSeries = new ArrayList<>();
 
     for (MetricData metricData : metrics) {
-      MetricDescriptor descriptor = mapMetricDescriptor(metricData, uniqueIdentifier);
+      MetricDescriptor descriptor = mapMetricDescriptor(metricData);
       if (descriptor == null) {
         continue;
       }
@@ -139,7 +130,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      Metric metric = mapMetric(metricData, descriptor.getType(), uniqueIdentifier);
+      Metric metric = mapMetric(metricData, descriptor.getType());
       Point point = mapPoint(lastUpdatedTime, metricData, updateKey, exporterStartTime, pointCollectionTime);
       if (point == null) {
         continue;
@@ -148,7 +139,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       allTimesSeries.add(TimeSeries.newBuilder()
           .setMetric(metric)
           .addPoints(point)
-          .setResource(mapGcpMonitoredResource(metricData.getResource()))
+          .setMetricKind(descriptor.getMetricKind())
           .build());
     }
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);

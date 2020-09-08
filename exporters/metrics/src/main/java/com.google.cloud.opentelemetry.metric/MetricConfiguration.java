@@ -21,7 +21,6 @@ public abstract class MetricConfiguration {
 
     private static final String DEFAULT_PROJECT_ID =
         Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
-    private static final boolean DEFAULT_ADD_UNIQUE_IDENTIFIER = false;
     private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
     MetricConfiguration() {
@@ -43,13 +42,6 @@ public abstract class MetricConfiguration {
     public abstract String getProjectId();
 
     /**
-     * Returns whether a unique identifier will be added.
-     *
-     * @return whether a unique identifier will be added.
-     */
-    public abstract boolean getAddUniqueIdentifier();
-
-    /**
      * Returns a MetricsServiceStub instance used to make RPC calls.
      *
      * @return the metrics service stub.
@@ -69,7 +61,6 @@ public abstract class MetricConfiguration {
     public static Builder builder() {
         return new AutoValue_MetricConfiguration.Builder()
             .setProjectId(DEFAULT_PROJECT_ID)
-            .setAddUniqueIdentifier(DEFAULT_ADD_UNIQUE_IDENTIFIER)
             .setDeadline(DEFAULT_DEADLINE);
     }
 
@@ -84,15 +75,11 @@ public abstract class MetricConfiguration {
 
         abstract String getProjectId();
 
-        abstract boolean getAddUniqueIdentifier();
-
         abstract Duration getDeadline();
 
         public abstract Builder setProjectId(String projectId);
 
         public abstract Builder setCredentials(Credentials newCredentials);
-
-        public abstract Builder setAddUniqueIdentifier(boolean newAddUniqueIdentifier);
 
         public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
 
