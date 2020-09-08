@@ -2,9 +2,9 @@ package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
-import static com.google.cloud.opentelemetry.metric.FakeData.someLongPoints;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -60,16 +60,16 @@ public class EndToEndTest {
 
   @Test
   public void testExportMockMetricsDataList() throws IOException {
-    exporter = new MetricExporter(aFakeProjectId, mockClient, false);
+    exporter = new MetricExporter(aFakeProjectId, mockClient);
 
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
     assertEquals(ResultCode.SUCCESS, exporter.export(ImmutableList.of(metricData)));
   }
 
   @Test
   public void testExportEmptyMetricsList() throws IOException {
-    exporter = new MetricExporter(aFakeProjectId, mockClient, false);
+    exporter = new MetricExporter(aFakeProjectId, mockClient);
 
     assertEquals(ResultCode.SUCCESS, exporter.export(new ArrayList<>()));
   }
