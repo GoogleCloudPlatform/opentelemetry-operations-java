@@ -2,18 +2,22 @@ package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
-import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.time.Instant;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -59,16 +63,19 @@ public class EndToEndTest {
   }
 
   @Test
-  public void testExportMockMetricsDataList() throws IOException {
+  public void testExportMockMetricsDataList() {
     exporter = new MetricExporter(aFakeProjectId, mockClient);
 
+    LongPoint longPoint = LongPoint
+        .create(1599032114 * NANO_PER_SECOND, Instant.now().plus(10, SECONDS).getEpochSecond() * NANO_PER_SECOND,
+            Labels.empty(), 32L);
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(longPoint));
     assertEquals(ResultCode.SUCCESS, exporter.export(ImmutableList.of(metricData)));
   }
 
   @Test
-  public void testExportEmptyMetricsList() throws IOException {
+  public void testExportEmptyMetricsList() {
     exporter = new MetricExporter(aFakeProjectId, mockClient);
 
     assertEquals(ResultCode.SUCCESS, exporter.export(new ArrayList<>()));

@@ -32,6 +32,8 @@ public class MetricTranslator {
   static final Set<String> KNOWN_DOMAINS = ImmutableSet
       .of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;
+  static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
+  static final String METRIC_DESCRIPTOR_DESCRIPTION = "OpenTelemetry metric";
 
   static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
   static final Set<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
@@ -69,7 +71,7 @@ public class MetricTranslator {
       logger.error("Metric type {} not supported", metricType);
       return null;
     }
-    builder.setUnit("ns").setDescription("description");
+    builder.setUnit(METRIC_DESCRIPTOR_TIME_UNIT).setDescription(METRIC_DESCRIPTOR_DESCRIPTION);
     return builder.build();
   }
 

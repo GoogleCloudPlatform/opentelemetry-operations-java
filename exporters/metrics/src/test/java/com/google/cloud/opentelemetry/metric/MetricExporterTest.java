@@ -9,6 +9,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLi
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricExporter.PROJECT_NAME_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_DESCRIPTION;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,6 +80,8 @@ public class MetricExporterTest {
         .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
         .setMetricKind(MetricKind.CUMULATIVE)
         .setValueType(MetricDescriptor.ValueType.INT64)
+        .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+        .setDescription(METRIC_DESCRIPTOR_DESCRIPTION)
         .build();
     CreateMetricDescriptorRequest expectedRequest = CreateMetricDescriptorRequest.newBuilder()
         .setName(PROJECT_NAME_PREFIX + aFakeProjectId)
