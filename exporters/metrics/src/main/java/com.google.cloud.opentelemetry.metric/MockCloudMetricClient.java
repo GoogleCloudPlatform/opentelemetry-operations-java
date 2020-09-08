@@ -24,7 +24,7 @@ class MockCloudMetricClient implements CloudMetricClient {
     stub = GrpcMetricServiceStub.create(
         MetricServiceStubSettings.newBuilder()
 //            .setEndpoint(address)
-            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+//            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
             .setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
                 ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())))
             .build());
