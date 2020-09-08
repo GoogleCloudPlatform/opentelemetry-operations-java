@@ -2,6 +2,7 @@ package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.auth.Credentials;
@@ -24,7 +25,7 @@ class MockCloudMetricClient implements CloudMetricClient {
     stub = GrpcMetricServiceStub.create(
         MetricServiceStubSettings.newBuilder()
 //            .setEndpoint(address)
-//            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .setCredentialsProvider(NoCredentialsProvider.create())
             .setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
                 ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())))
             .build());
