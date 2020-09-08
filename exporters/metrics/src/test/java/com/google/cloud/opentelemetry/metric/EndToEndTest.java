@@ -46,7 +46,7 @@ public class EndToEndTest {
     mockServerProcess = pb.start();
 
     // Setup the mock metric client
-    mockClient = new MockCloudMetricClient(address, LOCALHOST, port, FakeData.aFakeCredential);
+    mockClient = new MockCloudMetricClient(LOCALHOST, port, FakeData.aFakeCredential);
 
     // Block until the mock server starts (it will output the address after starting).
     BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
