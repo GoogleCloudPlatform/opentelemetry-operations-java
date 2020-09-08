@@ -7,6 +7,7 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
 
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
+import com.google.api.MonitoredResource;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -139,6 +140,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       allTimesSeries.add(TimeSeries.newBuilder()
           .setMetric(metric)
           .addPoints(point)
+          .setResource(MonitoredResource.newBuilder().build())
           .setMetricKind(descriptor.getMetricKind())
           .build());
     }
