@@ -1,10 +1,8 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
@@ -30,20 +28,17 @@ public class MetricConfigurationTest {
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertNull(configuration.getMetricServiceStub());
-    assertFalse(configuration.getAddUniqueIdentifier());
   }
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
     MetricConfiguration configuration = MetricConfiguration.builder()
         .setProjectId(PROJECT_ID)
-        .setAddUniqueIdentifier(true)
         .setCredentials(FAKE_CREDENTIALS)
         .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
-    assertTrue(configuration.getAddUniqueIdentifier());
   }
 
   @Test

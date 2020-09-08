@@ -1,10 +1,10 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
-import static com.google.cloud.opentelemetry.metric.FakeData.someLongPoints;
 import static com.google.cloud.opentelemetry.metric.MetricExporter.PROJECT_NAME_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static org.junit.Assert.assertEquals;
@@ -92,9 +92,9 @@ public class MetricExporterTest {
         .build();
     ProjectName expectedProjectName = ProjectName.of(PROJECT_ID);
 
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient, false);
+    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient);
     MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
     ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -108,17 +108,16 @@ public class MetricExporterTest {
     assertEquals(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName(), timeSeries.getMetric().getType());
     assertEquals(1, timeSeries.getPointsCount());
     assertEquals(32L, timeSeries.getPoints(0).getValue().getInt64Value());
-    assertEquals("gce_instance", timeSeries.getResource().getType());
   }
 
   @Test
   public void testExportWithNonSupportedMetricTypeDoesNothing() {
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient, false);
+    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
             someLabels);
     MetricData metricData = MetricData
-        .create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo, someLongPoints);
+        .create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
     ResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
