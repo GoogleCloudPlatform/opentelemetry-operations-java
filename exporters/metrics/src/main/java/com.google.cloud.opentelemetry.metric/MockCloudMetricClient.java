@@ -21,10 +21,10 @@ class MockCloudMetricClient implements CloudMetricClient {
 
   private final GrpcMetricServiceStub stub;
 
-  MockCloudMetricClient(String host, int port, Credentials credentials) throws IOException {
+  MockCloudMetricClient(String address, String host, int port, Credentials credentials) throws IOException {
     stub = GrpcMetricServiceStub.create(
         MetricServiceStubSettings.newBuilder()
-//            .setEndpoint(address)
+            .setEndpoint(address)
             .setCredentialsProvider(NoCredentialsProvider.create())
             .setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
                 ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())))
