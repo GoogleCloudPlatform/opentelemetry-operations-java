@@ -9,4 +9,5 @@ dependencies {
     api(libraries.google_cloud_trace)
     api(libraries.google_cloud_trace_grpc)
     testImplementation(testLibraries.junit)
+    testAnnotationProcessor(libraries.auto_value)
 }

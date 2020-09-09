@@ -1,17 +1,10 @@
 package com.google.cloud.opentelemetry.trace;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.data.SpanData;;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,119 +19,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
-
-class TestSpanData implements SpanData {
-  @Override
-  public TraceId getTraceId() {
-    return new TraceId(321, 123);
-  }
-
-  @Override
-  public SpanId getSpanId() {
-    return new SpanId(12345);
-  }
-
-  @Override
-  public TraceFlags getTraceFlags() {
-    return TraceFlags.getDefault();
-  }
-
-  @Override
-  public TraceState getTraceState() {
-    return TraceState.getDefault();
-  }
-
-  @Override
-  public SpanId getParentSpanId() {
-    return new SpanId(54321);
-  }
-
-  @Override
-  public Resource getResource() {
-    return Resource.getEmpty();
-  }
-
-  @Override
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return InstrumentationLibraryInfo.getEmpty();
-  }
-
-  @Override
-  public String getName() {
-    return "MySpanName";
-  }
-
-  @Override
-  public Span.Kind getKind() {
-    return null;
-  }
-
-  @Override
-  public long getStartEpochNanos() {
-    return TimeUnit.SECONDS.toNanos(3000) + 200;
-  }
-
-  @Override
-  public ReadableAttributes getAttributes() {
-    return Attributes.empty();
-  }
-
-  @Override
-  public List<Event> getEvents() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<Link> getLinks() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public Status getStatus() {
-    return Status.OK;
-  }
-
-  @Override
-  public long getEndEpochNanos() {
-    return TimeUnit.SECONDS.toNanos(3000) + 255;
-  }
-
-  @Override
-  public boolean getHasRemoteParent() {
-    return false;
-  }
-
-  @Override
-  public boolean getHasEnded() {
-    return false;
-  }
-
-  @Override
-  public int getTotalRecordedEvents() {
-    return 0;
-  }
-
-  @Override
-  public int getTotalRecordedLinks() {
-    return 0;
-  }
-
-  @Override
-  public int getTotalAttributeCount() {
-    return 0;
-  }
-}
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
 
   private static final String PROJECT_ID = "project-id";
   private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
+  private static final TraceId TRACE_ID = new TraceId(321, 123);
+  private static final SpanId SPAN_ID = new SpanId(12345);
+  private static final SpanId PARENT_SPAN_ID = new SpanId(54321);
+  private static final String SPAN_NAME = "MySpanName";
+  private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
+  private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
+  private static final Status SPAN_DATA_STATUS = Status.OK;
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
@@ -179,7 +76,22 @@ public class EndToEndTest {
     exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    spanDataList.add(new TestSpanData());
+    TestSpanData spanDataOne = TestSpanData.newBuilder()
+            .setParentSpanId(PARENT_SPAN_ID)
+            .setSpanId(SPAN_ID)
+            .setTraceId(TRACE_ID)
+            .setName(SPAN_NAME)
+            .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
+            .setEvents(Collections.emptyList())
+            .setStatus(SPAN_DATA_STATUS)
+            .setStartEpochNanos(START_EPOCH_NANOS)
+            .setEndEpochNanos(END_EPOCH_NANOS)
+            .setTotalRecordedLinks(0)
+            .setHasRemoteParent(false)
+            .setHasEnded(true)
+            .build();
+
+    spanDataList.add(spanDataOne);
 
     // Invokes export();
     assertTrue(exporter.export(spanDataList).isSuccess());
