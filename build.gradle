@@ -41,7 +41,6 @@ subprojects {
         ]
         testLibraries = [
                 junit       : "junit:junit:${junitVersion}",
-                mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
                 slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}"
         ]
     }

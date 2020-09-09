@@ -9,6 +9,5 @@ dependencies {
     api(libraries.google_cloud_core)
     api(libraries.google_cloud_monitoring)
     testImplementation(testLibraries.junit)
-    testImplementation(testLibraries.mockito)
     testImplementation(testLibraries.slf4j_simple)
 }

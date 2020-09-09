@@ -150,6 +150,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   private static void createTimeSeriesBatch(MetricServiceClient metricServiceClient, ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
+    if (allTimesSeries.size() == 0) {
+      return;
+    }
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {
       metricServiceClient.createTimeSeries(projectName, new ArrayList<>(timeSeries));
