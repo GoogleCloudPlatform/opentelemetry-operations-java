@@ -18,7 +18,6 @@ import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -47,7 +46,7 @@ public class MetricTranslator {
   }
 
   static MetricDescriptor mapMetricDescriptor(MetricData metric) {
-    String instrumentName = metric.getInstrumentationLibraryInfo().getName();
+    String instrumentName = metric.getDescriptor().getName();
     MetricDescriptor.Builder builder = MetricDescriptor.newBuilder().setDisplayName(instrumentName)
         .setType(mapMetricType(instrumentName));
     metric.getDescriptor().getConstantLabels().forEach((key, value) -> builder.addLabels(mapConstantLabel(key, value)));
@@ -58,7 +57,7 @@ public class MetricTranslator {
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
     } else {
-      logger.error("Metric type {} not supported", metricType);
+      logger.error("Metric type {} not supported. Only gauge and cumulative types are supported.", metricType);
       return null;
     }
     if (LONG_TYPES.contains(metricType)) {
@@ -66,7 +65,7 @@ public class MetricTranslator {
     } else if (DOUBLE_TYPES.contains(metricType)) {
       builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
     } else {
-      logger.error("Metric type {} not supported", metricType);
+      logger.error("Metric type {} not supported. Only long and double types are supported.", metricType);
       return null;
     }
     return builder.build();
@@ -93,51 +92,32 @@ public class MetricTranslator {
     return builder.build();
   }
 
-  static Point mapPoint(Map<MetricWithLabels, Long> lastUpdatedTime, MetricData metric, MetricWithLabels updateKey,
-      Instant exporterStartTime, long pointCollectionTime) {
+  static Point mapPoint(MetricData metric, MetricData.Point point, MetricWithLabels updateKey,
+      Map<MetricWithLabels, Long> lastUpdatedTime) {
     Builder pointBuilder = Point.newBuilder();
     Type type = metric.getDescriptor().getType();
     if (LONG_TYPES.contains(type)) {
-      pointBuilder.setValue(TypedValue.newBuilder().setInt64Value(
-          ((MetricData.LongPoint) metric.getPoints().iterator().next()).getValue()));
+      pointBuilder.setValue(TypedValue.newBuilder().setInt64Value(((MetricData.LongPoint) point).getValue()));
     } else if (DOUBLE_TYPES.contains(type)) {
-      pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(
-          ((MetricData.DoublePoint) metric.getPoints().iterator().next()).getValue()));
+      pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(((MetricData.DoublePoint) point).getValue()));
     } else {
       logger.error("Type {} not supported", type);
       return null;
     }
-    pointBuilder.setInterval(
-        mapInterval(lastUpdatedTime, updateKey, type, exporterStartTime, pointCollectionTime));
+    pointBuilder.setInterval(mapInterval(point));
+    lastUpdatedTime.put(updateKey, point.getEpochNanos());
     return pointBuilder.build();
   }
 
-  static TimeInterval mapInterval(Map<MetricWithLabels, Long> lastUpdatedTime,
-      MetricWithLabels updateKey, Type descriptorType, Instant exporterStartTime, long pointCollectionTime) {
-    long seconds;
-    int nanos;
-    if (CUMULATIVE_TYPES.contains(descriptorType)) {
-      if (!lastUpdatedTime.containsKey(updateKey)) {
-        // The aggregation has not reset since the exporter
-        // has started up, so that is the start time
-        seconds = exporterStartTime.getEpochSecond();
-        nanos = exporterStartTime.getNano();
-      } else {
-        // The aggregation reset the last time it was exported
-        // Add 1ms to guarantee there is no overlap from the previous export
-        // (see https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#timeinterval)
-        long lastUpdatedNanos = lastUpdatedTime.get(updateKey) + (long) 1e6;
-        seconds = lastUpdatedNanos / NANO_PER_SECOND;
-        nanos = (int) (lastUpdatedNanos % NANO_PER_SECOND);
-      }
-    } else {
-      seconds = pointCollectionTime / NANO_PER_SECOND;
-      nanos = (int) (pointCollectionTime % NANO_PER_SECOND);
-    }
-    Timestamp startTime = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
-    Timestamp endTime = Timestamp.newBuilder().setSeconds(pointCollectionTime / NANO_PER_SECOND)
-        .setNanos((int) (pointCollectionTime % NANO_PER_SECOND)).build();
-    lastUpdatedTime.put(updateKey, pointCollectionTime);
+  static TimeInterval mapInterval(MetricData.Point point) {
+    Timestamp startTime = Timestamp.newBuilder()
+        .setSeconds(point.getStartEpochNanos() / NANO_PER_SECOND)
+        .setNanos((int) (point.getStartEpochNanos() % NANO_PER_SECOND))
+        .build();
+    Timestamp endTime = Timestamp.newBuilder()
+        .setSeconds(point.getEpochNanos() / NANO_PER_SECOND)
+        .setNanos((int) (point.getEpochNanos() % NANO_PER_SECOND))
+        .build();
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 }
