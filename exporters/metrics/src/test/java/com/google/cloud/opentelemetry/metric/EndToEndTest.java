@@ -1,8 +1,8 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
+import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -64,7 +64,7 @@ public class EndToEndTest {
 
   @Test
   public void testExportMockMetricsDataList() {
-    exporter = new MetricExporter(aFakeProjectId, mockClient);
+    exporter = new MetricExporter(aProjectId, mockClient);
 
     LongPoint longPoint = LongPoint
         .create(1599032114 * NANO_PER_SECOND, Instant.now().plus(10, SECONDS).getEpochSecond() * NANO_PER_SECOND,
@@ -76,7 +76,7 @@ public class EndToEndTest {
 
   @Test
   public void testExportEmptyMetricsList() {
-    exporter = new MetricExporter(aFakeProjectId, mockClient);
+    exporter = new MetricExporter(aProjectId, mockClient);
 
     assertEquals(ResultCode.SUCCESS, exporter.export(new ArrayList<>()));
   }

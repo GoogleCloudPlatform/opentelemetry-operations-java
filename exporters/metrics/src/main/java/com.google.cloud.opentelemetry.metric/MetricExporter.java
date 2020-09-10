@@ -144,6 +144,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           .build());
     }
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
+    if (allTimesSeries.size() < metrics.size()) {
+      return ResultCode.FAILURE;
+    }
     return ResultCode.SUCCESS;
   }
 

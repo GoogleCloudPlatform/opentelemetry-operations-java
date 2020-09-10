@@ -128,7 +128,7 @@ public class MetricExporterTest {
   }
 
   @Test
-  public void testExportWithNonSupportedMetricTypeDoesNothing() {
+  public void testExportWithNonSupportedMetricTypeReturnsFailure() {
     MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
@@ -140,7 +140,7 @@ public class MetricExporterTest {
     verify(mockClient, times(0)).createMetricDescriptor(any());
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 
-    assertEquals(ResultCode.SUCCESS, result);
+    assertEquals(ResultCode.FAILURE, result);
   }
 
 }

@@ -75,13 +75,11 @@ public abstract class MetricConfiguration {
 
     abstract String getProjectId();
 
-
     abstract Duration getDeadline();
 
     public abstract Builder setProjectId(String projectId);
 
     public abstract Builder setCredentials(Credentials newCredentials);
-
 
     public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
 
@@ -102,5 +100,4 @@ public abstract class MetricConfiguration {
       return autoBuild();
     }
   }
-
 }
