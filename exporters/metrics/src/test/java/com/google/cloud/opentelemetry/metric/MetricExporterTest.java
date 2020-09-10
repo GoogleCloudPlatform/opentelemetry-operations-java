@@ -1,11 +1,12 @@
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
+import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
-import static com.google.cloud.opentelemetry.metric.MetricExporter.PROJECT_NAME_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
@@ -21,9 +22,6 @@ import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
 import com.google.api.MonitoredResource;
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
@@ -40,7 +38,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,10 +49,6 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
 public class MetricExporterTest {
-
-  private static final String PROJECT_ID = "TestProjectId";
-  private static final Credentials FAKE_CREDENTIALS =
-      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
   @Mock
   private MetricServiceClient mockClient;
@@ -69,7 +62,6 @@ public class MetricExporterTest {
   @Captor
   private ArgumentCaptor<ProjectName> projectNameArgCaptor;
 
-
   @Before
   public void setUp() {
     MockitoAnnotations.openMocks(this);
@@ -78,8 +70,8 @@ public class MetricExporterTest {
 
   @Test
   public void testCreateWithConfigurationSucceeds() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(PROJECT_ID)
-        .setCredentials(FAKE_CREDENTIALS).build();
+    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(aProjectId)
+        .setCredentials(aFakeCredential).build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
@@ -112,12 +104,12 @@ public class MetricExporterTest {
         .setMetricKind(expectedDescriptor.getMetricKind())
         .build();
     CreateMetricDescriptorRequest expectedRequest = CreateMetricDescriptorRequest.newBuilder()
-        .setName(PROJECT_NAME_PREFIX + PROJECT_ID)
+        .setName("projects/" + aProjectId)
         .setMetricDescriptor(expectedDescriptor)
         .build();
-    ProjectName expectedProjectName = ProjectName.of(PROJECT_ID);
+    ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
@@ -134,7 +126,7 @@ public class MetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeDoesNothing() {
-    MetricExporter exporter = MetricExporter.createWithClient(PROJECT_ID, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
             someLabels);

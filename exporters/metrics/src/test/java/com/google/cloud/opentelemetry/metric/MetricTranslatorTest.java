@@ -1,12 +1,12 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.FakeData.NANO_PER_SECOND;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -105,7 +105,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapPointSucceeds() {
-    MetricWithLabels metricWithLabels = new MetricWithLabels("custom.googleapis.com/OpenTelemetry/InstrumentName",
+    MetricWithLabels metricWithLabels = new MetricWithLabels("custom.googleapis.com/OpenTelemetry/DescriptorName",
         someLabels);
     Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
     lastUpdated.put(metricWithLabels, 1599032114L);

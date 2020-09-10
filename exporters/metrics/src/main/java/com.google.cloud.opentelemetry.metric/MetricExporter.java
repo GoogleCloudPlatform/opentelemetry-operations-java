@@ -24,7 +24,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,21 +35,15 @@ import org.slf4j.LoggerFactory;
 
 public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
-  @VisibleForTesting
-  static final String PROJECT_NAME_PREFIX = "projects/";
+  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
 
+  private static final String PROJECT_NAME_PREFIX = "projects/";
   private static final long WRITE_INTERVAL_SECOND = 12;
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
 
-  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
-
   private final MetricServiceClient metricServiceClient;
   private final String projectId;
-
-  @VisibleForTesting
-  final Instant exporterStartTime;
-
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
   MetricExporter(
@@ -59,7 +52,6 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   ) {
     this.projectId = projectId;
     this.metricServiceClient = client;
-    this.exporterStartTime = Instant.now();
   }
 
   public static MetricExporter createWithDefaultConfiguration() throws IOException {
