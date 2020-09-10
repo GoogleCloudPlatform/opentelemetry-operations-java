@@ -8,6 +8,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,7 +23,6 @@ import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
 import com.google.api.MonitoredResource;
-import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
@@ -51,7 +51,7 @@ import org.mockito.MockitoAnnotations;
 public class MetricExporterTest {
 
   @Mock
-  private MetricServiceClient mockClient;
+  private CloudMetricClientImpl mockClient;
 
   @Captor
   private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
@@ -85,6 +85,8 @@ public class MetricExporterTest {
         .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
         .setMetricKind(MetricKind.CUMULATIVE)
         .setValueType(MetricDescriptor.ValueType.INT64)
+        .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+        .setDescription(aMonotonicLongDescriptor.getDescription())
         .build();
     TimeInterval expectedTimeInterval = TimeInterval.newBuilder()
         .setStartTime(
@@ -125,7 +127,7 @@ public class MetricExporterTest {
   }
 
   @Test
-  public void testExportWithNonSupportedMetricTypeDoesNothing() {
+  public void testExportWithNonSupportedMetricTypeReturnsFailure() {
     MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,

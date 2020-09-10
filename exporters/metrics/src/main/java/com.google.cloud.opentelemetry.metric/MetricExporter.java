@@ -42,13 +42,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
 
-  private final MetricServiceClient metricServiceClient;
+  private final CloudMetricClient metricServiceClient;
   private final String projectId;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
   MetricExporter(
       String projectId,
-      MetricServiceClient client
+      CloudMetricClient client
   ) {
     this.projectId = projectId;
     this.metricServiceClient = client;
@@ -74,13 +74,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           projectId, credentials, configuration.getDeadline());
     }
     return MetricExporter.createWithClient(
-        projectId, MetricServiceClient.create(stub));
+        projectId, new CloudMetricClientImpl(MetricServiceClient.create(stub)));
   }
 
   @VisibleForTesting
   static MetricExporter createWithClient(
       String projectId,
-      MetricServiceClient metricServiceClient) {
+      CloudMetricClient metricServiceClient) {
     return new MetricExporter(projectId, metricServiceClient);
   }
 
@@ -94,7 +94,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
                 FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
     builder.createMetricDescriptorSettings()
         .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(projectId, MetricServiceClient.create(builder.build()));
+    return new MetricExporter(projectId, new CloudMetricClientImpl(MetricServiceClient.create(builder.build())));
   }
 
   @Override
@@ -150,7 +150,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return ResultCode.SUCCESS;
   }
 
-  private static void createTimeSeriesBatch(MetricServiceClient metricServiceClient, ProjectName projectName,
+  private static void createTimeSeriesBatch(CloudMetricClient metricServiceClient, ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {

@@ -81,7 +81,6 @@ public abstract class MetricConfiguration {
 
     public abstract Builder setCredentials(Credentials newCredentials);
 
-
     public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
 
     public abstract Builder setDeadline(Duration deadline);
@@ -101,5 +100,4 @@ public abstract class MetricConfiguration {
       return autoBuild();
     }
   }
-
 }

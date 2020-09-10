@@ -6,6 +6,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescr
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -57,6 +58,8 @@ public class MetricTranslatorTest {
         .setType(DESCRIPTOR_TYPE_URL + aMonotonicLongDescriptor.getName())
         .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
         .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+        .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+        .setDescription(aMonotonicLongDescriptor.getDescription())
         .setMetricKind(MetricKind.CUMULATIVE)
         .setValueType(MetricDescriptor.ValueType.INT64);
 

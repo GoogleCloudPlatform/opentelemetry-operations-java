@@ -24,8 +24,11 @@ public class FakeData {
 
   static Labels someLabels = Labels.newBuilder().setLabel("label1", "value1").setLabel("label2", "False").build();
 
+  // The name does not have to start with "opentelemetry/", it is set this way because of a bug in the mock server,
+  // and should be changed when the following issue is resolved:
+  // https://github.com/googleinterns/cloud-operations-api-mock/issues/56
   static Descriptor aMonotonicLongDescriptor = Descriptor
-      .create("DescriptorName", "Descriptor description", "Unit", Type.MONOTONIC_LONG,
+      .create("opentelemetry/DescriptorName", "Descriptor description", "Unit", Type.MONOTONIC_LONG,
           someLabels);
 
   static Attributes someGceAttributes = Attributes.newBuilder()
@@ -40,7 +43,7 @@ public class FakeData {
   static Resource aGceResource = Resource.create(someGceAttributes);
 
   static InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
-      .create("InstrumentName", "Instrument version 0");
+      .create("instrumentName", "0");
 
   static Point aLongPoint = LongPoint
       .create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32L);
