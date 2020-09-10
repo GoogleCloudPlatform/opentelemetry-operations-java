@@ -1,16 +1,16 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
-import static com.google.cloud.opentelemetry.metric.FakeData.aFakeProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
+import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
-import static com.google.cloud.opentelemetry.metric.MetricExporter.PROJECT_NAME_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_DESCRIPTION;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,15 +20,22 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
+import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
+import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
+import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
+import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
+import com.google.monitoring.v3.TypedValue;
+import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +63,6 @@ public class MetricExporterTest {
   @Captor
   private ArgumentCaptor<ProjectName> projectNameArgCaptor;
 
-
   @Before
   public void setUp() {
     MockitoAnnotations.openMocks(this);
@@ -65,7 +71,7 @@ public class MetricExporterTest {
 
   @Test
   public void testCreateWithConfigurationSucceeds() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(aFakeProjectId)
+    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(aProjectId)
         .setCredentials(aFakeCredential).build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
@@ -74,8 +80,8 @@ public class MetricExporterTest {
   @Test
   public void testExportSucceeds() {
     MetricDescriptor expectedDescriptor = MetricDescriptor.newBuilder()
-        .setDisplayName(anInstrumentationLibraryInfo.getName())
-        .setType(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName())
+        .setDisplayName(aMonotonicLongDescriptor.getName())
+        .setType(DESCRIPTOR_TYPE_URL + aMonotonicLongDescriptor.getName())
         .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING).build())
         .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
         .setMetricKind(MetricKind.CUMULATIVE)
@@ -83,13 +89,30 @@ public class MetricExporterTest {
         .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
         .setDescription(METRIC_DESCRIPTOR_DESCRIPTION)
         .build();
+    TimeInterval expectedTimeInterval = TimeInterval.newBuilder()
+        .setStartTime(
+            Timestamp.newBuilder().setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND).setNanos(0).build())
+        .setEndTime(
+            Timestamp.newBuilder().setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND).setNanos(0).build())
+        .build();
+    Point expectedPoint = Point.newBuilder()
+        .setValue(TypedValue.newBuilder().setInt64Value(((LongPoint) aLongPoint).getValue()))
+        .setInterval(expectedTimeInterval)
+        .build();
+    TimeSeries expectedTimeSeries = TimeSeries.newBuilder()
+        .setMetric(Metric.newBuilder().setType(expectedDescriptor.getType()).putLabels("label1", "value1")
+            .putLabels("label2", "False").build())
+        .addPoints(expectedPoint)
+        .setResource(MonitoredResource.newBuilder().build())
+        .setMetricKind(expectedDescriptor.getMetricKind())
+        .build();
     CreateMetricDescriptorRequest expectedRequest = CreateMetricDescriptorRequest.newBuilder()
-        .setName(PROJECT_NAME_PREFIX + aFakeProjectId)
+        .setName("projects/" + aProjectId)
         .setMetricDescriptor(expectedDescriptor)
         .build();
-    ProjectName expectedProjectName = ProjectName.of(aFakeProjectId);
+    ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    MetricExporter exporter = MetricExporter.createWithClient(aFakeProjectId, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
@@ -101,15 +124,12 @@ public class MetricExporterTest {
     assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
     assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
     assertEquals(1, timeSeriesArgCaptor.getValue().size());
-    TimeSeries timeSeries = timeSeriesArgCaptor.getValue().get(0);
-    assertEquals(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName(), timeSeries.getMetric().getType());
-    assertEquals(1, timeSeries.getPointsCount());
-    assertEquals(32L, timeSeries.getPoints(0).getValue().getInt64Value());
+    assertEquals(expectedTimeSeries, timeSeriesArgCaptor.getValue().get(0));
   }
 
   @Test
   public void testExportWithNonSupportedMetricTypeDoesNothing() {
-    MetricExporter exporter = MetricExporter.createWithClient(aFakeProjectId, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
     Descriptor summaryDescriptor = Descriptor
         .create("Descriptor Name", "Descriptor description", "Unit", Type.SUMMARY,
             someLabels);
