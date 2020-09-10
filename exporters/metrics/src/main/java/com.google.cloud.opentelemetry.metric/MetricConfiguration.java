@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricConfiguration {
 
-    private static final String DEFAULT_PROJECT_ID =
+  private static final String DEFAULT_PROJECT_ID =
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
   private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
@@ -42,7 +42,6 @@ public abstract class MetricConfiguration {
   public abstract String getProjectId();
 
   /**
-
    * Returns a MetricsServiceStub instance used to make RPC calls.
    *
    * @return the metrics service stub.
@@ -77,13 +76,11 @@ public abstract class MetricConfiguration {
     abstract String getProjectId();
 
 
-
     abstract Duration getDeadline();
 
     public abstract Builder setProjectId(String projectId);
 
     public abstract Builder setCredentials(Credentials newCredentials);
-
 
 
     public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
