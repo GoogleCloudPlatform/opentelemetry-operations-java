@@ -34,7 +34,6 @@ public class FakeData {
       .setAttribute("cloud.zone", "US")
       .setAttribute("cloud.provider", "gcp")
       .setAttribute("extra_info", "extra")
-      .setAttribute("gcp.resource_type", "gce_instance")
       .setAttribute("not_gcp_resource", "value")
       .build();
 

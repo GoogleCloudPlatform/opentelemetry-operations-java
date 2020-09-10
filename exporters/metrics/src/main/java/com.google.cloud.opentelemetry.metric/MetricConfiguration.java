@@ -75,7 +75,6 @@ public abstract class MetricConfiguration {
 
     abstract String getProjectId();
 
-
     abstract Duration getDeadline();
 
     public abstract Builder setProjectId(String projectId);

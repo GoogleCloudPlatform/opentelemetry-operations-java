@@ -137,7 +137,7 @@ public class MetricExporterTest {
     verify(mockClient, times(0)).createMetricDescriptor(any());
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 
-    assertEquals(ResultCode.SUCCESS, result);
+    assertEquals(ResultCode.FAILURE, result);
   }
 
 }
