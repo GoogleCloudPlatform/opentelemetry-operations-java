@@ -8,7 +8,6 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_DESCRIPTION;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
@@ -87,7 +86,7 @@ public class MetricExporterTest {
         .setMetricKind(MetricKind.CUMULATIVE)
         .setValueType(MetricDescriptor.ValueType.INT64)
         .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
-        .setDescription(METRIC_DESCRIPTOR_DESCRIPTION)
+        .setDescription(aMonotonicLongDescriptor.getDescription())
         .build();
     TimeInterval expectedTimeInterval = TimeInterval.newBuilder()
         .setStartTime(
