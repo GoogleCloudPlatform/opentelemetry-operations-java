@@ -1,12 +1,13 @@
-description = 'Cloud Trace Exporter for OpenTelemetry'
+description = 'Cloud Monitoring Exporter for OpenTelemetry'
 
 dependencies {
     api(libraries.auto_value_annotations)
+    api(libraries.slf4j)
     annotationProcessor(libraries.auto_value)
     api(libraries.opentelemetry_api)
     api(libraries.opentelemetry_sdk)
     api(libraries.google_cloud_core)
-    api(libraries.google_cloud_trace)
-    api(libraries.google_cloud_trace_grpc)
+    api(libraries.google_cloud_monitoring)
     testImplementation(testLibraries.junit)
+    testImplementation(testLibraries.slf4j_simple)
 }
