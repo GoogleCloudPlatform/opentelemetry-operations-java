@@ -5,7 +5,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
@@ -17,11 +16,7 @@ public class FakeData {
   static Labels someLabels = Labels.newBuilder().setLabel("label1", "value1").setLabel("label2", "False").build();
 
   static Descriptor aMonotonicLongDescriptor = Descriptor
-      .create("Descriptor Name", "Descriptor description", "Unit", Type.MONOTONIC_LONG,
-          someLabels);
-
-  static Descriptor aNonMonotonicDoubleDescriptor = Descriptor
-      .create("Descriptor Name", "Descriptor description", "Unit", Type.NON_MONOTONIC_DOUBLE,
+      .create("DescriptorName", "Descriptor description", "Unit", Type.MONOTONIC_LONG,
           someLabels);
 
   static Attributes someGceAttributes = Attributes.newBuilder()
@@ -41,7 +36,4 @@ public class FakeData {
 
   static Point aLongPoint = LongPoint
       .create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32L);
-
-  static Point aDoublePoint = DoublePoint
-      .create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND, Labels.empty(), 32.35);
 }

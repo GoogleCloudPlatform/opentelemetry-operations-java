@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MetricConfiguration {
 
-  private static final String DEFAULT_PROJECT_ID =
+    private static final String DEFAULT_PROJECT_ID =
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
   private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
