@@ -14,6 +14,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
@@ -23,7 +24,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,16 +35,15 @@ import org.slf4j.LoggerFactory;
 
 public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
+  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
+
   private static final String PROJECT_NAME_PREFIX = "projects/";
   private static final long WRITE_INTERVAL_SECOND = 12;
   private static final int MAX_BATCH_SIZE = 200;
   private static final long NANO_PER_SECOND = (long) 1e9;
 
-  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
-
   private final MetricServiceClient metricServiceClient;
   private final String projectId;
-  private final Instant exporterStartTime;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
   MetricExporter(
@@ -53,7 +52,6 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   ) {
     this.projectId = projectId;
     this.metricServiceClient = client;
-    this.exporterStartTime = Instant.now();
   }
 
   public static MetricExporter createWithDefaultConfiguration() throws IOException {
@@ -79,7 +77,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         projectId, MetricServiceClient.create(stub));
   }
 
-  private static MetricExporter createWithClient(
+  @VisibleForTesting
+  static MetricExporter createWithClient(
       String projectId,
       MetricServiceClient metricServiceClient) {
     return new MetricExporter(projectId, metricServiceClient);
@@ -145,6 +144,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           .build());
     }
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
+    if (allTimesSeries.size() < metrics.size()) {
+      return ResultCode.FAILURE;
+    }
     return ResultCode.SUCCESS;
   }
 
