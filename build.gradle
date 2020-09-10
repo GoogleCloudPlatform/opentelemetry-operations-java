@@ -23,7 +23,6 @@ subprojects {
         cloudMonitoringVersion = '2.0.1'
         openTelemetryVersion = '0.7.0'
         junitVersion = '4.13'
-        mockitoVersion = '3.5.10'
         opentelemetryOperationsVersion = "0.7.1"  // CURRENT_RELEASE_VERSION
 
         libraries = [
@@ -41,7 +40,6 @@ subprojects {
         ]
         testLibraries = [
                 junit       : "junit:junit:${junitVersion}",
-                mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
                 slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}"
         ]
     }
