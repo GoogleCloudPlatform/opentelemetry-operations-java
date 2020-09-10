@@ -110,14 +110,15 @@ public class MetricTranslator {
   }
 
   static TimeInterval mapInterval(MetricData.Point point) {
-    Timestamp startTime = Timestamp.newBuilder()
-        .setSeconds(point.getStartEpochNanos() / NANO_PER_SECOND)
-        .setNanos((int) (point.getStartEpochNanos() % NANO_PER_SECOND))
-        .build();
-    Timestamp endTime = Timestamp.newBuilder()
-        .setSeconds(point.getEpochNanos() / NANO_PER_SECOND)
-        .setNanos((int) (point.getEpochNanos() % NANO_PER_SECOND))
-        .build();
+    Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
+    Timestamp endTime = mapTimestamp(point.getEpochNanos());
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
+  }
+
+  private static Timestamp mapTimestamp(long epochNanos) {
+    return Timestamp.newBuilder()
+        .setSeconds(epochNanos / NANO_PER_SECOND)
+        .setNanos((int) (epochNanos % NANO_PER_SECOND))
+        .build();
   }
 }
