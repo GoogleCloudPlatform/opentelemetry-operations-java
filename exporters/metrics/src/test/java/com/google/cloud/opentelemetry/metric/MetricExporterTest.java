@@ -11,7 +11,9 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,11 +33,11 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.junit.Before;
@@ -115,11 +117,11 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
-    ResultCode result = exporter.export(ImmutableList.of(metricData));
+    CompletableResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1)).createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
 
-    assertEquals(ResultCode.SUCCESS, result);
+    assertTrue(result.isSuccess());
     assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
     assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
     assertEquals(1, timeSeriesArgCaptor.getValue().size());
@@ -135,11 +137,12 @@ public class MetricExporterTest {
     MetricData metricData = MetricData
         .create(summaryDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(aLongPoint));
 
-    ResultCode result = exporter.export(ImmutableList.of(metricData));
+    CompletableResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 
-    assertEquals(ResultCode.FAILURE, result);
+
+    assertFalse(result.isSuccess());
   }
 
 }

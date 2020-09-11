@@ -21,6 +21,7 @@ import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.time.Duration;
@@ -98,7 +99,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   @Override
-  public ResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<MetricData> metrics) {
     List<TimeSeries> allTimesSeries = new ArrayList<>();
 
     for (MetricData metricData : metrics) {
@@ -145,9 +146,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     }
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
     if (allTimesSeries.size() < metrics.size()) {
-      return ResultCode.FAILURE;
+      return CompletableResultCode.ofFailure();
     }
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   private static void createTimeSeriesBatch(CloudMetricClient metricServiceClient, ProjectName projectName,
@@ -164,8 +165,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

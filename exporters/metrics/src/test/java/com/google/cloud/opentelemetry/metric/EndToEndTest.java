@@ -6,13 +6,12 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -71,13 +70,13 @@ public class EndToEndTest {
             Labels.empty(), 32L);
     MetricData metricData = MetricData
         .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(longPoint));
-    assertEquals(ResultCode.SUCCESS, exporter.export(ImmutableList.of(metricData)));
+    assertTrue(exporter.export(ImmutableList.of(metricData)).isSuccess());
   }
 
   @Test
   public void testExportEmptyMetricsList() {
     exporter = new MetricExporter(aProjectId, mockClient);
 
-    assertEquals(ResultCode.SUCCESS, exporter.export(new ArrayList<>()));
+    assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }
 }
