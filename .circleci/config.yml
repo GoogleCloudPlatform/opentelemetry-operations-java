@@ -40,10 +40,11 @@ jobs:
 
       - store_artifacts:
           path: ./exporters/trace/build
+      - store_artifacts:
+          path: ./exporters/metrics/build
 
   test:
     executor: jdk
-
     steps:
       - setup
 
