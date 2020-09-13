@@ -2,8 +2,6 @@ package com.google.cloud.opentelemetry.trace;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.test.TestSpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
@@ -24,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -96,7 +94,7 @@ public class EndToEndTest {
     spanDataList.add(spanDataOne);
 
     // Invokes export();
-    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
+    assertTrue(exporter.export(spanDataList).isSuccess());
   }
 
   @Test
@@ -105,6 +103,6 @@ public class EndToEndTest {
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();
-    assertEquals(SpanExporter.ResultCode.SUCCESS, exporter.export(spanDataList));
+    assertTrue(exporter.export(spanDataList).isSuccess());
   }
 }
