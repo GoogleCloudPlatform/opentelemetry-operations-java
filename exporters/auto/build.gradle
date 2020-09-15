@@ -1,0 +1,16 @@
+description = 'Auto Exporter for OpenTelemetry'
+
+dependencies {
+    repositories {
+        maven {
+            url "https://dl.bintray.com/open-telemetry/maven"
+        }
+    }
+
+    api(libraries.auto_value_annotations)
+    annotationProcessor(libraries.auto_value)
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.8.0")
+    implementation(libraries.opentelemetry_sdk)
+    implementation(libraries.opentelemetry_operations_java)
+    implementation(libraries.slf4j)
+}

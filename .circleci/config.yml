@@ -42,6 +42,8 @@ jobs:
           path: ./exporters/trace/build
       - store_artifacts:
           path: ./exporters/metrics/build
+      - store_artifacts:
+          path: ./exporters/auto/build
 
   test:
     executor: jdk
