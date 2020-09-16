@@ -15,6 +15,6 @@ dependencies {
     annotationProcessor(libraries.auto_value)
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.8.0")
     implementation(libraries.opentelemetry_sdk)
-    implementation(libraries.opentelemetry_operations_java)
+    implementation(project(':exporter-trace'))
     implementation(libraries.slf4j)
 }
