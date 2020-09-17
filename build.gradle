@@ -14,9 +14,11 @@ subprojects {
         mavenCentral()
         mavenLocal()
         maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+        maven { url 'https://dl.bintray.com/open-telemetry/maven'}
     }
 
     ext {
+        autoServiceVersion = '1.0-rc7'
         autoValueVersion = '1.7.4'
         slf4jVersion = '1.7.30'
         googleCloudVersion = '1.0.2'
@@ -27,6 +29,8 @@ subprojects {
         opentelemetryOperationsVersion = "0.7.1"  // CURRENT_RELEASE_VERSION
 
         libraries = [
+                auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+                auto_service                 : "com.google.auto.service:auto-service:${autoServiceVersion}",
                 auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
                 auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
                 google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
@@ -37,6 +41,7 @@ subprojects {
                 slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
                 opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+                opentelemetry_auto           : "io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:${openTelemetryVersion}",
                 opentelemetry_operations_java: "com.google.cloud.opentelemetry:exporter-trace:${opentelemetryOperationsVersion}"
         ]
         testLibraries = [
