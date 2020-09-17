@@ -11,5 +11,6 @@ dependencies {
     annotationProcessor(libraries.auto_value)
     implementation(libraries.opentelemetry_auto)
     implementation(libraries.opentelemetry_sdk)
+    implementation(project(':exporter-metrics'))
     implementation(project(':exporter-trace'))
 }
