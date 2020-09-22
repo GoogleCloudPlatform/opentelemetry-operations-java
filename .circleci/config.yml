@@ -34,7 +34,9 @@ jobs:
 
       - run:
           name: Build jars
-          command: ./gradlew sourcesJar
+          command: |
+            ./gradlew sourcesJar
+            ./gradlew shadowJar
 
       - teardown
 
@@ -42,6 +44,8 @@ jobs:
           path: ./exporters/trace/build
       - store_artifacts:
           path: ./exporters/metrics/build
+      - store_artifacts:
+          path: ./exporters/auto/build
 
   test:
     executor: jdk
