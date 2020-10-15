@@ -7,7 +7,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-
 import java.io.IOException;
 import java.time.Duration;
 
@@ -25,7 +24,7 @@ public class TraceExporterExample {
       this.traceExporter = TraceExporter.createWithConfiguration(configuration);
 
       // Register the TraceExporter with OpenTelemetry
-      OpenTelemetrySdk.getTracerProvider()
+      OpenTelemetrySdk.getTracerManagement()
           .addSpanProcessor(BatchSpanProcessor.newBuilder(this.traceExporter).build());
     } catch (IOException e) {
       System.out.println("Uncaught Exception");

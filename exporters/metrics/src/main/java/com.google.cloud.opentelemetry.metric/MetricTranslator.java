@@ -1,9 +1,9 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOTONIC_DOUBLE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.MONOTONIC_LONG;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type.NON_MONOTONIC_LONG;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.MONOTONIC_DOUBLE;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.MONOTONIC_LONG;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_DOUBLE;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_LONG;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
@@ -17,7 +17,7 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.Type;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -34,25 +34,30 @@ public class MetricTranslator {
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
   static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
-  static final Set<MetricData.Descriptor.Type> CUMULATIVE_TYPES = ImmutableSet
+  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet
       .of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
-  static final Set<MetricData.Descriptor.Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
-  static final Set<MetricData.Descriptor.Type> DOUBLE_TYPES = ImmutableSet
+  static final Set<Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
+  static final Set<Type> DOUBLE_TYPES = ImmutableSet
       .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
-  static Metric mapMetric(MetricData metric, String type) {
+  static Metric mapMetric(MetricData.Point metricPoint,
+      String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
-    metric.getDescriptor().getConstantLabels().forEach(metricBuilder::putLabels);
+    metricPoint.getLabels().forEach(metricBuilder::putLabels);
     return metricBuilder.build();
   }
 
-  static MetricDescriptor mapMetricDescriptor(MetricData metric) {
-    String instrumentName = metric.getDescriptor().getName();
-    MetricDescriptor.Builder builder = MetricDescriptor.newBuilder().setDisplayName(instrumentName)
-        .setType(mapMetricType(instrumentName));
-    metric.getDescriptor().getConstantLabels().forEach((key, value) -> builder.addLabels(mapConstantLabel(key, value)));
+  static MetricDescriptor mapMetricDescriptor(MetricData metric,
+      MetricData.Point metricPoint) {
+    MetricDescriptor.Builder builder = MetricDescriptor
+        .newBuilder()
+        .setDisplayName(metric.getName())
+        .setDescription(metric.getDescription())
+        .setType(mapMetricType(metric.getInstrumentationLibraryInfo().getName()))
+        .setUnit(metric.getUnit());
+    metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
 
-    MetricData.Descriptor.Type metricType = metric.getDescriptor().getType();
+    Type metricType = metric.getType();
     if (GAUGE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
@@ -69,7 +74,6 @@ public class MetricTranslator {
       logger.error("Metric type {} not supported. Only long and double types are supported.", metricType);
       return null;
     }
-    builder.setUnit(METRIC_DESCRIPTOR_TIME_UNIT).setDescription(metric.getDescriptor().getDescription());
     return builder.build();
   }
 
@@ -82,7 +86,7 @@ public class MetricTranslator {
     return DESCRIPTOR_TYPE_URL + instrumentName;
   }
 
-  static LabelDescriptor mapConstantLabel(String key, String value) {
+  static LabelDescriptor mapLabel(String key, String value) {
     LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key);
     if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
       builder.setValueType(LabelDescriptor.ValueType.BOOL);
@@ -97,7 +101,7 @@ public class MetricTranslator {
   static Point mapPoint(MetricData metric, MetricData.Point point, MetricWithLabels updateKey,
       Map<MetricWithLabels, Long> lastUpdatedTime) {
     Builder pointBuilder = Point.newBuilder();
-    Type type = metric.getDescriptor().getType();
+    Type type = metric.getType();
     if (LONG_TYPES.contains(type)) {
       pointBuilder.setValue(TypedValue.newBuilder().setInt64Value(((MetricData.LongPoint) point).getValue()));
     } else if (DOUBLE_TYPES.contains(type)) {

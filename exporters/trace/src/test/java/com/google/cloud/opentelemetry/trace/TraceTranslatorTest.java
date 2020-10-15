@@ -155,7 +155,7 @@ public class TraceTranslatorTest {
 
   @Test
   public void testToStatusProto(){
-    io.opentelemetry.trace.Status myStatus = io.opentelemetry.trace.Status.OK.withDescription("Status description");
+    SpanData.Status myStatus = io.opentelemetry.trace.Status.OK.withDescription("Status description");
     Status spanStatus = TraceTranslator.toStatusProto(myStatus);
 
     // The int representation is 0 for canonical code "OK".
