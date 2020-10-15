@@ -23,9 +23,9 @@ public class FakeData {
   static final Credentials aFakeCredential =
       GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
-  static Labels someLabels = Labels.newBuilder().setLabel("label1", "value1").setLabel("label2", "False").build();
+  static final Labels someLabels = Labels.newBuilder().setLabel("label1", "value1").setLabel("label2", "False").build();
 
-  static Attributes someGceAttributes = Attributes.newBuilder()
+  static final Attributes someGceAttributes = Attributes.newBuilder()
       .setAttribute("cloud.account.id", 123)
       .setAttribute("host.id", "host")
       .setAttribute("cloud.zone", "US")
@@ -34,16 +34,19 @@ public class FakeData {
       .setAttribute("not_gcp_resource", "value")
       .build();
 
-  static Resource aGceResource = Resource.create(someGceAttributes);
+  static final Resource aGceResource = Resource.create(someGceAttributes);
 
-  static InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
-      .create("instrumentName", "0");
+  // The name does not have to start with "opentelemetry/", it is set this way because of a bug in the mock server,
+  // and should be changed when the following issue is resolved:
+  // https://github.com/googleinterns/cloud-operations-api-mock/issues/56
+  static final InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
+      .create("opentelemetry/instrumentName", "0");
 
-  static Point aLongPoint = LongPoint
+  static final Point aLongPoint = LongPoint
       .create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND,
           Labels.of("label1", "value1", "label2", "False"), 32L);
 
-  static MetricData aMetricData = MetricData
+  static final MetricData aMetricData = MetricData
       .create(aGceResource, anInstrumentationLibraryInfo, "Metric Name", "description", "ns",
           Type.MONOTONIC_LONG, ImmutableList.of(aLongPoint));
 }
