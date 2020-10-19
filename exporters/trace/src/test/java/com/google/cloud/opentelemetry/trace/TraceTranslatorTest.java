@@ -1,5 +1,10 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static io.opentelemetry.sdk.trace.data.ImmutableStatus.OK;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.Span;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
@@ -8,21 +13,16 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.SpanContext;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 @RunWith(JUnit4.class)
 public class TraceTranslatorTest {
@@ -155,51 +155,10 @@ public class TraceTranslatorTest {
 
   @Test
   public void testToStatusProto(){
-    SpanData.Status myStatus = io.opentelemetry.trace.Status.OK.withDescription("Status description");
-    Status spanStatus = TraceTranslator.toStatusProto(myStatus);
+    Status spanStatus = TraceTranslator.toStatusProto(OK);
 
     // The int representation is 0 for canonical code "OK".
     assertEquals(0,spanStatus.getCode());
-    assertEquals("Status description", spanStatus.getMessage());
-  }
-  
-  @Test
-  public void testToLinksProto(){
-    List<SpanData.Link> links = new ArrayList<>();
-
-    TraceId traceIdOne = new TraceId(321, 123);
-    SpanId spanIdOne = new SpanId(12345);
-    TraceId traceIdTwo = new TraceId(32473, 24893);
-    SpanId spanIdTwo = new SpanId(54321);
-
-    SpanData.Link linkOne = createLink(traceIdOne, spanIdOne, TraceFlags.builder().build(),
-            TraceState.builder().build(), Attributes.newBuilder().setAttribute("key", "value").build());
-    SpanData.Link linkTwo = createLink(traceIdTwo, spanIdTwo, TraceFlags.builder().build(),
-            TraceState.builder().build(), Attributes.newBuilder().setAttribute("random string", "another string").build());
-
-    links.add(linkOne);
-    links.add(linkTwo);
-    Span.Links finalLinks = TraceTranslator.toLinksProto(links, 2);
-
-    assertEquals(2, finalLinks.getLinkCount());
-    assertEquals(0, finalLinks.getDroppedLinksCount());
-
-    assertEquals(traceIdOne.toLowerBase16(), finalLinks.getLink(0).getTraceId());
-    assertEquals(spanIdOne.toLowerBase16(), finalLinks.getLink(0).getSpanId());
-    // The int representation is 0 for (Link.Type.TYPE_UNSPECIFIED), which is given in TraceTranslator.
-    assertEquals(0, finalLinks.getLink(0).getTypeValue());
-    assertTrue(finalLinks.getLink(0).getAttributes().containsAttributeMap("key"));
-
-    assertEquals(traceIdTwo.toLowerBase16(), finalLinks.getLink(1).getTraceId());
-    assertEquals(spanIdTwo.toLowerBase16(), finalLinks.getLink(1).getSpanId());
-    assertEquals(0, finalLinks.getLink(1).getTypeValue());
-    assertTrue(finalLinks.getLink(1).getAttributes().containsAttributeMap("random string"));
-    assertFalse(finalLinks.getLink(1).getAttributes().containsAttributeMap("key"));
-  }
-
-  public SpanData.Link createLink(TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState, Attributes attributes){
-    SpanContext spanContext = SpanContext.create(traceId, spanId, traceFlags, traceState);
-    return SpanData.Link.create(spanContext, attributes);
   }
 
   @Test

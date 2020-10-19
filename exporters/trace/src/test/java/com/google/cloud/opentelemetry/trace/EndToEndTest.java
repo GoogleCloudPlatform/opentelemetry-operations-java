@@ -1,16 +1,13 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static io.opentelemetry.sdk.trace.data.ImmutableStatus.OK;
+import static org.junit.Assert.assertTrue;
+
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,21 +18,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
 
   private static final String PROJECT_ID = "project-id";
   private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
-  private static final TraceId TRACE_ID = new TraceId(321, 123);
-  private static final SpanId SPAN_ID = new SpanId(12345);
-  private static final SpanId PARENT_SPAN_ID = new SpanId(54321);
+  private static final String TRACE_ID = TraceId.fromLongs(321, 123);
+  private static final String SPAN_ID = SpanId.fromLong(12345);
+  private static final String PARENT_SPAN_ID = SpanId.fromLong(54321);
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  private static final Status SPAN_DATA_STATUS = Status.OK;
+  private static final Status SPAN_DATA_STATUS = OK;
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
