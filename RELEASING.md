@@ -88,7 +88,7 @@ token](https://help.github.com/articles/creating-a-personal-access-token-for-the
     # Change version to next minor (and keep -SNAPSHOT)
     $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' build.gradle
     # Update the example project dependency to this release version
-    $ sed -i ’s/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_RELEASE_VERSION\)/‘$MAJOR.$MINOR.$PATCH’\1/‘ build.gradle
+    $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_RELEASE_VERSION\)/'$MAJOR.$MINOR.$PATCH'\1/' build.gradle
     # Run build with the path to the mock server executable
     $ ./gradlew build -Dmock.server.path=$MOCKSERVER
     $ git commit -a -m "Start $MAJOR.$((MINOR+1)).0 development cycle"
