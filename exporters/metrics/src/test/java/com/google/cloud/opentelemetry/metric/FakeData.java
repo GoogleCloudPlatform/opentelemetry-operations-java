@@ -36,17 +36,17 @@ public class FakeData {
 
   static final Resource aGceResource = Resource.create(someGceAttributes);
 
+  static final InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
+      .create("instrumentName", "0");
+
+  static final Point aLongPoint = LongPoint
+      .create(1599030114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND,
+          Labels.of("label1", "value1", "label2", "False"), 32L);
+
   // The name does not have to start with "opentelemetry/", it is set this way because of a bug in the mock server,
   // and should be changed when the following issue is resolved:
   // https://github.com/googleinterns/cloud-operations-api-mock/issues/56
-  static final InstrumentationLibraryInfo anInstrumentationLibraryInfo = InstrumentationLibraryInfo
-      .create("opentelemetry/instrumentName", "0");
-
-  static final Point aLongPoint = LongPoint
-      .create(1599032114 * NANO_PER_SECOND, 1599031814 * NANO_PER_SECOND,
-          Labels.of("label1", "value1", "label2", "False"), 32L);
-
   static final MetricData aMetricData = MetricData
-      .create(aGceResource, anInstrumentationLibraryInfo, "Metric Name", "description", "ns",
+      .create(aGceResource, anInstrumentationLibraryInfo, "opentelemetry/name", "description", "ns",
           Type.MONOTONIC_LONG, ImmutableList.of(aLongPoint));
 }
