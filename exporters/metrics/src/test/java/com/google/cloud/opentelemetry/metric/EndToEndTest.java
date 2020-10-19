@@ -1,22 +1,14 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
-import static com.google.cloud.opentelemetry.metric.FakeData.aMonotonicLongDescriptor;
+import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
-import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.time.Instant;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -64,19 +56,12 @@ public class EndToEndTest {
   @Test
   public void testExportMockMetricsDataList() {
     exporter = new MetricExporter(aProjectId, mockClient);
-
-    LongPoint longPoint = LongPoint
-        .create(1599032114 * NANO_PER_SECOND, Instant.now().plus(10, SECONDS).getEpochSecond() * NANO_PER_SECOND,
-            Labels.empty(), 32L);
-    MetricData metricData = MetricData
-        .create(aMonotonicLongDescriptor, aGceResource, anInstrumentationLibraryInfo, ImmutableList.of(longPoint));
-    assertTrue(exporter.export(ImmutableList.of(metricData)).isSuccess());
+    assertTrue(exporter.export(ImmutableList.of(aMetricData)).isSuccess());
   }
 
   @Test
   public void testExportEmptyMetricsList() {
     exporter = new MetricExporter(aProjectId, mockClient);
-
     assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }
 }

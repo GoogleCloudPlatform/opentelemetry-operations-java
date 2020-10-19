@@ -25,7 +25,6 @@
 package com.google.cloud.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -33,9 +32,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,14 +57,14 @@ public abstract class TestSpanData implements SpanData {
         return new AutoValue_TestSpanData.Builder()
                 .setParentSpanId(SpanId.getInvalid())
                 .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-                .setLinks(Collections.<Link>emptyList())
+                .setLinks(Collections.emptyList())
                 .setTotalRecordedLinks(0)
                 .setAttributes(Attributes.empty())
-                .setEvents(Collections.<Event>emptyList())
+                .setEvents(Collections.emptyList())
                 .setTotalRecordedEvents(0)
                 .setResource(Resource.getEmpty())
                 .setTraceState(TraceState.getDefault())
-                .setTraceFlags(TraceFlags.getDefault())
+                .setSampled(false)
                 .setHasRemoteParent(false)
                 .setTotalAttributeCount(0);
     }
@@ -106,7 +102,7 @@ public abstract class TestSpanData implements SpanData {
          * @param traceId the trace id.
          * @return this builder (for chaining).
          */
-        public abstract Builder setTraceId(TraceId traceId);
+        public abstract Builder setTraceId(String traceId);
 
         /**
          * Set the span id on this builder.
@@ -114,15 +110,9 @@ public abstract class TestSpanData implements SpanData {
          * @param spanId the span id.
          * @return this builder (for chaining).
          */
-        public abstract Builder setSpanId(SpanId spanId);
+        public abstract Builder setSpanId(String spanId);
 
-        /**
-         * Set the {@link TraceFlags} on this builder.
-         *
-         * @param traceFlags the trace flags.
-         * @return this.
-         */
-        public abstract Builder setTraceFlags(TraceFlags traceFlags);
+        public abstract Builder setSampled(boolean isSampled);
 
         /**
          * Set the {@link TraceState} on this builder.
@@ -139,7 +129,7 @@ public abstract class TestSpanData implements SpanData {
          * @return this.
          * @since 0.1.0
          */
-        public abstract Builder setParentSpanId(SpanId parentSpanId);
+        public abstract Builder setParentSpanId(String parentSpanId);
 
         /**
          * Set the {@link Resource} associated with this span. Must not be null.
@@ -194,7 +184,6 @@ public abstract class TestSpanData implements SpanData {
          *
          * @param attributes a Map&lt;String, AttributeValue&gt; of attributes.
          * @return this
-         * @see AttributeValue
          * @since 0.1.0
          */
         public abstract Builder setAttributes(ReadableAttributes attributes);
@@ -232,10 +221,8 @@ public abstract class TestSpanData implements SpanData {
          *
          * @param links A List&lt;Link&gt;
          * @return this
-         * @see io.opentelemetry.trace.Link
-         * @since 0.1.0
          */
-        public abstract Builder setLinks(List<Link> links);
+        public abstract Builder setLinks(List<SpanData.Link> links);
 
         /**
          * Sets to true if the span has a parent on a different process.

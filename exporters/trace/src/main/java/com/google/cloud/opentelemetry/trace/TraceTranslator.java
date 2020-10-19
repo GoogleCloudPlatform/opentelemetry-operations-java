@@ -1,5 +1,7 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
@@ -11,18 +13,17 @@ import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 class TraceTranslator {
 
@@ -53,20 +54,20 @@ class TraceTranslator {
   @VisibleForTesting
   static Span generateSpan(
       SpanData spanData, String projectId, Map<String, AttributeValue> constAttributes) {
-    final String traceIdHex = spanData.getTraceId().toLowerBase16();
-    final String spanIdHex = spanData.getSpanId().toLowerBase16();
+    final String traceId = spanData.getTraceId();
+    final String spanId = spanData.getSpanId();
     SpanName spanName =
-        SpanName.newBuilder().setProject(projectId).setTrace(traceIdHex).setSpan(spanIdHex).build();
+        SpanName.newBuilder().setProject(projectId).setTrace(traceId).setSpan(spanId).build();
     Span.Builder spanBuilder =
         Span.newBuilder()
             .setName(spanName.toString())
-            .setSpanId(spanIdHex)
+            .setSpanId(spanId)
             .setDisplayName(
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
             .setAttributes(toAttributesProto(spanData.getAttributes(), constAttributes))
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
-    io.opentelemetry.trace.Status status = spanData.getStatus();
+    SpanData.Status status = spanData.getStatus();
     if (status != null) {
       spanBuilder.setStatus(toStatusProto(status));
     }
@@ -75,13 +76,11 @@ class TraceTranslator {
       spanBuilder.setEndTime(toTimestampProto(end));
     }
     spanBuilder.setLinks(toLinksProto(spanData.getLinks(), spanData.getTotalRecordedLinks()));
-    if (spanData.getParentSpanId() != null && spanData.getParentSpanId().isValid()) {
-      spanBuilder.setParentSpanId(spanData.getParentSpanId().toLowerBase16());
+    if (spanData.getParentSpanId() != null) {
+      spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
-    /* @Nullable */ Boolean hasRemoteParent = spanData.getHasRemoteParent();
-    if (hasRemoteParent != null) {
-      spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
-    }
+    boolean hasRemoteParent = spanData.getHasRemoteParent();
+    spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
   }
 
@@ -132,41 +131,41 @@ class TraceTranslator {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
-    attributes.forEach(
-        (key, value) -> {
-          AttributeValue attributeValue = toAttributeValueProto(value);
-          attributesBuilder.putAttributeMap(mapKey(key), attributeValue);
-        });
-
+    attributes.forEach(new AttributeConsumer() {
+      @Override
+      public <T> void consume(AttributeKey<T> key, T value) {
+        attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
+      }
+    });
     return attributesBuilder;
   }
 
-  private static AttributeValue toAttributeValueProto(
-      io.opentelemetry.common.AttributeValue attributeValue) {
+  private static <T> AttributeValue toAttributeValueProto(
+      io.opentelemetry.common.AttributeKey<T> key, T value) {
     AttributeValue.Builder builder = AttributeValue.newBuilder();
-    switch (attributeValue.getType()) {
+    switch (key.getType()) {
       case STRING:
-        builder.setStringValue(toTruncatableStringProto(attributeValue.getStringValue()));
+        builder.setStringValue(toTruncatableStringProto((String) value));
         break;
       case BOOLEAN:
-        builder.setBoolValue(attributeValue.getBooleanValue());
+        builder.setBoolValue((Boolean) value);
         break;
       case LONG:
-        builder.setIntValue(attributeValue.getLongValue());
+        builder.setIntValue((Long) value);
         break;
       case DOUBLE:
         builder.setStringValue(
-            toTruncatableStringProto(String.valueOf(attributeValue.getDoubleValue())));
+            toTruncatableStringProto(String.valueOf((value))));
         break;
     }
     return builder.build();
   }
 
-  private static String mapKey(String key) {
-    if (HTTP_ATTRIBUTE_MAPPING.containsKey(key)) {
-      return HTTP_ATTRIBUTE_MAPPING.get(key);
+  private static <T> String mapKey(AttributeKey<T> key) {
+    if (HTTP_ATTRIBUTE_MAPPING.containsKey(key.getKey())) {
+      return HTTP_ATTRIBUTE_MAPPING.get(key.getKey());
     } else {
-      return key;
+      return key.getKey();
     }
   }
 
@@ -188,7 +187,7 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static Status toStatusProto(io.opentelemetry.trace.Status status) {
+  static Status toStatusProto(SpanData.Status status) {
     Status.Builder statusBuilder = Status.newBuilder().setCode(status.getCanonicalCode().value());
     if (status.getDescription() != null) {
       statusBuilder.setMessage(status.getDescription());
@@ -210,8 +209,8 @@ class TraceTranslator {
   private static Link toLinkProto(io.opentelemetry.sdk.trace.data.SpanData.Link link) {
     checkNotNull(link);
     return Link.newBuilder()
-        .setTraceId(link.getContext().getTraceId().toLowerBase16())
-        .setSpanId(link.getContext().getSpanId().toLowerBase16())
+        .setTraceId(link.getContext().getTraceIdAsHexString())
+        .setSpanId(link.getContext().getSpanIdAsHexString())
         .setType(Link.Type.TYPE_UNSPECIFIED)
         .setAttributes(toAttributesBuilderProto(link.getAttributes()))
         .build();

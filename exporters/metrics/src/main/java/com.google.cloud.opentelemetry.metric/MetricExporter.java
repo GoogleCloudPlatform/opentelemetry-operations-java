@@ -103,17 +103,6 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     List<TimeSeries> allTimesSeries = new ArrayList<>();
 
     for (MetricData metricData : metrics) {
-      MetricDescriptor descriptor = mapMetricDescriptor(metricData);
-      if (descriptor == null) {
-        continue;
-      }
-      metricServiceClient.createMetricDescriptor(
-          CreateMetricDescriptorRequest.newBuilder().setName(PROJECT_NAME_PREFIX + projectId)
-              .setMetricDescriptor(descriptor)
-              .build());
-
-      MetricWithLabels updateKey = new MetricWithLabels(descriptor.getType(),
-          metricData.getDescriptor().getConstantLabels());
 
       // We are expecting one point per MetricData
       if (metricData.getPoints().size() != 1) {
@@ -123,6 +112,18 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       }
       MetricData.Point metricPoint = metricData.getPoints().iterator().next();
 
+      MetricDescriptor descriptor = mapMetricDescriptor(metricData, metricPoint);
+      if (descriptor == null) {
+        continue;
+      }
+      metricServiceClient.createMetricDescriptor(
+          CreateMetricDescriptorRequest.newBuilder().setName(PROJECT_NAME_PREFIX + projectId)
+              .setMetricDescriptor(descriptor)
+              .build());
+
+      MetricWithLabels updateKey = new MetricWithLabels(descriptor.getType(),
+          metricPoint.getLabels());
+
       // Cloud Monitoring API allows, for any combination of labels and
       // metric name, one update per WRITE_INTERVAL seconds
       long pointCollectionTime = metricPoint.getEpochNanos();
@@ -131,7 +132,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      Metric metric = mapMetric(metricData, descriptor.getType());
+      Metric metric = mapMetric(metricPoint, descriptor.getType());
       Point point = mapPoint(metricData, metricPoint, updateKey, lastUpdatedTime);
       if (point == null) {
         continue;
