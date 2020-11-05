@@ -2,15 +2,15 @@ package com.google.cloud.opentelemetry.auto;
 
 import com.google.auto.service.AutoService;
 import com.google.cloud.opentelemetry.metric.MetricExporter;
-import io.opentelemetry.javaagent.tooling.exporter.ExporterConfig;
-import io.opentelemetry.javaagent.tooling.exporter.MetricExporterFactory;
+import io.opentelemetry.javaagent.spi.exporter.MetricExporterFactory;
 
 import java.io.IOException;
+import java.util.Properties;
 
 @AutoService(MetricExporterFactory.class)
 public class GoogleCloudMetricExporterFactory implements MetricExporterFactory {
     @Override
-    public MetricExporter fromConfig(ExporterConfig _config) {
+    public MetricExporter fromConfig(Properties _config) {
         try {
             return MetricExporter.createWithDefaultConfiguration();
         } catch (IOException ex) {
