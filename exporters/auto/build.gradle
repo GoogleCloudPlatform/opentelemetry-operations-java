@@ -14,3 +14,11 @@ dependencies {
     implementation(project(':exporter-metrics'))
     implementation(project(':exporter-trace'))
 }
+
+jar.enabled = false
+
+tasks.build.dependsOn tasks.shadowJar
+
+shadowJar{
+    classifier = null
+}

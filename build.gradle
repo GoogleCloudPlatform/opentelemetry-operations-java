@@ -62,10 +62,6 @@ subprojects {
         from sourceSets.main.allSource
     }
 
-    task uberJar(type: Jar) {
-        archiveClassifier.set('all')
-    }
-
     test {
         systemProperty 'mock.server.path', System.getProperty('mock.server.path')
         finalizedBy jacocoTestReport
@@ -76,7 +72,7 @@ subprojects {
     }
 
     artifacts {
-        archives javadocJar, sourcesJar, uberJar
+        archives javadocJar, sourcesJar
     }
 
     signing {
