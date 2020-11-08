@@ -14,7 +14,7 @@ subprojects {
         mavenCentral()
         mavenLocal()
         maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
-        maven { url 'https://dl.bintray.com/open-telemetry/maven'}
+        maven { url 'https://dl.bintray.com/open-telemetry/maven' }
     }
 
     ext {
@@ -27,7 +27,7 @@ subprojects {
         openTelemetryInstrumentationVersion = '0.9.0'
         junitVersion = '4.13'
         mockitoVersion = '3.5.10'
-        opentelemetryOperationsVersion = "0.9.1"  // CURRENT_RELEASE_VERSION
+        opentelemetryOperationsVersion = '0.9.1'  // CURRENT_RELEASE_VERSION
 
         libraries = [
                 auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
