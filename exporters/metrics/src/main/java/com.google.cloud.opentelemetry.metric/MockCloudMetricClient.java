@@ -20,12 +20,15 @@ class MockCloudMetricClient implements CloudMetricClient {
   private final GrpcMetricServiceStub stub;
 
   MockCloudMetricClient(String host, int port) throws IOException {
-    stub = GrpcMetricServiceStub.create(
-        MetricServiceStubSettings.newBuilder()
-            .setCredentialsProvider(NoCredentialsProvider.create())
-            .setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
-                ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())))
-            .build());
+    stub =
+        GrpcMetricServiceStub.create(
+            MetricServiceStubSettings.newBuilder()
+                .setCredentialsProvider(NoCredentialsProvider.create())
+                .setTransportChannelProvider(
+                    FixedTransportChannelProvider.create(
+                        GrpcTransportChannel.create(
+                            ManagedChannelBuilder.forAddress(host, port).usePlaintext().build())))
+                .build());
   }
 
   public final MetricDescriptor createMetricDescriptor(CreateMetricDescriptorRequest request) {
@@ -33,9 +36,11 @@ class MockCloudMetricClient implements CloudMetricClient {
   }
 
   public final void createTimeSeries(ProjectName name, List<TimeSeries> timeSeries) {
-    CreateTimeSeriesRequest request = CreateTimeSeriesRequest.newBuilder().setName(name.toString())
-        .addAllTimeSeries(timeSeries)
-        .build();
+    CreateTimeSeriesRequest request =
+        CreateTimeSeriesRequest.newBuilder()
+            .setName(name.toString())
+            .addAllTimeSeries(timeSeries)
+            .build();
     stub.createTimeSeriesCallable().call(request);
   }
 

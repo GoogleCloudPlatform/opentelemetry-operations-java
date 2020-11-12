@@ -1,12 +1,11 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class TraceExporterTest {

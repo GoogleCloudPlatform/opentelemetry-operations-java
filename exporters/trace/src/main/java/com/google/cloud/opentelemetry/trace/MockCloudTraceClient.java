@@ -6,7 +6,6 @@ import com.google.devtools.cloudtrace.v2.Span;
 import com.google.devtools.cloudtrace.v2.TraceServiceGrpc;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
-
 import java.util.List;
 
 // A simplified version of TraceServiceClient, used ONLY for testing purposes.

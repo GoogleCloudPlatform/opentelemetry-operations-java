@@ -28,33 +28,29 @@ public class MetricTranslator {
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
   static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
-  static final Set<String> KNOWN_DOMAINS = ImmutableSet
-      .of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
+  static final Set<String> KNOWN_DOMAINS =
+      ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
   static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
-  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet
-      .of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
+  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
   static final Set<Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
-  static final Set<Type> DOUBLE_TYPES = ImmutableSet
-      .of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
+  static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
 
-  static Metric mapMetric(MetricData.Point metricPoint,
-      String type) {
+  static Metric mapMetric(MetricData.Point metricPoint, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
     metricPoint.getLabels().forEach(metricBuilder::putLabels);
     return metricBuilder.build();
   }
 
-  static MetricDescriptor mapMetricDescriptor(MetricData metric,
-      MetricData.Point metricPoint) {
-    MetricDescriptor.Builder builder = MetricDescriptor
-        .newBuilder()
-        .setDisplayName(metric.getName())
-        .setDescription(metric.getDescription())
-        .setType(mapMetricType(metric.getInstrumentationLibraryInfo().getName()))
-        .setUnit(metric.getUnit());
+  static MetricDescriptor mapMetricDescriptor(MetricData metric, MetricData.Point metricPoint) {
+    MetricDescriptor.Builder builder =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(metric.getName())
+            .setDescription(metric.getDescription())
+            .setType(mapMetricType(metric.getInstrumentationLibraryInfo().getName()))
+            .setUnit(metric.getUnit());
     metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
 
     Type metricType = metric.getType();
@@ -63,7 +59,9 @@ public class MetricTranslator {
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
     } else {
-      logger.error("Metric type {} not supported. Only gauge and cumulative types are supported.", metricType);
+      logger.error(
+          "Metric type {} not supported. Only gauge and cumulative types are supported.",
+          metricType);
       return null;
     }
     if (LONG_TYPES.contains(metricType)) {
@@ -71,7 +69,8 @@ public class MetricTranslator {
     } else if (DOUBLE_TYPES.contains(metricType)) {
       builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
     } else {
-      logger.error("Metric type {} not supported. Only long and double types are supported.", metricType);
+      logger.error(
+          "Metric type {} not supported. Only long and double types are supported.", metricType);
       return null;
     }
     return builder.build();
@@ -98,14 +97,19 @@ public class MetricTranslator {
     return builder.build();
   }
 
-  static Point mapPoint(MetricData metric, MetricData.Point point, MetricWithLabels updateKey,
+  static Point mapPoint(
+      MetricData metric,
+      MetricData.Point point,
+      MetricWithLabels updateKey,
       Map<MetricWithLabels, Long> lastUpdatedTime) {
     Builder pointBuilder = Point.newBuilder();
     Type type = metric.getType();
     if (LONG_TYPES.contains(type)) {
-      pointBuilder.setValue(TypedValue.newBuilder().setInt64Value(((MetricData.LongPoint) point).getValue()));
+      pointBuilder.setValue(
+          TypedValue.newBuilder().setInt64Value(((MetricData.LongPoint) point).getValue()));
     } else if (DOUBLE_TYPES.contains(type)) {
-      pointBuilder.setValue(TypedValue.newBuilder().setDoubleValue(((MetricData.DoublePoint) point).getValue()));
+      pointBuilder.setValue(
+          TypedValue.newBuilder().setDoubleValue(((MetricData.DoublePoint) point).getValue()));
     } else {
       logger.error("Type {} not supported", type);
       return null;
