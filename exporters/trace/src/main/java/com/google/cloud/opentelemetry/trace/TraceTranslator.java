@@ -126,7 +126,7 @@ class TraceTranslator {
   }
 
   private static Attributes toAttributesProto(ReadableAttributes attributes) {
-    return toAttributesProto(attributes, ImmutableMap.<String, AttributeValue>of());
+    return toAttributesProto(attributes, ImmutableMap.of());
   }
 
   private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
@@ -222,7 +222,7 @@ class TraceTranslator {
     if (resource == null) {
       return Collections.emptyMap();
     }
-    Map<String, AttributeValue> resourceLabels = new LinkedHashMap<String, AttributeValue>();
+    Map<String, AttributeValue> resourceLabels = new LinkedHashMap<>();
     for (Map.Entry<String, String> entry : resource.entrySet()) {
       putToResourceAttributeMap(resourceLabels, entry.getKey(), entry.getValue());
     }

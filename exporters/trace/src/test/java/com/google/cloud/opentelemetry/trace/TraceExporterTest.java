@@ -17,7 +17,7 @@ public class TraceExporterTest {
       TraceExporter exporter = TraceExporter.createWithConfiguration(configuration);
 
       assertNotNull(exporter);
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
   }
 }

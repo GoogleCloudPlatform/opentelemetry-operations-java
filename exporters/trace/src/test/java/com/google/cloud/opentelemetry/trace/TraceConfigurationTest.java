@@ -75,7 +75,7 @@ public class TraceConfigurationTest {
 
     builder.setProjectId("");
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 
   @Test
@@ -104,7 +104,7 @@ public class TraceConfigurationTest {
         Collections.singletonMap(null, AttributeValue.newBuilder().setBoolValue(true).build());
     builder.setFixedAttributes(attributes);
 
-    assertThrows(NullPointerException.class, () -> builder.build());
+    assertThrows(NullPointerException.class, builder::build);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class TraceConfigurationTest {
     Map<String, AttributeValue> attributes = Collections.singletonMap("key", null);
     builder.setFixedAttributes(attributes);
 
-    assertThrows(NullPointerException.class, () -> builder.build());
+    assertThrows(NullPointerException.class, builder::build);
   }
 
   @Test
@@ -123,7 +123,7 @@ public class TraceConfigurationTest {
 
     builder.setDeadline(TraceConfiguration.Builder.ZERO);
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 
   @Test
@@ -132,6 +132,6 @@ public class TraceConfigurationTest {
 
     builder.setDeadline(NEG_ONE_MINUTE);
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 }

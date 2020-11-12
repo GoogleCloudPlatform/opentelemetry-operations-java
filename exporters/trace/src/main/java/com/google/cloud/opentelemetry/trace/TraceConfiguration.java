@@ -146,7 +146,7 @@ public abstract class TraceConfiguration {
       // Make a defensive copy of fixed attributes.
       setFixedAttributes(
           Collections.unmodifiableMap(
-              new LinkedHashMap<String, AttributeValue>(getFixedAttributes())));
+              new LinkedHashMap<>(getFixedAttributes())));
       Preconditions.checkArgument(
           !Strings.isNullOrEmpty(getProjectId()),
           "Cannot find a project ID from either configurations or application default.");
