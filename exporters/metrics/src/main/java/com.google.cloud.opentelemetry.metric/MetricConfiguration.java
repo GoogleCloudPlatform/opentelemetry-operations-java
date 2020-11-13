@@ -12,9 +12,7 @@ import java.time.Duration;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Configurations for {@link MetricExporter}.
- */
+/** Configurations for {@link MetricExporter}. */
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
@@ -23,8 +21,7 @@ public abstract class MetricConfiguration {
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
   private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
-  MetricConfiguration() {
-  }
+  MetricConfiguration() {}
 
   /**
    * Returns the {@link Credentials}.
@@ -64,14 +61,11 @@ public abstract class MetricConfiguration {
         .setDeadline(DEFAULT_DEADLINE);
   }
 
-  /**
-   * Builder for {@link MetricConfiguration}.
-   */
+  /** Builder for {@link MetricConfiguration}. */
   @AutoValue.Builder
   public abstract static class Builder {
 
-    Builder() {
-    }
+    Builder() {}
 
     abstract String getProjectId();
 

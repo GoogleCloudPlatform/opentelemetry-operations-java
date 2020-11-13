@@ -13,12 +13,12 @@ import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.Span.Kind;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,8 +32,10 @@ class TraceTranslator {
   private static final String EXPORTER_VERSION = "0.1.0";
   private static final String AGENT_LABEL_KEY = "g.co/agent";
   private static final String AGENT_LABEL_VALUE_STRING =
-      "opentelemetry-java " + OPEN_TELEMETRY_LIBRARY_VERSION +
-              "; google-cloud-trace-exporter " + EXPORTER_VERSION;
+      "opentelemetry-java "
+          + OPEN_TELEMETRY_LIBRARY_VERSION
+          + "; google-cloud-trace-exporter "
+          + EXPORTER_VERSION;
   private static final AttributeValue AGENT_LABEL_VALUE =
       AttributeValue.newBuilder()
           .setStringValue(toTruncatableStringProto(AGENT_LABEL_VALUE_STRING))
@@ -79,7 +81,7 @@ class TraceTranslator {
     if (spanData.getParentSpanId() != null) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
-    boolean hasRemoteParent = spanData.getHasRemoteParent();
+    boolean hasRemoteParent = spanData.hasRemoteParent();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
   }
@@ -109,7 +111,7 @@ class TraceTranslator {
 
     return com.google.protobuf.Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
   }
-  
+
   // These are the attributes of the Span, where usually we may add more
   // attributes like the agent.
   @VisibleForTesting
@@ -124,24 +126,24 @@ class TraceTranslator {
   }
 
   private static Attributes toAttributesProto(ReadableAttributes attributes) {
-    return toAttributesProto(attributes, ImmutableMap.<String, AttributeValue>of());
+    return toAttributesProto(attributes, ImmutableMap.of());
   }
 
   private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
-    attributes.forEach(new AttributeConsumer() {
-      @Override
-      public <T> void consume(AttributeKey<T> key, T value) {
-        attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
-      }
-    });
+    attributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public <T> void accept(AttributeKey<T> key, T value) {
+            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
+          }
+        });
     return attributesBuilder;
   }
 
-  private static <T> AttributeValue toAttributeValueProto(
-      io.opentelemetry.common.AttributeKey<T> key, T value) {
+  private static <T> AttributeValue toAttributeValueProto(AttributeKey<T> key, T value) {
     AttributeValue.Builder builder = AttributeValue.newBuilder();
     switch (key.getType()) {
       case STRING:
@@ -154,8 +156,7 @@ class TraceTranslator {
         builder.setIntValue((Long) value);
         break;
       case DOUBLE:
-        builder.setStringValue(
-            toTruncatableStringProto(String.valueOf((value))));
+        builder.setStringValue(toTruncatableStringProto(String.valueOf((value))));
         break;
     }
     return builder.build();
@@ -221,7 +222,7 @@ class TraceTranslator {
     if (resource == null) {
       return Collections.emptyMap();
     }
-    Map<String, AttributeValue> resourceLabels = new LinkedHashMap<String, AttributeValue>();
+    Map<String, AttributeValue> resourceLabels = new LinkedHashMap<>();
     for (Map.Entry<String, String> entry : resource.entrySet()) {
       putToResourceAttributeMap(resourceLabels, entry.getKey(), entry.getValue());
     }

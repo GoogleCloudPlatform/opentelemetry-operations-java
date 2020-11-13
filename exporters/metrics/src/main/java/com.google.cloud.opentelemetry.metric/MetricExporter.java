@@ -20,7 +20,7 @@ import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
@@ -47,10 +47,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final String projectId;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
-  MetricExporter(
-      String projectId,
-      CloudMetricClient client
-  ) {
+  MetricExporter(String projectId, CloudMetricClient client) {
     this.projectId = projectId;
     this.metricServiceClient = client;
   }
@@ -79,23 +76,22 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   @VisibleForTesting
-  static MetricExporter createWithClient(
-      String projectId,
-      CloudMetricClient metricServiceClient) {
+  static MetricExporter createWithClient(String projectId, CloudMetricClient metricServiceClient) {
     return new MetricExporter(projectId, metricServiceClient);
   }
 
   private static MetricExporter createWithCredentials(
-      String projectId,
-      Credentials credentials,
-      Duration deadline) throws IOException {
+      String projectId, Credentials credentials, Duration deadline) throws IOException {
     MetricServiceSettings.Builder builder =
         MetricServiceSettings.newBuilder()
             .setCredentialsProvider(
-                FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
-    builder.createMetricDescriptorSettings()
+                FixedCredentialsProvider.create(
+                    checkNotNull(credentials, "Credentials not provided.")));
+    builder
+        .createMetricDescriptorSettings()
         .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(projectId, new CloudMetricClientImpl(MetricServiceClient.create(builder.build())));
+    return new MetricExporter(
+        projectId, new CloudMetricClientImpl(MetricServiceClient.create(builder.build())));
   }
 
   @Override
@@ -106,7 +102,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
       // We are expecting one point per MetricData
       if (metricData.getPoints().size() != 1) {
-        logger.error("There should be exactly one point in each metricData, found {}",
+        logger.error(
+            "There should be exactly one point in each metricData, found {}",
             metricData.getPoints().size());
         continue;
       }
@@ -117,18 +114,20 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
       metricServiceClient.createMetricDescriptor(
-          CreateMetricDescriptorRequest.newBuilder().setName(PROJECT_NAME_PREFIX + projectId)
+          CreateMetricDescriptorRequest.newBuilder()
+              .setName(PROJECT_NAME_PREFIX + projectId)
               .setMetricDescriptor(descriptor)
               .build());
 
-      MetricWithLabels updateKey = new MetricWithLabels(descriptor.getType(),
-          metricPoint.getLabels());
+      MetricWithLabels updateKey =
+          new MetricWithLabels(descriptor.getType(), metricPoint.getLabels());
 
       // Cloud Monitoring API allows, for any combination of labels and
       // metric name, one update per WRITE_INTERVAL seconds
       long pointCollectionTime = metricPoint.getEpochNanos();
       if (lastUpdatedTime.containsKey(updateKey)
-          && pointCollectionTime <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
+          && pointCollectionTime
+              <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
         continue;
       }
 
@@ -138,12 +137,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         continue;
       }
 
-      allTimesSeries.add(TimeSeries.newBuilder()
-          .setMetric(metric)
-          .addPoints(point)
-          .setResource(MonitoredResource.newBuilder().build())
-          .setMetricKind(descriptor.getMetricKind())
-          .build());
+      allTimesSeries.add(
+          TimeSeries.newBuilder()
+              .setMetric(metric)
+              .addPoints(point)
+              .setResource(MonitoredResource.newBuilder().build())
+              .setMetricKind(descriptor.getMetricKind())
+              .build());
     }
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
     if (allTimesSeries.size() < metrics.size()) {
@@ -152,7 +152,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return CompletableResultCode.ofSuccess();
   }
 
-  private static void createTimeSeriesBatch(CloudMetricClient metricServiceClient, ProjectName projectName,
+  private static void createTimeSeriesBatch(
+      CloudMetricClient metricServiceClient,
+      ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {

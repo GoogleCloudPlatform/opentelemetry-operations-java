@@ -35,7 +35,7 @@ public class EndToEndTest {
 
     // Start the mock server. This assumes the binary is present and in $PATH.
     // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[]{System.getProperty("mock.server.path"), "-address", address};
+    String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
     ProcessBuilder pb = new ProcessBuilder(cmdArray);
     pb.redirectErrorStream(true);
     mockServerProcess = pb.start();
@@ -44,7 +44,8 @@ public class EndToEndTest {
     mockClient = new MockCloudMetricClient(LOCALHOST, port);
 
     // Block until the mock server starts (it will output the address after starting).
-    BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
+    BufferedReader br =
+        new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
     br.readLine();
   }
 

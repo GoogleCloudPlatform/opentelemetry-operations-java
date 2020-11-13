@@ -47,17 +47,19 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapMetricDescriptorSucceeds() {
-    MetricDescriptor.Builder expectedDescriptor = MetricDescriptor.newBuilder()
-        .setDisplayName(aMetricData.getName())
-        .setType(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName())
-        .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
-        .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
-        .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
-        .setDescription(aMetricData.getDescription())
-        .setMetricKind(MetricKind.CUMULATIVE)
-        .setValueType(MetricDescriptor.ValueType.INT64);
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aMetricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(aMetricData.getDescription())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.INT64);
 
-    MetricDescriptor actualDescriptor = MetricTranslator.mapMetricDescriptor(aMetricData, aLongPoint);
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(aMetricData, aLongPoint);
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -66,26 +68,34 @@ public class MetricTranslatorTest {
     String name = "Metric Name";
     String description = "Metric Description";
     String unit = "ns";
-    MetricData metricData = MetricData.create(aGceResource, anInstrumentationLibraryInfo, name, description, unit,
-        Type.SUMMARY, ImmutableList.of(aLongPoint));
+    MetricData metricData =
+        MetricData.create(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            Type.SUMMARY,
+            ImmutableList.of(aLongPoint));
 
-    MetricDescriptor actualDescriptor = MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
     assertNull(actualDescriptor);
   }
 
   @Test
   public void testMapConstantLabelWithStringValueSucceeds() {
     LabelDescriptor actualLabel = MetricTranslator.mapLabel("label1", "value1");
-    LabelDescriptor expectedLabel = LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING)
-        .build();
+    LabelDescriptor expectedLabel =
+        LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING).build();
     assertEquals(expectedLabel, actualLabel);
   }
 
   @Test
   public void testMapConstantLabelWithBooleanValueSucceeds() {
     LabelDescriptor actualLabel = MetricTranslator.mapLabel("label1", "True");
-    LabelDescriptor expectedLabel = LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.BOOL)
-        .build();
+    LabelDescriptor expectedLabel =
+        LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.BOOL).build();
     assertEquals(expectedLabel, actualLabel);
 
     LabelDescriptor actualLabel2 = MetricTranslator.mapLabel("label1", "false");
@@ -95,31 +105,41 @@ public class MetricTranslatorTest {
   @Test
   public void testMapConstantLabelWithLongValueSucceeds() {
     LabelDescriptor actualLabel = MetricTranslator.mapLabel("label1", "123928374982123");
-    LabelDescriptor expectedLabel = LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64)
-        .build();
+    LabelDescriptor expectedLabel =
+        LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
   }
 
   @Test
   public void testMapPointSucceeds() {
-    MetricWithLabels metricWithLabels = new MetricWithLabels("custom.googleapis.com/OpenTelemetry/DescriptorName",
-        someLabels);
+    MetricWithLabels metricWithLabels =
+        new MetricWithLabels("custom.googleapis.com/OpenTelemetry/DescriptorName", someLabels);
     Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
     lastUpdated.put(metricWithLabels, 1599032114L);
 
-    Timestamp expectedStartTime = Timestamp.newBuilder().setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
-        .setNanos(
-            (int) (aLongPoint.getStartEpochNanos() % NANO_PER_SECOND)).build();
-    Timestamp expectedEndTime = Timestamp.newBuilder().setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
-        .setNanos((int) (aLongPoint.getEpochNanos() % NANO_PER_SECOND)).build();
-    TimeInterval expectedInterval = TimeInterval.newBuilder()
-        .setStartTime(expectedStartTime)
-        .setEndTime(expectedEndTime)
-        .build();
-    Point expectedPoint = Point.newBuilder().setValue(TypedValue.newBuilder().setInt64Value(32L).build()).setInterval(
-        expectedInterval).build();
+    Timestamp expectedStartTime =
+        Timestamp.newBuilder()
+            .setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
+            .setNanos((int) (aLongPoint.getStartEpochNanos() % NANO_PER_SECOND))
+            .build();
+    Timestamp expectedEndTime =
+        Timestamp.newBuilder()
+            .setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
+            .setNanos((int) (aLongPoint.getEpochNanos() % NANO_PER_SECOND))
+            .build();
+    TimeInterval expectedInterval =
+        TimeInterval.newBuilder()
+            .setStartTime(expectedStartTime)
+            .setEndTime(expectedEndTime)
+            .build();
+    Point expectedPoint =
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setInt64Value(32L).build())
+            .setInterval(expectedInterval)
+            .build();
 
-    Point actualPoint = MetricTranslator.mapPoint(aMetricData, aLongPoint, metricWithLabels, lastUpdated);
+    Point actualPoint =
+        MetricTranslator.mapPoint(aMetricData, aLongPoint, metricWithLabels, lastUpdated);
     assertEquals(expectedPoint, actualPoint);
   }
 }
