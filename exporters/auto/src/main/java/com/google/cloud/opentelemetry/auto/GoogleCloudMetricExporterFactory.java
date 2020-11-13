@@ -4,7 +4,6 @@ import com.google.auto.service.AutoService;
 import com.google.cloud.opentelemetry.metric.MetricExporter;
 import io.opentelemetry.javaagent.spi.exporter.MetricExporterFactory;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -22,6 +21,6 @@ public class GoogleCloudMetricExporterFactory implements MetricExporterFactory {
 
   @Override
   public Set<String> getNames() {
-    return new HashSet<>(Arrays.asList("google_cloud", "google_cloud_metric"));
+    return new HashSet<>(Constants.CLOUD_MONITORING_EXPORTER_NAMES);
   }
 }
