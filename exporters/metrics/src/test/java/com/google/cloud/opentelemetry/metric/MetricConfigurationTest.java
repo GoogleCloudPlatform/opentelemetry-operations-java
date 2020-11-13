@@ -23,7 +23,8 @@ public class MetricConfigurationTest {
 
   @Test
   public void testDefaultConfigurationSucceeds() {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(PROJECT_ID).build();
+    MetricConfiguration configuration =
+        MetricConfiguration.builder().setProjectId(PROJECT_ID).build();
 
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
@@ -32,10 +33,11 @@ public class MetricConfigurationTest {
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
-    MetricConfiguration configuration = MetricConfiguration.builder()
-        .setProjectId(PROJECT_ID)
-        .setCredentials(FAKE_CREDENTIALS)
-        .build();
+    MetricConfiguration configuration =
+        MetricConfiguration.builder()
+            .setProjectId(PROJECT_ID)
+            .setCredentials(FAKE_CREDENTIALS)
+            .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());

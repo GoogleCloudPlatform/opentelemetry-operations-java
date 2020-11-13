@@ -1,5 +1,7 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static com.google.api.client.util.Preconditions.checkNotNull;
+
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -12,15 +14,12 @@ import com.google.devtools.cloudtrace.v2.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import static com.google.api.client.util.Preconditions.checkNotNull;
 
 public class TraceExporter implements SpanExporter {
 
@@ -49,7 +48,9 @@ public class TraceExporter implements SpanExporter {
           projectId, credentials, configuration.getFixedAttributes(), configuration.getDeadline());
     }
     return TraceExporter.createWithClient(
-        projectId, new CloudTraceClientImpl(TraceServiceClient.create(stub)), configuration.getFixedAttributes());
+        projectId,
+        new CloudTraceClientImpl(TraceServiceClient.create(stub)),
+        configuration.getFixedAttributes());
   }
 
   private static TraceExporter createWithClient(
@@ -74,7 +75,9 @@ public class TraceExporter implements SpanExporter {
         .batchWriteSpansSettings()
         .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
     return new TraceExporter(
-        projectId, new CloudTraceClientImpl(TraceServiceClient.create(builder.build())), fixedAttributes);
+        projectId,
+        new CloudTraceClientImpl(TraceServiceClient.create(builder.build())),
+        fixedAttributes);
   }
 
   TraceExporter(

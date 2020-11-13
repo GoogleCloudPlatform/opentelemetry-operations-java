@@ -50,17 +50,13 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class MetricExporterTest {
 
-  @Mock
-  private CloudMetricClientImpl mockClient;
+  @Mock private CloudMetricClientImpl mockClient;
 
-  @Captor
-  private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
+  @Captor private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
 
-  @Captor
-  private ArgumentCaptor<CreateMetricDescriptorRequest> metricDescriptorCaptor;
+  @Captor private ArgumentCaptor<CreateMetricDescriptorRequest> metricDescriptorCaptor;
 
-  @Captor
-  private ArgumentCaptor<ProjectName> projectNameArgCaptor;
+  @Captor private ArgumentCaptor<ProjectName> projectNameArgCaptor;
 
   @Before
   public void setUp() {
@@ -70,52 +66,76 @@ public class MetricExporterTest {
 
   @Test
   public void testCreateWithConfigurationSucceeds() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().setProjectId(aProjectId)
-        .setCredentials(aFakeCredential).build();
+    MetricConfiguration configuration =
+        MetricConfiguration.builder()
+            .setProjectId(aProjectId)
+            .setCredentials(aFakeCredential)
+            .build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
 
   @Test
   public void testExportSucceeds() {
-    MetricDescriptor expectedDescriptor = MetricDescriptor.newBuilder()
-        .setDisplayName(aMetricData.getName())
-        .setType(DESCRIPTOR_TYPE_URL + aMetricData.getInstrumentationLibraryInfo().getName())
-        .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING).build())
-        .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
-        .setMetricKind(MetricKind.CUMULATIVE)
-        .setValueType(MetricDescriptor.ValueType.INT64)
-        .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
-        .setDescription(aMetricData.getDescription())
-        .build();
-    TimeInterval expectedTimeInterval = TimeInterval.newBuilder()
-        .setStartTime(
-            Timestamp.newBuilder().setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND).setNanos(0).build())
-        .setEndTime(
-            Timestamp.newBuilder().setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND).setNanos(0).build())
-        .build();
-    Point expectedPoint = Point.newBuilder()
-        .setValue(TypedValue.newBuilder().setInt64Value(((LongPoint) aLongPoint).getValue()))
-        .setInterval(expectedTimeInterval)
-        .build();
-    TimeSeries expectedTimeSeries = TimeSeries.newBuilder()
-        .setMetric(Metric.newBuilder().setType(expectedDescriptor.getType()).putLabels("label1", "value1")
-            .putLabels("label2", "False").build())
-        .addPoints(expectedPoint)
-        .setResource(MonitoredResource.newBuilder().build())
-        .setMetricKind(expectedDescriptor.getMetricKind())
-        .build();
-    CreateMetricDescriptorRequest expectedRequest = CreateMetricDescriptorRequest.newBuilder()
-        .setName("projects/" + aProjectId)
-        .setMetricDescriptor(expectedDescriptor)
-        .build();
+    MetricDescriptor expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aMetricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + aMetricData.getInstrumentationLibraryInfo().getName())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("label1")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.INT64)
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(aMetricData.getDescription())
+            .build();
+    TimeInterval expectedTimeInterval =
+        TimeInterval.newBuilder()
+            .setStartTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .setEndTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .build();
+    Point expectedPoint =
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setInt64Value(((LongPoint) aLongPoint).getValue()))
+            .setInterval(expectedTimeInterval)
+            .build();
+    TimeSeries expectedTimeSeries =
+        TimeSeries.newBuilder()
+            .setMetric(
+                Metric.newBuilder()
+                    .setType(expectedDescriptor.getType())
+                    .putLabels("label1", "value1")
+                    .putLabels("label2", "False")
+                    .build())
+            .addPoints(expectedPoint)
+            .setResource(MonitoredResource.newBuilder().build())
+            .setMetricKind(expectedDescriptor.getMetricKind())
+            .build();
+    CreateMetricDescriptorRequest expectedRequest =
+        CreateMetricDescriptorRequest.newBuilder()
+            .setName("projects/" + aProjectId)
+            .setMetricDescriptor(expectedDescriptor)
+            .build();
     ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
     MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
-    verify(mockClient, times(1)).createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+    verify(mockClient, times(1))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
 
     assertTrue(result.isSuccess());
     assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
@@ -128,9 +148,15 @@ public class MetricExporterTest {
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
     MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
 
-    MetricData metricData = MetricData
-        .create(aGceResource, anInstrumentationLibraryInfo, "Metric Name", "description", "ns",
-            Type.SUMMARY, ImmutableList.of(aLongPoint));
+    MetricData metricData =
+        MetricData.create(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            "Metric Name",
+            "description",
+            "ns",
+            Type.SUMMARY,
+            ImmutableList.of(aLongPoint));
 
     CompletableResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
@@ -138,5 +164,4 @@ public class MetricExporterTest {
 
     assertFalse(result.isSuccess());
   }
-
 }

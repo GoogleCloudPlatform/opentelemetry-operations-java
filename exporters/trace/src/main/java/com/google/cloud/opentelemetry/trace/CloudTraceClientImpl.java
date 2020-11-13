@@ -3,7 +3,6 @@ package com.google.cloud.opentelemetry.trace;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import com.google.devtools.cloudtrace.v2.Span;
-
 import java.util.List;
 
 public class CloudTraceClientImpl implements CloudTraceClient {

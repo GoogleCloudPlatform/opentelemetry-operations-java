@@ -1,20 +1,23 @@
 package com.google.cloud.opentelemetry.trace;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link TraceConfiguration}. */
 @RunWith(JUnit4.class)
@@ -72,7 +75,7 @@ public class TraceConfigurationTest {
 
     builder.setProjectId("");
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 
   @Test
@@ -101,7 +104,7 @@ public class TraceConfigurationTest {
         Collections.singletonMap(null, AttributeValue.newBuilder().setBoolValue(true).build());
     builder.setFixedAttributes(attributes);
 
-    assertThrows(NullPointerException.class, () -> builder.build());
+    assertThrows(NullPointerException.class, builder::build);
   }
 
   @Test
@@ -111,7 +114,7 @@ public class TraceConfigurationTest {
     Map<String, AttributeValue> attributes = Collections.singletonMap("key", null);
     builder.setFixedAttributes(attributes);
 
-    assertThrows(NullPointerException.class, () -> builder.build());
+    assertThrows(NullPointerException.class, builder::build);
   }
 
   @Test
@@ -120,7 +123,7 @@ public class TraceConfigurationTest {
 
     builder.setDeadline(TraceConfiguration.Builder.ZERO);
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 
   @Test
@@ -129,6 +132,6 @@ public class TraceConfigurationTest {
 
     builder.setDeadline(NEG_ONE_MINUTE);
 
-    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, builder::build);
   }
 }

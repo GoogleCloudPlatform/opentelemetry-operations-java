@@ -1,13 +1,13 @@
 package com.google.cloud.opentelemetry.trace;
 
-import static io.opentelemetry.sdk.trace.data.ImmutableStatus.OK;
 import static org.junit.Assert.assertTrue;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,13 +35,12 @@ public class EndToEndTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  private static final Status SPAN_DATA_STATUS = OK;
+  private static final Status SPAN_DATA_STATUS = Status.ok();
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
   private TraceExporter exporter;
   private Process mockServerProcess;
-
 
   @Before
   public void setup() throws IOException {
@@ -53,7 +52,7 @@ public class EndToEndTest {
 
     // Start the mock server. This assumes the binary is present and in $PATH.
     // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[]{System.getProperty("mock.server.path"), "-address", address};
+    String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
     ProcessBuilder pb = new ProcessBuilder(cmdArray);
     pb.redirectErrorStream(true);
     mockServerProcess = pb.start();
@@ -62,7 +61,8 @@ public class EndToEndTest {
     mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
 
     // Block until the mock server starts (it will output the address after starting).
-    BufferedReader br = new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
+    BufferedReader br =
+        new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
     br.readLine();
   }
 
@@ -72,16 +72,17 @@ public class EndToEndTest {
   }
 
   @Test
-  public void exportMockSpanDataList(){
+  public void exportMockSpanDataList() {
     exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
-    TestSpanData spanDataOne = TestSpanData.newBuilder()
+    TestSpanData spanDataOne =
+        TestSpanData.newBuilder()
             .setParentSpanId(PARENT_SPAN_ID)
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)
-            .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
+            .setKind(Kind.SERVER)
             .setEvents(Collections.emptyList())
             .setStatus(SPAN_DATA_STATUS)
             .setStartEpochNanos(START_EPOCH_NANOS)
@@ -98,7 +99,7 @@ public class EndToEndTest {
   }
 
   @Test
-  public void exportEmptySpanDataList(){
+  public void exportEmptySpanDataList() {
     exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
