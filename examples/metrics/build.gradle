@@ -5,7 +5,7 @@ plugins {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.google.cloud.opentelemetry.example.trace.TraceExporterExample'
+                'Main-Class': 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
         )
     }
 }
@@ -23,11 +23,12 @@ task fatJar(type: Jar) {
     with jar
 }
 
-description = 'Examples for Cloud Trace Exporter'
+description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
+    compile 'io.opentelemetry:opentelemetry-exporters-logging:0.9.1'
     compile(libraries.opentelemetry_api)
     compile(libraries.opentelemetry_sdk)
-    compile(libraries.google_cloud_trace)
-    compile(libraries.opentelemetry_operations_java_trace)
+    compile(libraries.google_cloud_monitoring)
+    compile(libraries.opentelemetry_operations_java_metrics)
 }
