@@ -4,7 +4,6 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapResource;
 
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -139,7 +138,6 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           TimeSeries.newBuilder()
               .setMetric(mapMetric(metricPoint, descriptor.getType()))
               .setMetricKind(descriptor.getMetricKind())
-              .setResource(mapResource(metricData.getResource()))
               .addPoints(point)
               .build());
     }

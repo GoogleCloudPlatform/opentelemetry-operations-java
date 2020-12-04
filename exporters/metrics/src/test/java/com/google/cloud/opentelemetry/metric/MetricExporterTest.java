@@ -23,9 +23,7 @@ import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
-import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
@@ -121,22 +119,6 @@ public class MetricExporterTest {
                     .putLabels("label2", "False")
                     .build())
             .addPoints(expectedPoint)
-            .setResource(
-                MonitoredResource.newBuilder()
-                    .putAllLabels(
-                        ImmutableMap.of(
-                            "cloud.account.id",
-                            "123",
-                            "cloud.provider",
-                            "gcp",
-                            "cloud.zone",
-                            "US",
-                            "extra_info",
-                            "extra",
-                            "host.id",
-                            "host"))
-                    .putLabels("not_gcp_resource", "value")
-                    .build())
             .setMetricKind(expectedDescriptor.getMetricKind())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
