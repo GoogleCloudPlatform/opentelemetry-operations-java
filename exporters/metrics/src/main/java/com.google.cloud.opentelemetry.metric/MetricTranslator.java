@@ -8,6 +8,7 @@ import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_LO
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
+import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
@@ -16,8 +17,11 @@ import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Type;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -123,6 +127,20 @@ public class MetricTranslator {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
+  }
+
+  static MonitoredResource mapResource(Resource resource) {
+    MonitoredResource.Builder resourceBuilder = MonitoredResource.newBuilder();
+    resource
+        .getAttributes()
+        .forEach(
+            new AttributeConsumer() {
+              @Override
+              public <T> void accept(AttributeKey<T> key, T value) {
+                resourceBuilder.putLabels(key.getKey(), String.valueOf(value));
+              }
+            });
+    return resourceBuilder.build();
   }
 
   private static Timestamp mapTimestamp(long epochNanos) {
