@@ -29,5 +29,5 @@ dependencies {
     compile(libraries.opentelemetry_api)
     compile(libraries.opentelemetry_sdk)
     compile(libraries.google_cloud_trace)
-    compile(libraries.opentelemetry_operations_java)
+    compile project(':exporter-trace')
 }

@@ -27,7 +27,6 @@ subprojects {
         openTelemetryInstrumentationVersion = '0.10.1'
         junitVersion = '4.13'
         mockitoVersion = '3.5.10'
-        opentelemetryOperationsVersion = '0.9.1'  // CURRENT_RELEASE_VERSION
 
         libraries = [
                 auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -43,7 +42,6 @@ subprojects {
                 opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
                 opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",
-                opentelemetry_operations_java: "com.google.cloud.opentelemetry:exporter-trace:${opentelemetryOperationsVersion}"
         ]
         testLibraries = [
                 junit       : "junit:junit:${junitVersion}",

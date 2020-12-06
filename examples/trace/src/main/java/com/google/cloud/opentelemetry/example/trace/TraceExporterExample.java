@@ -6,14 +6,15 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.time.Duration;
 
 public class TraceExporterExample {
   private TraceExporter traceExporter;
 
-  private Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.TraceExporterExample");
+  private Tracer tracer =
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.TraceExporterExample");
 
   private void setupTraceExporter() {
     // Using default project ID and Credentials
@@ -25,7 +26,7 @@ public class TraceExporterExample {
 
       // Register the TraceExporter with OpenTelemetry
       OpenTelemetrySdk.getGlobalTracerManagement()
-          .addSpanProcessor(BatchSpanProcessor.builder(this.traceExporter).build());
+          .addSpanProcessor(SimpleSpanProcessor.builder(this.traceExporter).build());
     } catch (IOException e) {
       System.out.println("Uncaught Exception");
     }
