@@ -23,6 +23,7 @@ import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
+import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.Point;
@@ -119,6 +120,7 @@ public class MetricExporterTest {
                     .putLabels("label2", "False")
                     .build())
             .addPoints(expectedPoint)
+            .setResource(MonitoredResource.newBuilder().build())
             .setMetricKind(expectedDescriptor.getMetricKind())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
