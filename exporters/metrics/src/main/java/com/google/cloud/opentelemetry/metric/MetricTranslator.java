@@ -41,6 +41,7 @@ public class MetricTranslator {
   static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
   static final Set<Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
   static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
+  private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   static Metric mapMetric(MetricData.Point metricPoint, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
@@ -137,7 +138,7 @@ public class MetricTranslator {
       endTime =
           Timestamp.newBuilder()
               .setSeconds(endTime.getSeconds())
-              .setNanos(endTime.getNanos() + 1000)
+              .setNanos(endTime.getNanos() + MIN_TIMESTAMP_INTERVAL_NANOS)
               .build();
     }
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
