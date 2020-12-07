@@ -120,8 +120,12 @@ public class MetricExporterTest {
                     .putLabels("label2", "False")
                     .build())
             .addPoints(expectedPoint)
-            .setResource(MonitoredResource.newBuilder().build())
             .setMetricKind(expectedDescriptor.getMetricKind())
+            .setResource(
+                MonitoredResource.newBuilder()
+                    .setType("global")
+                    .putLabels("project_id", aProjectId)
+                    .build())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
         CreateMetricDescriptorRequest.newBuilder()
