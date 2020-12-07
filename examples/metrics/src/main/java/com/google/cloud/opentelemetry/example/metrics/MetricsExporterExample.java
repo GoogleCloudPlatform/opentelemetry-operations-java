@@ -21,12 +21,12 @@ public class MetricsExporterExample {
 
   private static void setupMetricExporter() {
     try {
-      MetricConfiguration configuration =
-          MetricConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
-      metricExporter = MetricExporter.createWithConfiguration(configuration);
+      metricExporter = MetricExporter.createWithDefaultConfiguration();
       intervalMetricReader =
           IntervalMetricReader.builder()
-              .setExportIntervalMillis(500)
+              // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
+              // Rate at which data can be written to a single time series: one point each 10 seconds
+              .setExportIntervalMillis(20000)
               .setMetricExporter(metricExporter)
               .setMetricProducers(
                   singleton(OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))

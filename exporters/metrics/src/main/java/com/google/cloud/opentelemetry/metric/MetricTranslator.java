@@ -49,7 +49,7 @@ public class MetricTranslator {
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
             .setDescription(metric.getDescription())
-            .setType(mapMetricType(metric.getInstrumentationLibraryInfo().getName()))
+            .setType(mapMetricType(metric.getName()))
             .setUnit(metric.getUnit());
     metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
 
@@ -114,14 +114,18 @@ public class MetricTranslator {
       logger.error("Type {} not supported", type);
       return null;
     }
-    pointBuilder.setInterval(mapInterval(point));
+    pointBuilder.setInterval(mapInterval(point, type));
     lastUpdatedTime.put(updateKey, point.getEpochNanos());
     return pointBuilder.build();
   }
 
-  static TimeInterval mapInterval(MetricData.Point point) {
+  static TimeInterval mapInterval(MetricData.Point point, Type metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
+    if (GAUGE_TYPES.contains(metricType)) {
+      // The start time must be equal to the end time for the gauge metric
+      startTime = endTime;
+    }
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 

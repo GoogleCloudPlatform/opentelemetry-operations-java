@@ -141,7 +141,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           TimeSeries.newBuilder()
               .setMetric(metric)
               .addPoints(point)
-              .setResource(MonitoredResource.newBuilder().build())
+              //.setResource(MonitoredResource.newBuilder().build())
               .setMetricKind(descriptor.getMetricKind())
               .build());
     }
