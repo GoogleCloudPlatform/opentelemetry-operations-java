@@ -26,7 +26,6 @@ task fatJar(type: Jar) {
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
-    compile 'io.opentelemetry:opentelemetry-exporters-logging:0.9.1'
     compile(libraries.opentelemetry_api)
     compile(libraries.opentelemetry_sdk)
     compile(libraries.google_cloud_monitoring)
