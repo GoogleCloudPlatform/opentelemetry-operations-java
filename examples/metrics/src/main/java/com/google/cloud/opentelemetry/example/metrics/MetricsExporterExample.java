@@ -19,7 +19,7 @@ public class MetricsExporterExample {
   private static io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter;
   private static IntervalMetricReader intervalMetricReader;
 
-  public MetricsExporterExample() {
+  private static void setupMetricExporter() {
     try {
       MetricConfiguration configuration =
           MetricConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
@@ -36,7 +36,7 @@ public class MetricsExporterExample {
     }
   }
 
-  private void addCounter() {
+  private static void myUseCase() {
     LongUpDownCounter counter =
         METER
             .longUpDownCounterBuilder("processed_jobs")
@@ -46,7 +46,7 @@ public class MetricsExporterExample {
     doWork(counter);
   }
 
-  private void doWork(LongUpDownCounter counter) {
+  private static void doWork(LongUpDownCounter counter) {
     Random random = new Random();
     try {
       for (int i = 0; i < 10; i++) {
@@ -58,10 +58,14 @@ public class MetricsExporterExample {
     }
   }
 
-  public static void main(String[] args) {
-    MetricsExporterExample example = new MetricsExporterExample();
-    example.addCounter();
+  public static void main(String[] args) throws InterruptedException {
+    setupMetricExporter();
+
+    myUseCase();
+    Thread.sleep(10000);
+
     intervalMetricReader.shutdown();
     metricExporter.flush();
+    metricExporter.shutdown();
   }
 }

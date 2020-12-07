@@ -30,5 +30,5 @@ dependencies {
     compile(libraries.opentelemetry_api)
     compile(libraries.opentelemetry_sdk)
     compile(libraries.google_cloud_monitoring)
-    compile(libraries.opentelemetry_operations_java_metrics)
+    compile project(':exporter-metrics')
 }
