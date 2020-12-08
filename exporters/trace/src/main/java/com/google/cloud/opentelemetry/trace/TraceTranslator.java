@@ -13,7 +13,9 @@ import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
+import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -79,7 +81,7 @@ class TraceTranslator {
     if (spanData.getParentSpanId() != null) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
-    boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
+    boolean hasRemoteParent = spanData.hasRemoteParent();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
   }
@@ -114,8 +116,7 @@ class TraceTranslator {
   // attributes like the agent.
   @VisibleForTesting
   static Attributes toAttributesProto(
-      io.opentelemetry.api.common.Attributes attributes,
-      Map<String, AttributeValue> fixedAttributes) {
+      ReadableAttributes attributes, Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
@@ -128,15 +129,17 @@ class TraceTranslator {
     return toAttributesProto(attributes, ImmutableMap.of());
   }
 
-  private static Attributes.Builder toAttributesBuilderProto(
-      io.opentelemetry.api.common.Attributes attributes) {
+  private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
-        (attributeKey, o) ->
-            attributesBuilder.putAttributeMap(
-                mapKey(attributeKey), toAttributeValueProto(attributeKey, o)));
+        new AttributeConsumer() {
+          @Override
+          public <T> void accept(AttributeKey<T> key, T value) {
+            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
+          }
+        });
     return attributesBuilder;
   }
 
