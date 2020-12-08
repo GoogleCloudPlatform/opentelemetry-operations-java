@@ -4,10 +4,10 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapResource;
 
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
-import com.google.api.MonitoredResource;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -141,7 +141,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           TimeSeries.newBuilder()
               .setMetric(metric)
               .addPoints(point)
-              .setResource(MonitoredResource.newBuilder().build())
+              .setResource(mapResource(projectId))
               .setMetricKind(descriptor.getMetricKind())
               .build());
     }

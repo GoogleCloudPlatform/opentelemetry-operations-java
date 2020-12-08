@@ -8,6 +8,7 @@ import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_LO
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
+import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Type;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,8 @@ public class MetricTranslator {
   static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
+  private static final String DEFAULT_RESOURCE_TYPE = "global";
+  private static final String RESOURCE_PROJECT_ID_LABEL = "project_id";
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
@@ -37,6 +41,7 @@ public class MetricTranslator {
   static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
   static final Set<Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
   static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
+  private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   static Metric mapMetric(MetricData.Point metricPoint, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
@@ -49,7 +54,7 @@ public class MetricTranslator {
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
             .setDescription(metric.getDescription())
-            .setType(mapMetricType(metric.getInstrumentationLibraryInfo().getName()))
+            .setType(mapMetricType(metric.getName()))
             .setUnit(metric.getUnit());
     metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
 
@@ -114,15 +119,39 @@ public class MetricTranslator {
       logger.error("Type {} not supported", type);
       return null;
     }
-    pointBuilder.setInterval(mapInterval(point));
+    pointBuilder.setInterval(mapInterval(point, type));
     lastUpdatedTime.put(updateKey, point.getEpochNanos());
     return pointBuilder.build();
   }
 
-  static TimeInterval mapInterval(MetricData.Point point) {
+  static TimeInterval mapInterval(MetricData.Point point, Type metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
+    if (GAUGE_TYPES.contains(metricType)) {
+      // The start time must be equal to the end time for the gauge metric
+      startTime = endTime;
+    } else if (TimeUnit.SECONDS.toNanos(startTime.getSeconds()) + startTime.getNanos()
+        == TimeUnit.SECONDS.toNanos(endTime.getSeconds()) + endTime.getNanos()) {
+      // The end time of a new interval must be at least a millisecond after the end time of the
+      // previous interval, for all non-gauge types.
+      // https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#timeinterval
+      endTime =
+          Timestamp.newBuilder()
+              .setSeconds(endTime.getSeconds())
+              .setNanos(endTime.getNanos() + MIN_TIMESTAMP_INTERVAL_NANOS)
+              .build();
+    }
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
+  }
+
+  static MonitoredResource mapResource(String projectId) {
+    // This is mapping to the global resource type temporarily:
+    // https://cloud.google.com/monitoring/api/resources#tag_global
+    // It should be mapped properly in the future.
+    return MonitoredResource.newBuilder()
+        .setType(DEFAULT_RESOURCE_TYPE)
+        .putLabels(RESOURCE_PROJECT_ID_LABEL, projectId)
+        .build();
   }
 
   private static Timestamp mapTimestamp(long epochNanos) {

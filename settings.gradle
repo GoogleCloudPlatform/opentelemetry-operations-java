@@ -3,6 +3,7 @@ rootProject.name = "opentelemetry-operations-java"
 include ":exporter-trace"
 include ":examples-trace"
 include ":exporter-metrics"
+include ":examples-metrics"
 include ":exporter-auto"
 
 project(':exporter-trace').projectDir =
@@ -13,6 +14,9 @@ project(':examples-trace').projectDir =
 
 project(':exporter-metrics').projectDir =
         "$rootDir/exporters/metrics" as File
+
+project(':examples-metrics').projectDir =
+        "$rootDir/examples/metrics" as File
 
 project(':exporter-auto').projectDir =
         "$rootDir/exporters/auto" as File

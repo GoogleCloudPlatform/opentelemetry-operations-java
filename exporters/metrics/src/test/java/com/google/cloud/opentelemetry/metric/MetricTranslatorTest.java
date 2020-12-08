@@ -50,7 +50,7 @@ public class MetricTranslatorTest {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
-            .setType(DESCRIPTOR_TYPE_URL + anInstrumentationLibraryInfo.getName())
+            .setType(DESCRIPTOR_TYPE_URL + aMetricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
