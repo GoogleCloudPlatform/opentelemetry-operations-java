@@ -2,7 +2,6 @@ package com.google.cloud.opentelemetry.example.metrics;
 
 import static java.util.Collections.singleton;
 
-import com.google.cloud.opentelemetry.metric.MetricConfiguration;
 import com.google.cloud.opentelemetry.metric.MetricExporter;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
@@ -10,7 +9,6 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Random;
 
 public class MetricsExporterExample {
@@ -22,21 +20,19 @@ public class MetricsExporterExample {
 
   private static void setupMetricExporter() {
     try {
-      MetricConfiguration configuration =
-          MetricConfiguration.builder().setDeadline(Duration.ofMillis(90000)).build();
-      metricExporter = MetricExporter.createWithConfiguration(configuration);
+      metricExporter = MetricExporter.createWithDefaultConfiguration();
       intervalMetricReader =
           IntervalMetricReader.builder()
               // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
               // Rate at which data can be written to a single time series: one point each 10
-              // seconds
+              // seconds.
               .setExportIntervalMillis(20000)
               .setMetricExporter(metricExporter)
               .setMetricProducers(
                   singleton(OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
               .build();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
