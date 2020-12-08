@@ -4,8 +4,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.io.BufferedReader;
@@ -31,6 +34,7 @@ public class EndToEndTest {
   private static final Map<String, AttributeValue> FIXED_ATTRIBUTES = new HashMap<>();
   private static final String TRACE_ID = TraceId.fromLongs(321, 123);
   private static final String SPAN_ID = SpanId.fromLong(12345);
+  private static final String PARENT_TRACE_ID = TraceId.fromLongs(543, 345);
   private static final String PARENT_SPAN_ID = SpanId.fromLong(54321);
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
@@ -78,7 +82,12 @@ public class EndToEndTest {
 
     TestSpanData spanDataOne =
         TestSpanData.newBuilder()
-            .setParentSpanId(PARENT_SPAN_ID)
+            .setParentSpanContext(
+                SpanContext.create(
+                    PARENT_TRACE_ID,
+                    PARENT_SPAN_ID,
+                    TraceFlags.getSampled(),
+                    TraceState.getDefault()))
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)

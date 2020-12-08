@@ -26,9 +26,8 @@ package com.google.cloud.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -56,7 +55,7 @@ public abstract class TestSpanData implements SpanData {
    */
   public static Builder newBuilder() {
     return new AutoValue_TestSpanData.Builder()
-        .setParentSpanId(SpanId.getInvalid())
+        .setParentSpanContext(SpanContext.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
@@ -77,11 +76,6 @@ public abstract class TestSpanData implements SpanData {
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   /**
@@ -138,13 +132,12 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setTraceState(TraceState traceState);
 
     /**
-     * The parent span id associated for this span, which may be null.
+     * The parent span context associated for this span, which may be null.
      *
-     * @param parentSpanId the SpanId of the parent
+     * @param parentSpanContext the SpanId of the parent
      * @return this.
-     * @since 0.1.0
      */
-    public abstract Builder setParentSpanId(String parentSpanId);
+    public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.
@@ -201,7 +194,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this
      * @since 0.1.0
      */
-    public abstract Builder setAttributes(ReadableAttributes attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.

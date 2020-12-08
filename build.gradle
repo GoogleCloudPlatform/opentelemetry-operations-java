@@ -23,8 +23,8 @@ subprojects {
         slf4jVersion = '1.7.30'
         googleCloudVersion = '1.0.2'
         cloudMonitoringVersion = '2.0.1'
-        openTelemetryVersion = '0.10.0'
-        openTelemetryInstrumentationVersion = '0.10.1'
+        openTelemetryVersion = '0.12.0'
+        openTelemetryInstrumentationVersion = '0.11.1'
         junitVersion = '4.13'
         mockitoVersion = '3.5.10'
 

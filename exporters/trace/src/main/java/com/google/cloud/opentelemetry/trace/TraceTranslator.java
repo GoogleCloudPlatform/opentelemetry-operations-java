@@ -13,9 +13,7 @@ import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -81,7 +79,7 @@ class TraceTranslator {
     if (spanData.getParentSpanId() != null) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
-    boolean hasRemoteParent = spanData.hasRemoteParent();
+    boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
   }
@@ -116,7 +114,8 @@ class TraceTranslator {
   // attributes like the agent.
   @VisibleForTesting
   static Attributes toAttributesProto(
-      ReadableAttributes attributes, Map<String, AttributeValue> fixedAttributes) {
+      io.opentelemetry.api.common.Attributes attributes,
+      Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
@@ -125,25 +124,23 @@ class TraceTranslator {
     return attributesBuilder.build();
   }
 
-  private static Attributes toAttributesProto(ReadableAttributes attributes) {
+  private static Attributes toAttributesProto(io.opentelemetry.api.common.Attributes attributes) {
     return toAttributesProto(attributes, ImmutableMap.of());
   }
 
-  private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
+  private static Attributes.Builder toAttributesBuilderProto(
+      io.opentelemetry.api.common.Attributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
-          }
-        });
+        (attributeKey, o) ->
+            attributesBuilder.putAttributeMap(
+                mapKey(attributeKey), toAttributeValueProto(attributeKey, o)));
     return attributesBuilder;
   }
 
-  private static <T> AttributeValue toAttributeValueProto(AttributeKey<T> key, T value) {
+  private static <T> AttributeValue toAttributeValueProto(AttributeKey<?> key, Object value) {
     AttributeValue.Builder builder = AttributeValue.newBuilder();
     switch (key.getType()) {
       case STRING:
@@ -189,7 +186,7 @@ class TraceTranslator {
 
   @VisibleForTesting
   static Status toStatusProto(SpanData.Status status) {
-    Status.Builder statusBuilder = Status.newBuilder().setCode(status.getCanonicalCode().value());
+    Status.Builder statusBuilder = Status.newBuilder().setCode(status.getStatusCode().value());
     if (status.getDescription() != null) {
       statusBuilder.setMessage(status.getDescription());
     }
