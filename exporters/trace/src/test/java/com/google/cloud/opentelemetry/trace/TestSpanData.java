@@ -138,11 +138,10 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setTraceState(TraceState traceState);
 
     /**
-     * The parent span id associated for this span, which may be null.
+     * The parent span ID associated for this span, which may be null.
      *
      * @param parentSpanId the SpanId of the parent
      * @return this.
-     * @since 0.1.0
      */
     public abstract Builder setParentSpanId(String parentSpanId);
 

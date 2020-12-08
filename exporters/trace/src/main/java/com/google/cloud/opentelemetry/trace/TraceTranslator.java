@@ -125,7 +125,7 @@ class TraceTranslator {
     return attributesBuilder.build();
   }
 
-  private static Attributes toAttributesProto(ReadableAttributes attributes) {
+  private static Attributes toAttributesProto(io.opentelemetry.api.common.Attributes attributes) {
     return toAttributesProto(attributes, ImmutableMap.of());
   }
 
@@ -143,7 +143,7 @@ class TraceTranslator {
     return attributesBuilder;
   }
 
-  private static <T> AttributeValue toAttributeValueProto(AttributeKey<T> key, T value) {
+  private static <T> AttributeValue toAttributeValueProto(AttributeKey<?> key, Object value) {
     AttributeValue.Builder builder = AttributeValue.newBuilder();
     switch (key.getType()) {
       case STRING:
@@ -189,7 +189,7 @@ class TraceTranslator {
 
   @VisibleForTesting
   static Status toStatusProto(SpanData.Status status) {
-    Status.Builder statusBuilder = Status.newBuilder().setCode(status.getCanonicalCode().value());
+    Status.Builder statusBuilder = Status.newBuilder().setCode(status.getStatusCode().value());
     if (status.getDescription() != null) {
       statusBuilder.setMessage(status.getDescription());
     }

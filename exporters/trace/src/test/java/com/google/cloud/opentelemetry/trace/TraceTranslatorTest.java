@@ -9,7 +9,6 @@ import com.google.devtools.cloudtrace.v2.Span;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ public class TraceTranslatorTest {
     long longKey = 100;
     double doubleKey = 3.14;
 
-    ReadableAttributes attributes =
+    Attributes attributes =
         Attributes.builder()
             .put("myKey", stringkey)
             .put("http.status_code", boolKey)
