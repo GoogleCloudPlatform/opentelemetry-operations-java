@@ -48,17 +48,26 @@ public class FakeData {
           Labels.of("label1", "value1", "label2", "False"),
           32L);
 
+  static final Point aDoublePoint =
+          MetricData.DoublePoint.create(
+                  1599030114 * NANO_PER_SECOND,
+                  1599031814 * NANO_PER_SECOND,
+                  Labels.of("label1", "value1", "label2", "False"),
+                  32d);
+
   // The name does not have to start with "opentelemetry/", it is set this way because of a bug in
   // the mock server,
   // and should be changed when the following issue is resolved:
   // https://github.com/googleinterns/cloud-operations-api-mock/issues/56
   static final MetricData aMetricData =
-      MetricData.create(
+      MetricData.createLongSum(
           aGceResource,
           anInstrumentationLibraryInfo,
           "opentelemetry/name",
           "description",
           "ns",
-          Type.MONOTONIC_LONG,
-          ImmutableList.of(aLongPoint));
+              MetricData.LongSumData.create(
+                      true,
+                      MetricData.AggregationTemporality.CUMULATIVE,
+                      ImmutableList.of(aLongPoint)));
 }

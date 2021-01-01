@@ -3,6 +3,7 @@ package com.google.cloud.opentelemetry.metric;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -153,14 +154,13 @@ public class MetricExporterTest {
     MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
 
     MetricData metricData =
-        MetricData.create(
+        MetricData.createDoubleSummary(
             aGceResource,
             anInstrumentationLibraryInfo,
             "Metric Name",
             "description",
             "ns",
-            Type.SUMMARY,
-            ImmutableList.of(aLongPoint));
+            MetricData.DoubleSummaryData.create(ImmutableList.of(aDoublePoint)));
 
     CompletableResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());
