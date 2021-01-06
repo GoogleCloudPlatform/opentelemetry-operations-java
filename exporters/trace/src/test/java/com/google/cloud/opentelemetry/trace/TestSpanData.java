@@ -26,17 +26,17 @@ package com.google.cloud.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
+
+import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.api.trace.Span}
@@ -200,7 +200,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this
      * @since 0.1.0
      */
-    public abstract Builder setAttributes(ReadableAttributes attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.
