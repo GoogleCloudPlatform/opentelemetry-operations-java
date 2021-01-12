@@ -27,6 +27,7 @@ package com.google.cloud.opentelemetry.trace;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -73,6 +74,9 @@ public abstract class TestSpanData implements SpanData {
   abstract boolean getInternalHasEnded();
 
   abstract boolean getInternalHasRemoteParent();
+
+  @Override
+  public abstract String getParentSpanId();
 
   @Override
   public final boolean hasEnded() {
@@ -144,6 +148,14 @@ public abstract class TestSpanData implements SpanData {
      * @return this.
      */
     public abstract Builder setParentSpanId(String parentSpanId);
+
+    /**
+     * The parent SpanContext associated for this span, which may be null.
+     *
+     * @param parentSpanContext the SpanContext of the parent
+     * @return this.
+     */
+    public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.
