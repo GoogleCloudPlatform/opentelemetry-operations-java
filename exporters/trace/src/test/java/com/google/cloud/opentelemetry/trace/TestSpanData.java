@@ -58,6 +58,7 @@ public abstract class TestSpanData implements SpanData {
   public static Builder newBuilder() {
     return new AutoValue_TestSpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
+        .setParentSpanContext(SpanContext.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
