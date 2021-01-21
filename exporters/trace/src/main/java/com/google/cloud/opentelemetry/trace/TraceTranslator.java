@@ -13,10 +13,9 @@ import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import java.util.Collections;
@@ -24,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 class TraceTranslator {
 
@@ -116,7 +116,7 @@ class TraceTranslator {
   // attributes like the agent.
   @VisibleForTesting
   static Attributes toAttributesProto(
-      ReadableAttributes attributes, Map<String, AttributeValue> fixedAttributes) {
+          io.opentelemetry.api.common.Attributes attributes, Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
@@ -129,14 +129,14 @@ class TraceTranslator {
     return toAttributesProto(attributes, ImmutableMap.of());
   }
 
-  private static Attributes.Builder toAttributesBuilderProto(ReadableAttributes attributes) {
+  private static Attributes.Builder toAttributesBuilderProto(io.opentelemetry.api.common.Attributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
-        new AttributeConsumer() {
+        new BiConsumer<AttributeKey<?>, Object>() {
           @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
+          public void accept(AttributeKey<?> key, Object value) {
             attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
           }
         });
@@ -189,7 +189,23 @@ class TraceTranslator {
 
   @VisibleForTesting
   static Status toStatusProto(SpanData.Status status) {
-    Status.Builder statusBuilder = Status.newBuilder().setCode(status.getStatusCode().value());
+
+    final Status.Builder statusBuilder = Status.newBuilder();
+
+    final StatusCode statusCode = status.getStatusCode();
+    switch (statusCode) {
+      case OK:
+        statusBuilder.setCode(0);
+        break;
+      case UNSET:
+        statusBuilder.setCode(1);
+        break;
+      case ERROR:
+        statusBuilder.setCode(2);
+        break;
+
+    }
+
     if (status.getDescription() != null) {
       statusBuilder.setMessage(status.getDescription());
     }

@@ -1,6 +1,7 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -69,14 +70,13 @@ public class MetricTranslatorTest {
     String description = "Metric Description";
     String unit = "ns";
     MetricData metricData =
-        MetricData.create(
+        MetricData.createDoubleSummary(
             aGceResource,
             anInstrumentationLibraryInfo,
             name,
             description,
             unit,
-            Type.SUMMARY,
-            ImmutableList.of(aLongPoint));
+            MetricData.DoubleSummaryData.create(ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
         MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);

@@ -173,8 +173,10 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     metricServiceClient.shutdown();
+
+    return CompletableResultCode.ofSuccess();
   }
 
   static class MetricWithLabels {

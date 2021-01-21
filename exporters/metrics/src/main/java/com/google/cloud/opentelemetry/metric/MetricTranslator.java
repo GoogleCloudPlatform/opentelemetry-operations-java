@@ -1,9 +1,9 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.MONOTONIC_DOUBLE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.MONOTONIC_LONG;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_DOUBLE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.NON_MONOTONIC_LONG;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.DOUBLE_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.LONG_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricData.Type.LONG_SUM;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
@@ -37,10 +37,10 @@ public class MetricTranslator {
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
-  static final Set<Type> GAUGE_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, NON_MONOTONIC_DOUBLE);
-  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(MONOTONIC_LONG, MONOTONIC_DOUBLE);
-  static final Set<Type> LONG_TYPES = ImmutableSet.of(NON_MONOTONIC_LONG, MONOTONIC_LONG);
-  static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(NON_MONOTONIC_DOUBLE, MONOTONIC_DOUBLE);
+  static final Set<Type> GAUGE_TYPES = ImmutableSet.of(LONG_GAUGE, DOUBLE_GAUGE);
+  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
+  static final Set<Type> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
+  static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   static Metric mapMetric(MetricData.Point metricPoint, String type) {
