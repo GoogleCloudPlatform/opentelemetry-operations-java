@@ -6,14 +6,15 @@ import com.google.cloud.opentelemetry.metric.MetricExporter;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.io.IOException;
 import java.util.Random;
 
 public class MetricsExporterExample {
   private static final Meter METER =
-      OpenTelemetry.getGlobalMeter("instrumentation-library-name", "semver:1.0.0");
+    GlobalMetricsProvider.getMeter("instrumentation-library-name", "semver:1.0.0");
   private static final Random RANDOM = new Random();
   private static io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter;
   private static IntervalMetricReader intervalMetricReader;
@@ -29,7 +30,7 @@ public class MetricsExporterExample {
               .setExportIntervalMillis(20000)
               .setMetricExporter(metricExporter)
               .setMetricProducers(
-                  singleton(OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
+                  singleton(SdkMeterProvider.builder().buildAndRegisterGlobal()))
               .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
