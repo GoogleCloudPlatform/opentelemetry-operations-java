@@ -10,7 +10,10 @@ import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,9 +139,9 @@ public class TraceTranslatorTest {
 
   @Test
   public void testToTimeEventsProto() {
-    List<SpanData.Event> events = new ArrayList<>();
-    SpanData.Event eventOne =
-        new SpanData.Event() {
+    List<EventData> events = new ArrayList<>();
+    EventData eventOne =
+        new EventData() {
           // The SpanData.Event interfaces requires us to override these four methods
           @Override
           public long getEpochNanos() {
@@ -181,7 +184,7 @@ public class TraceTranslatorTest {
 
   @Test
   public void testToStatusProto() {
-    Status spanStatus = TraceTranslator.toStatusProto(SpanData.Status.ok());
+    Status spanStatus = TraceTranslator.toStatusProto(StatusData.ok());
 
     // The int representation is 0 for canonical code "OK".
     assertEquals(0, spanStatus.getCode());

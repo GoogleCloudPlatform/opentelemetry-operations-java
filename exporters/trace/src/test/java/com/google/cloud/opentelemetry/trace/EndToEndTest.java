@@ -4,10 +4,13 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,7 +40,7 @@ public class EndToEndTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  private static final Status SPAN_DATA_STATUS = Status.ok();
+  private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
@@ -91,6 +94,12 @@ public class EndToEndTest {
     TestSpanData spanDataOne =
         TestSpanData.newBuilder()
             .setParentSpanId(PARENT_SPAN_ID)
+            .setParentSpanContext(
+              SpanContext.createFromRemoteParent(
+                TRACE_ID,
+                PARENT_SPAN_ID,
+                TraceFlags.getDefault(),
+                TraceState.getDefault()))
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)
@@ -100,7 +109,6 @@ public class EndToEndTest {
             .setStartEpochNanos(START_EPOCH_NANOS)
             .setEndEpochNanos(END_EPOCH_NANOS)
             .setTotalRecordedLinks(0)
-            .setHasRemoteParent(false)
             .setHasEnded(true)
             .build();
 
