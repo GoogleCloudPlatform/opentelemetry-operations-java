@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,27 +45,38 @@ public class EndToEndTest {
   private Process mockServerProcess;
 
   @Before
-  public void setup() throws IOException {
-    // Find a free port to spin up our server at.
-    ServerSocket socket = new ServerSocket(0);
-    int port = socket.getLocalPort();
-    String address = String.format("%s:%d", LOCALHOST, port);
-    socket.close();
+  public void setup() throws MockServerStartupFailedPleaseReadmeException {
+    try {
+      // Find a free port to spin up our server at.
+      ServerSocket socket = new ServerSocket(0);
+      int port = socket.getLocalPort();
+      String address = String.format("%s:%d", LOCALHOST, port);
+      socket.close();
 
-    // Start the mock server. This assumes the binary is present and in $PATH.
-    // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
-    ProcessBuilder pb = new ProcessBuilder(cmdArray);
-    pb.redirectErrorStream(true);
-    mockServerProcess = pb.start();
+      // Start the mock server. This assumes the binary is present and in $PATH.
+      // Typically, the CI will be the one that curls the binary and adds it to $PATH.
+      String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
+      ProcessBuilder pb = new ProcessBuilder(cmdArray);
+      pb.redirectErrorStream(true);
+      mockServerProcess = pb.start();
 
-    // Setup the mock trace client.
-    mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
+      // Setup the mock trace client.
+      mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
+      InputStream in = mockServerProcess.getInputStream();
 
-    // Block until the mock server starts (it will output the address after starting).
-    BufferedReader br =
-        new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
-    br.readLine();
+      // Block until the mock server starts (it will output the address after starting).
+      BufferedReader br =
+          new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
+      br.readLine();
+    } catch (Exception e) {
+      System.err.print("Unable to start Google API Mock Server: ");
+      System.err.println(System.getProperty("mock.server.path"));
+      System.err.println("\tMake sure you're following the direction to run tests");
+      System.err.println("\t$ source get_mock_server.sh");
+      System.err.println("\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
+      System.err.println("Error Stream\n");
+      throw new MockServerStartupFailedPleaseReadmeException("Failed to start mock server.", e);
+    }
   }
 
   @After
