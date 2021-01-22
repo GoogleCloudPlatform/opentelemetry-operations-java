@@ -81,6 +81,10 @@ subprojects {
 
     signing {
         required false
+        // Allow using the GPG agent on linux instead of passwords in a .properties file.
+        if (rootProject.hasProperty('signingUseGpgCmd')) {
+          useGpgCmd()
+        }
         sign configurations.archives
     }
 
@@ -106,8 +110,8 @@ subprojects {
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
                     scm {
-                        connection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        developerConnection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        connection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        developerConnection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                         url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                     }
 

@@ -45,7 +45,7 @@ public class EndToEndTest {
   private Process mockServerProcess;
 
   @Before
-  public void setup() throws MockServerStartupFailedPleaseReadmeException {
+  public void setup() throws MockServerStartupException {
     try {
       // Find a free port to spin up our server at.
       ServerSocket socket = new ServerSocket(0);
@@ -62,7 +62,6 @@ public class EndToEndTest {
 
       // Setup the mock trace client.
       mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
-      InputStream in = mockServerProcess.getInputStream();
 
       // Block until the mock server starts (it will output the address after starting).
       BufferedReader br =
@@ -75,7 +74,7 @@ public class EndToEndTest {
       error.append("\n\tMake sure you're following the direction to run tests");
       error.append("\n\t$ source get_mock_server.sh");
       error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
-      throw new MockServerStartupFailedPleaseReadmeException(error.toString(), e);
+      throw new MockServerStartupException(error.toString(), e);
     }
   }
 
