@@ -17,6 +17,12 @@ subprojects {
         maven { url 'https://dl.bintray.com/open-telemetry/maven' }
     }
 
+    test {
+        testLogging {
+            exceptionFormat = 'full'
+        }
+    }
+
     ext {
         autoServiceVersion = '1.0-rc7'
         autoValueVersion = '1.7.4'

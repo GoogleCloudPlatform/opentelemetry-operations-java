@@ -26,7 +26,7 @@ public class EndToEndTest {
   private MockCloudMetricClient mockClient;
 
   @Before
-  public void setup() throws MockServerStartupFailedPleaseReadmeException {
+  public void setup() throws MockServerStartupException {
     try {
       // Find a free port to spin up our server at.
       ServerSocket socket = new ServerSocket(0);
@@ -49,13 +49,13 @@ public class EndToEndTest {
           new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
       br.readLine();
     } catch (Exception e) {
-      System.err.print("Unable to start Google API Mock Server: ");
-      System.err.println(System.getProperty("mock.server.path"));
-      System.err.println("\tMake sure you're following the direction to run tests");
-      System.err.println("\t$ source get_mock_server.sh");
-      System.err.println("\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
-      System.err.println("Error Stream\n");
-      throw new MockServerStartupFailedPleaseReadmeException("Failed to start mock server.", e);
+      StringBuilder error = new StringBuilder();
+      error.append("Unable to start Google API Mock Server: ");
+      error.append(System.getProperty("mock.server.path"));
+      error.append("\n\tMake sure you're following the direction to run tests");
+      error.append("\n\t$ source get_mock_server.sh");
+      error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
+      throw new MockServerStartupException(error.toString(), e);
     }
   }
 
