@@ -1,9 +1,9 @@
 package com.google.cloud.opentelemetry.metric;
 
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.DOUBLE_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.DOUBLE_SUM;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.LONG_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricData.Type.LONG_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
+import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
@@ -17,8 +17,11 @@ import com.google.monitoring.v3.Point.Builder;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Type;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -37,19 +40,19 @@ public class MetricTranslator {
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
-  static final Set<Type> GAUGE_TYPES = ImmutableSet.of(LONG_GAUGE, DOUBLE_GAUGE);
-  static final Set<Type> CUMULATIVE_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
-  static final Set<Type> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
-  static final Set<Type> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
+  static final Set<MetricDataType> GAUGE_TYPES = ImmutableSet.of(LONG_GAUGE, DOUBLE_GAUGE);
+  static final Set<MetricDataType> CUMULATIVE_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
+  static final Set<MetricDataType> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
+  static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
-  static Metric mapMetric(MetricData.Point metricPoint, String type) {
+  static Metric mapMetric(Labels labels, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
-    metricPoint.getLabels().forEach(metricBuilder::putLabels);
+    labels.forEach(metricBuilder::putLabels);
     return metricBuilder.build();
   }
 
-  static MetricDescriptor mapMetricDescriptor(MetricData metric, MetricData.Point metricPoint) {
+  static MetricDescriptor mapMetricDescriptor(MetricData metric, io.opentelemetry.sdk.metrics.data.Point metricPoint) {
     MetricDescriptor.Builder builder =
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
@@ -58,7 +61,7 @@ public class MetricTranslator {
             .setUnit(metric.getUnit());
     metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
 
-    Type metricType = metric.getType();
+    MetricDataType metricType = metric.getType();
     if (GAUGE_TYPES.contains(metricType)) {
       builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
     } else if (CUMULATIVE_TYPES.contains(metricType)) {
@@ -102,29 +105,7 @@ public class MetricTranslator {
     return builder.build();
   }
 
-  static Point mapPoint(
-      MetricData metric,
-      MetricData.Point point,
-      MetricWithLabels updateKey,
-      Map<MetricWithLabels, Long> lastUpdatedTime) {
-    Builder pointBuilder = Point.newBuilder();
-    Type type = metric.getType();
-    if (LONG_TYPES.contains(type)) {
-      pointBuilder.setValue(
-          TypedValue.newBuilder().setInt64Value(((MetricData.LongPoint) point).getValue()));
-    } else if (DOUBLE_TYPES.contains(type)) {
-      pointBuilder.setValue(
-          TypedValue.newBuilder().setDoubleValue(((MetricData.DoublePoint) point).getValue()));
-    } else {
-      logger.error("Type {} not supported", type);
-      return null;
-    }
-    pointBuilder.setInterval(mapInterval(point, type));
-    lastUpdatedTime.put(updateKey, point.getEpochNanos());
-    return pointBuilder.build();
-  }
-
-  static TimeInterval mapInterval(MetricData.Point point, Type metricType) {
+  static TimeInterval mapInterval(io.opentelemetry.sdk.metrics.data.Point point, MetricDataType metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
     if (GAUGE_TYPES.contains(metricType)) {

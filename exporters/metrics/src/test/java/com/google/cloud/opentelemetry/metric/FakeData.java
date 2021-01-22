@@ -8,10 +8,14 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import io.opentelemetry.sdk.metrics.data.MetricData.Type;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+
+import java.util.Collections;
 import java.util.Date;
 
 public class FakeData {
@@ -41,19 +45,28 @@ public class FakeData {
   static final InstrumentationLibraryInfo anInstrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("instrumentName", "0");
 
-  static final Point aLongPoint =
+  static final LongPoint aLongPoint =
       LongPoint.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Labels.of("label1", "value1", "label2", "False"),
           32L);
 
-  static final Point aDoublePoint =
-          MetricData.DoublePoint.create(
+  static final DoublePoint aDoublePoint =
+          DoublePoint.create(
                   1599030114 * NANO_PER_SECOND,
                   1599031814 * NANO_PER_SECOND,
                   Labels.of("label1", "value1", "label2", "False"),
                   32d);
+
+   static final DoubleSummaryPoint aDoubleSummaryPoint =
+           DoubleSummaryPoint.create(
+                          1599030114 * NANO_PER_SECOND,
+                          1599031814 * NANO_PER_SECOND,
+                          Labels.of("label1", "value1", "label2", "False"),
+                          1,
+                          32d,
+                          Collections.emptyList());
 
   // The name does not have to start with "opentelemetry/", it is set this way because of a bug in
   // the mock server,
@@ -66,8 +79,8 @@ public class FakeData {
           "opentelemetry/name",
           "description",
           "ns",
-              MetricData.LongSumData.create(
+              LongSumData.create(
                       true,
-                      MetricData.AggregationTemporality.CUMULATIVE,
+                      AggregationTemporality.CUMULATIVE,
                       ImmutableList.of(aLongPoint)));
 }

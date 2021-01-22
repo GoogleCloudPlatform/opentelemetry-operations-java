@@ -2,6 +2,7 @@ package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -25,7 +26,7 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Type;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class MetricTranslatorTest {
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
     aLongPoint.getLabels().forEach(expectedMetricBuilder::putLabels);
 
-    Metric actualMetric = MetricTranslator.mapMetric(aLongPoint, type);
+    Metric actualMetric = MetricTranslator.mapMetric(aLongPoint.getLabels(), type);
     assertEquals(expectedMetricBuilder.build(), actualMetric);
   }
 
@@ -76,7 +77,7 @@ public class MetricTranslatorTest {
             name,
             description,
             unit,
-            MetricData.DoubleSummaryData.create(ImmutableList.of(aDoublePoint)));
+            DoubleSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
 
     MetricDescriptor actualDescriptor =
         MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
@@ -108,38 +109,5 @@ public class MetricTranslatorTest {
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
-  }
-
-  @Test
-  public void testMapPointSucceeds() {
-    MetricWithLabels metricWithLabels =
-        new MetricWithLabels("custom.googleapis.com/OpenTelemetry/DescriptorName", someLabels);
-    Map<MetricWithLabels, Long> lastUpdated = new HashMap<>();
-    lastUpdated.put(metricWithLabels, 1599032114L);
-
-    Timestamp expectedStartTime =
-        Timestamp.newBuilder()
-            .setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
-            .setNanos((int) (aLongPoint.getStartEpochNanos() % NANO_PER_SECOND))
-            .build();
-    Timestamp expectedEndTime =
-        Timestamp.newBuilder()
-            .setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
-            .setNanos((int) (aLongPoint.getEpochNanos() % NANO_PER_SECOND))
-            .build();
-    TimeInterval expectedInterval =
-        TimeInterval.newBuilder()
-            .setStartTime(expectedStartTime)
-            .setEndTime(expectedEndTime)
-            .build();
-    Point expectedPoint =
-        Point.newBuilder()
-            .setValue(TypedValue.newBuilder().setInt64Value(32L).build())
-            .setInterval(expectedInterval)
-            .build();
-
-    Point actualPoint =
-        MetricTranslator.mapPoint(aMetricData, aLongPoint, metricWithLabels, lastUpdated);
-    assertEquals(expectedPoint, actualPoint);
   }
 }
