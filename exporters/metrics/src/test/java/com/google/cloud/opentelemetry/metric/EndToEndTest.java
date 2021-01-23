@@ -66,13 +66,13 @@ public class EndToEndTest {
 
   @Test
   public void testExportMockMetricsDataList() {
-    exporter = new MetricExporter(aProjectId, mockClient);
+    exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(ImmutableList.of(aMetricData)).isSuccess());
   }
 
   @Test
   public void testExportEmptyMetricsList() {
-    exporter = new MetricExporter(aProjectId, mockClient);
+    exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }
 }

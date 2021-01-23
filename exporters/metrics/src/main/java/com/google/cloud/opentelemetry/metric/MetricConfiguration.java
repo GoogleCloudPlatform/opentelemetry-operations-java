@@ -55,10 +55,20 @@ public abstract class MetricConfiguration {
    */
   public abstract Duration getDeadline();
 
+  /**
+   * Returns the strategy for how to send metric descriptors to Cloud Monitoring.
+   * 
+   * <p>The Default is to only send descriptors once per process/classloader.
+   * 
+   * @return thhe configured strategy.
+   */
+  public abstract MetricDescriptorStrategy getDescriptorStrategy();
+
   public static Builder builder() {
     return new AutoValue_MetricConfiguration.Builder()
         .setProjectId(DEFAULT_PROJECT_ID)
-        .setDeadline(DEFAULT_DEADLINE);
+        .setDeadline(DEFAULT_DEADLINE)
+        .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE);
   }
 
   /** Builder for {@link MetricConfiguration}. */
@@ -78,6 +88,8 @@ public abstract class MetricConfiguration {
     public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
 
     public abstract Builder setDeadline(Duration deadline);
+
+    public abstract Builder setDescriptorStrategy(MetricDescriptorStrategy strategy);
 
     abstract MetricConfiguration autoBuild();
 
