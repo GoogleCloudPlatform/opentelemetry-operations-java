@@ -2,7 +2,6 @@ package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.function.Consumer;
@@ -18,13 +17,13 @@ public interface MetricDescriptorStrategy {
      * @param client           A consumer that will ensure metric descriptors are
      *                         registered to cloud monitoring.
      */
-    void exportDescriptors(Collection<MetricDescriptor> batchDescriptors, Consumer<MetricDescriptor> export);
+    void exportDescriptors(Iterable<MetricDescriptor> batchDescriptors, Consumer<MetricDescriptor> export);
 
     /** A strategy that always sends metric descriptors. */
     public static MetricDescriptorStrategy ALWAYS_SEND = new MetricDescriptorStrategy() {
 
         @Override
-        public void exportDescriptors(Collection<MetricDescriptor> batchDescriptors,
+        public void exportDescriptors(Iterable<MetricDescriptor> batchDescriptors,
                 Consumer<MetricDescriptor> export) {
             for (MetricDescriptor descriptor : batchDescriptors) {
                 export.accept(descriptor);
@@ -37,17 +36,17 @@ public interface MetricDescriptorStrategy {
      */
     public static MetricDescriptorStrategy NEVER_SEND = new MetricDescriptorStrategy() {
         @Override
-        public void exportDescriptors(Collection<MetricDescriptor> batchDescriptors,
+        public void exportDescriptors(Iterable<MetricDescriptor> batchDescriptors,
                 Consumer<MetricDescriptor> export) {
         }
     };
 
     /** A strategy that sends descriptors once per classloader instance. */
     public static MetricDescriptorStrategy SEND_ONCE = new MetricDescriptorStrategy() {
-        private Set<String> alreadySent = new HashSet<>();
+        private final Set<String> alreadySent = new HashSet<>();
 
         @Override
-        public synchronized void exportDescriptors(Collection<MetricDescriptor> batchDescriptors,
+        public synchronized void exportDescriptors(Iterable<MetricDescriptor> batchDescriptors,
                 Consumer<MetricDescriptor> export) {
             for (MetricDescriptor descriptor : batchDescriptors) {
                 if (!alreadySent.contains(descriptor.getName())) {

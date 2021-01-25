@@ -96,7 +96,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   public CompletableResultCode export(Collection<MetricData> metrics) {
     // General Algorithm for export:
     // 1. Iterate over all points in the set of metrics to export
-    // 2. Attempt to register MetricDescriptors if not already registered.
+    // 2. Attempt to register MetricDescriptors (using configured strategy)
     // 3. Fire the set of time series off.
     MetricTimeSeriesBuilder builder = new AggregateByLabelMetricTimeSeriesBuilder(projectId);
     for (final MetricData metricData : metrics) {

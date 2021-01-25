@@ -1,7 +1,25 @@
 # Metrics Exporter
 
-TODO: Full Write up
+*NOTE: Metrics are still Alpha in OpenTelemetry, and the API is not guaranteed to be stable across versions.*
 
+Opentelemetry Google Monitoring Metrics Exporter allows users to send collected metrics
+to Google Cloud.
+
+[Google Cloud Monitoring](https://cloud.google.com/monitoring) provides visibility into the performance, uptime, and overall health of cloud-powered applications. It collects metrics, events, and metadata from Google Cloud, Amazon Web Services, hosted uptime probes, application instrumentation, and a variety of common application components including Cassandra, Nginx, Apache Web Server, Elasticsearch, and many others. Operations ingests that data and generates insights via dashboards, charts, and alerts. Cloud Monitoring alerting helps you collaborate by integrating with Slack, PagerDuty, and more.
+
+## Setup
+
+Google Cloud Monitoring is a managed service provided by Google Cloud Platform. Google Cloud Monitoring requires to set up "Workspace" in advance. The guide to create a new Workspace is available on [the official document](https://cloud.google.com/monitoring/workspaces/create).
+
+## Usage
+
+TODO(jsuereth): Write this.
+
+See [the code example](../../examples/metrics) for details.
+
+## Authentication
+
+TODO(jsuereth): Write this section.
 
 ## Configuration
 
@@ -51,8 +69,7 @@ IntervalMetricReader reader =
 | Configuration | Environment Variable | JVM Property | Description | Default |
 | ------------- | -------------------- | ------------ | ----------- | ------- |
 | projectId     | GOOGLE_CLOUD_PROJECT or GOOGLE_APPLICATION_CREDENTIALS | ??? | The cloud project id.  This is autodiscovered. | The autodiscovered value. |
-| credentials | GOOGLE_APPLICATION_CREDENTIALS | N/A | Credentials to use when talking to Cloud Monitoring API. | App Engine, Cloud Sheel, GCE built-in or provided by `gcloud auth applciation-default login` |
-| deadline      | ??? | ??? | The deadline limit on exprot calls to Cloud Monitoring API | 10 seconds |
-| metricDescriptorStrategy | ??? | ??? | How to adapt OpenTelemetry metric defintiion into google cloud. `ALWAYS_SEND` will try to create metric descriptors on every export.  `SEND_ONCE` will try to create metric descriptors once per Java instance/classloader. `NEVER_SEND` will rely on Cloud Monitoring's auto-generated MetricDescriptors from time series. | `SEND_ONCE` |
-
+| credentials | GOOGLE_APPLICATION_CREDENTIALS | N/A | Credentials to use when talking to Cloud Monitoring API. | App Engine, Cloud Shell, GCE built-in or provided by `gcloud auth application-default login` |
+| deadline      | ??? | ??? | The deadline limit on export calls to Cloud Monitoring API | 10 seconds |
+| metricDescriptorStrategy | ??? | ??? | How to adapt OpenTelemetry metric definition into google cloud. `ALWAYS_SEND` will try to create metric descriptors on every export.  `SEND_ONCE` will try to create metric descriptors once per Java instance/classloader. `NEVER_SEND` will rely on Cloud Monitoring's auto-generated MetricDescriptors from time series. | `SEND_ONCE` |
 
