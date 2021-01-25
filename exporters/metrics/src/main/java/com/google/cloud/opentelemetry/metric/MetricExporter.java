@@ -128,7 +128,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       }
 
       for (final MetricDescriptor descriptor: builder.getDescriptors()) {
-        // TODO: limit this ONCE per JVM.
+        // TODO (#68): limit this ONCE per JVM.
         metricServiceClient.createMetricDescriptor(
             CreateMetricDescriptorRequest.newBuilder()
                 .setName(PROJECT_NAME_PREFIX + projectId)

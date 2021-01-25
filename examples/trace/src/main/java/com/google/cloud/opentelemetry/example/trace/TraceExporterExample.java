@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.Random;
 
 public class TraceExporterExample {
-  // TODO: Update this to NON-global OpenTelemetry.  Only APIs/Frameworks should be using gloabl.
+  // TODO: Update this to NON-global OpenTelemetry.  Only APIs/Frameworks should be using global.
   private static final Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
   private static final Random random = new Random();
 
