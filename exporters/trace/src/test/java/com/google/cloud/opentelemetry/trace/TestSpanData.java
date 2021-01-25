@@ -32,7 +32,10 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
@@ -68,13 +71,11 @@ public abstract class TestSpanData implements SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setSampled(false)
-        .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }
 
   abstract boolean getInternalHasEnded();
 
-  abstract boolean getInternalHasRemoteParent();
 
   @Override
   public abstract String getParentSpanId();
@@ -82,11 +83,6 @@ public abstract class TestSpanData implements SpanData {
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   /**
@@ -99,9 +95,9 @@ public abstract class TestSpanData implements SpanData {
 
     abstract TestSpanData autoBuild();
 
-    abstract List<Event> getEvents();
+    abstract List<EventData> getEvents();
 
-    abstract List<Link> getLinks();
+    abstract List<LinkData> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -218,12 +214,12 @@ public abstract class TestSpanData implements SpanData {
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.
      *
-     * @param events A List&lt;Event&gt; of events associated with this span.
+     * @param events A List&lt;EventData&gt; of events associated with this span.
      * @return this
      * @see Event
      * @since 0.1.0
      */
-    public abstract Builder setEvents(List<Event> events);
+    public abstract Builder setEvents(List<EventData> events);
 
     /**
      * Set the links associated with this span. Must not be null, may be empty.
@@ -231,19 +227,7 @@ public abstract class TestSpanData implements SpanData {
      * @param links A List&lt;Link&gt;
      * @return this
      */
-    public abstract Builder setLinks(List<Link> links);
-
-    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
-
-    /**
-     * Sets to true if the span has a parent on a different process.
-     *
-     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
-     * @return this
-     */
-    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
-      return setInternalHasRemoteParent(hasRemoteParent);
-    }
+    public abstract Builder setLinks(List<LinkData> links);
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 
@@ -264,7 +248,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this
      * @since 0.1.0
      */
-    public abstract Builder setStatus(Status status);
+    public abstract Builder setStatus(StatusData status);
 
     /**
      * Set the end timestamp of the span.

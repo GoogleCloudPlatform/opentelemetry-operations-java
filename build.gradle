@@ -17,14 +17,20 @@ subprojects {
         maven { url 'https://dl.bintray.com/open-telemetry/maven' }
     }
 
+    test {
+        testLogging {
+            exceptionFormat = 'full'
+        }
+    }
+
     ext {
         autoServiceVersion = '1.0-rc7'
         autoValueVersion = '1.7.4'
         slf4jVersion = '1.7.30'
         googleCloudVersion = '1.0.2'
         cloudMonitoringVersion = '2.0.1'
-        openTelemetryVersion = '0.13.1'
-        openTelemetryInstrumentationVersion = '0.13.1'
+        openTelemetryVersion = '0.14.1'
+        openTelemetryInstrumentationVersion = '0.14.0'
         junitVersion = '4.13'
         mockitoVersion = '3.5.10'
 
@@ -41,6 +47,8 @@ subprojects {
                 slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
                 opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
                 opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+                opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
+                opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
                 opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",
         ]
         testLibraries = [
@@ -75,6 +83,10 @@ subprojects {
 
     signing {
         required false
+        // Allow using the GPG agent on linux instead of passwords in a .properties file.
+        if (rootProject.hasProperty('signingUseGpgCmd')) {
+          useGpgCmd()
+        }
         sign configurations.archives
     }
 
@@ -100,8 +112,8 @@ subprojects {
                     url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
 
                     scm {
-                        connection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        developerConnection 'scm:svn:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        connection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        developerConnection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                         url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                     }
 

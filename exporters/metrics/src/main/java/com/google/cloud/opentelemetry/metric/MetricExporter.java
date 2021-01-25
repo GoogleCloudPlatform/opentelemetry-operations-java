@@ -1,12 +1,7 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapPoint;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapResource;
 
-import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
@@ -17,12 +12,14 @@ import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
-import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -96,62 +93,72 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    List<TimeSeries> allTimesSeries = new ArrayList<>();
-
-    for (MetricData metricData : metrics) {
-
-      // We are expecting one point per MetricData
-      if (metricData.getPoints().size() != 1) {
-        logger.error(
-            "There should be exactly one point in each metricData, found {}",
-            metricData.getPoints().size());
-        continue;
-      }
-      MetricData.Point metricPoint = metricData.getPoints().iterator().next();
-
-      MetricDescriptor descriptor = mapMetricDescriptor(metricData, metricPoint);
-      if (descriptor == null) {
-        continue;
-      }
-      metricServiceClient.createMetricDescriptor(
-          CreateMetricDescriptorRequest.newBuilder()
-              .setName(PROJECT_NAME_PREFIX + projectId)
-              .setMetricDescriptor(descriptor)
-              .build());
-
-      MetricWithLabels updateKey =
-          new MetricWithLabels(descriptor.getType(), metricPoint.getLabels());
-
-      // Cloud Monitoring API allows, for any combination of labels and
-      // metric name, one update per WRITE_INTERVAL seconds
-      long pointCollectionTime = metricPoint.getEpochNanos();
-      if (lastUpdatedTime.containsKey(updateKey)
-          && pointCollectionTime
-              <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
-        continue;
-      }
-
-      Metric metric = mapMetric(metricPoint, descriptor.getType());
-      Point point = mapPoint(metricData, metricPoint, updateKey, lastUpdatedTime);
-      if (point == null) {
-        continue;
+    // General Algorithm for export:
+    // 1. Iterate over all points in the set of metrics to export
+    // 2. Attempt to register MetricDescriptors if not already registered.
+    // 3. Fire the set of time series off.
+    MetricTimeSeriesBuilder builder =  new AggregateByLabelMetricTimeSeriesBuilder(projectId);
+    for (final MetricData metricData : metrics) {
+      // Extract all the underlying points.
+      switch (metricData.getType()) {
+        case LONG_GAUGE:
+          for (LongPoint point : metricData.getLongGaugeData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
+        case LONG_SUM:
+          for (LongPoint point : metricData.getLongSumData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
+        case DOUBLE_GAUGE:
+          for (DoublePoint point : metricData.getDoubleGaugeData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
+        case DOUBLE_SUM:
+          for (DoublePoint point : metricData.getDoubleSumData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
+        default:
+          logger.error("Metric type {} not supported. Only gauge and cumulative types are supported.",
+              metricData.getType());
+          continue;
       }
 
-      allTimesSeries.add(
-          TimeSeries.newBuilder()
-              .setMetric(metric)
-              .addPoints(point)
-              .setResource(mapResource(projectId))
-              .setMetricKind(descriptor.getMetricKind())
-              .build());
-    }
-    createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), allTimesSeries);
-    if (allTimesSeries.size() < metrics.size()) {
+      for (final MetricDescriptor descriptor: builder.getDescriptors()) {
+        // TODO (#68): limit this ONCE per JVM.
+        metricServiceClient.createMetricDescriptor(
+            CreateMetricDescriptorRequest.newBuilder()
+                .setName(PROJECT_NAME_PREFIX + projectId)
+                .setMetricDescriptor(descriptor)
+                .build());
+      }
+
+      // TODO: Filter metrics by last updated time....
+      // MetricWithLabels updateKey =
+      //     new MetricWithLabels(descriptor.getType(), metricPoint.getLabels());
+
+      // // Cloud Monitoring API allows, for any combination of labels and
+      // // metric name, one update per WRITE_INTERVAL seconds
+      // long pointCollectionTime = metricPoint.getEpochNanos();
+      // if (lastUpdatedTime.containsKey(updateKey)
+      //     && pointCollectionTime
+      //         <= lastUpdatedTime.get(updateKey) / NANO_PER_SECOND + WRITE_INTERVAL_SECOND) {
+      //   continue;
+      // }
+    }    
+    List<TimeSeries> series = builder.getTimeSeries();
+    createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), series);
+    // TODO: better error reporting.
+    if (series.size() < metrics.size()) {
       return CompletableResultCode.ofFailure();
     }
     return CompletableResultCode.ofSuccess();
   }
 
+  // Fragment metrics into batches and send to GCM.
   private static void createTimeSeriesBatch(
       CloudMetricClient metricServiceClient,
       ProjectName projectName,
@@ -179,6 +186,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return CompletableResultCode.ofSuccess();
   }
 
+  // TODO: Move this to its own class.
   static class MetricWithLabels {
 
     private final String metricType;

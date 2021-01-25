@@ -2,7 +2,7 @@ package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -13,7 +13,8 @@ import java.time.Duration;
 import java.util.Random;
 
 public class TraceExporterExample {
-  private static final Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.TraceExporterExample");
+  // TODO: Update this to NON-global OpenTelemetry.  Only APIs/Frameworks should be using global.
+  private static final Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
   private static final Random random = new Random();
 
   private static void setupTraceExporter() {

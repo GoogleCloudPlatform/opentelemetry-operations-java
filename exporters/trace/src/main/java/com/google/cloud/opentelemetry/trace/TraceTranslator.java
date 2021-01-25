@@ -16,8 +16,10 @@ import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,7 +71,7 @@ class TraceTranslator {
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
             .setAttributes(toAttributesProto(spanData.getAttributes(), constAttributes))
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
-    SpanData.Status status = spanData.getStatus();
+    StatusData status = spanData.getStatus();
     if (status != null) {
       spanBuilder.setStatus(toStatusProto(status));
     }
@@ -81,7 +83,7 @@ class TraceTranslator {
     if (spanData.getParentSpanId() != null) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
-    boolean hasRemoteParent = spanData.hasRemoteParent();
+    boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
   }
@@ -171,10 +173,10 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static Span.TimeEvents toTimeEventsProto(List<Event> events) {
+  static Span.TimeEvents toTimeEventsProto(List<EventData> events) {
     Span.TimeEvents.Builder timeEventsBuilder = Span.TimeEvents.newBuilder();
 
-    for (Event event : events) {
+    for (EventData event : events) {
       timeEventsBuilder.addTimeEvent(
           Span.TimeEvent.newBuilder()
               .setTime(toTimestampProto(event.getEpochNanos()))
@@ -188,7 +190,7 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static Status toStatusProto(SpanData.Status status) {
+  static Status toStatusProto(StatusData status) {
 
     final Status.Builder statusBuilder = Status.newBuilder();
 
@@ -214,20 +216,20 @@ class TraceTranslator {
 
   @VisibleForTesting
   static Links toLinksProto(
-      List<io.opentelemetry.sdk.trace.data.SpanData.Link> links, int totalRecordedLinks) {
+      List<LinkData> links, int totalRecordedLinks) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(Math.max(0, totalRecordedLinks - links.size()));
-    for (io.opentelemetry.sdk.trace.data.SpanData.Link link : links) {
+    for (LinkData link : links) {
       linksBuilder.addLink(toLinkProto(link));
     }
     return linksBuilder.build();
   }
 
-  private static Link toLinkProto(io.opentelemetry.sdk.trace.data.SpanData.Link link) {
+  private static Link toLinkProto(LinkData link) {
     checkNotNull(link);
     return Link.newBuilder()
-        .setTraceId(link.getContext().getTraceIdAsHexString())
-        .setSpanId(link.getContext().getSpanIdAsHexString())
+        .setTraceId(link.getSpanContext().getTraceIdAsHexString())
+        .setSpanId(link.getSpanContext().getSpanIdAsHexString())
         .setType(Link.Type.TYPE_UNSPECIFIED)
         .setAttributes(toAttributesBuilderProto(link.getAttributes()))
         .build();

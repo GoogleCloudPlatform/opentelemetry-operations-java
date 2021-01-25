@@ -4,10 +4,13 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +40,7 @@ public class EndToEndTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  private static final Status SPAN_DATA_STATUS = Status.ok();
+  private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
   private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
@@ -43,27 +48,37 @@ public class EndToEndTest {
   private Process mockServerProcess;
 
   @Before
-  public void setup() throws IOException {
-    // Find a free port to spin up our server at.
-    ServerSocket socket = new ServerSocket(0);
-    int port = socket.getLocalPort();
-    String address = String.format("%s:%d", LOCALHOST, port);
-    socket.close();
+  public void setup() throws MockServerStartupException {
+    try {
+      // Find a free port to spin up our server at.
+      ServerSocket socket = new ServerSocket(0);
+      int port = socket.getLocalPort();
+      String address = String.format("%s:%d", LOCALHOST, port);
+      socket.close();
 
-    // Start the mock server. This assumes the binary is present and in $PATH.
-    // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-    String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
-    ProcessBuilder pb = new ProcessBuilder(cmdArray);
-    pb.redirectErrorStream(true);
-    mockServerProcess = pb.start();
+      // Start the mock server. This assumes the binary is present and in $PATH.
+      // Typically, the CI will be the one that curls the binary and adds it to $PATH.
+      String[] cmdArray = new String[] {System.getProperty("mock.server.path"), "-address", address};
+      ProcessBuilder pb = new ProcessBuilder(cmdArray);
+      pb.redirectErrorStream(true);
+      mockServerProcess = pb.start();
 
-    // Setup the mock trace client.
-    mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
+      // Setup the mock trace client.
+      mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
 
-    // Block until the mock server starts (it will output the address after starting).
-    BufferedReader br =
-        new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
-    br.readLine();
+      // Block until the mock server starts (it will output the address after starting).
+      BufferedReader br =
+          new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
+      br.readLine();
+    } catch (Exception e) {
+      StringBuilder error = new StringBuilder();
+      error.append("Unable to start Google API Mock Server: ");
+      error.append(System.getProperty("mock.server.path"));
+      error.append("\n\tMake sure you're following the direction to run tests");
+      error.append("\n\t$ source get_mock_server.sh");
+      error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
+      throw new MockServerStartupException(error.toString(), e);
+    }
   }
 
   @After
@@ -79,6 +94,12 @@ public class EndToEndTest {
     TestSpanData spanDataOne =
         TestSpanData.newBuilder()
             .setParentSpanId(PARENT_SPAN_ID)
+            .setParentSpanContext(
+              SpanContext.createFromRemoteParent(
+                TRACE_ID,
+                PARENT_SPAN_ID,
+                TraceFlags.getDefault(),
+                TraceState.getDefault()))
             .setSpanId(SPAN_ID)
             .setTraceId(TRACE_ID)
             .setName(SPAN_NAME)
@@ -88,7 +109,6 @@ public class EndToEndTest {
             .setStartEpochNanos(START_EPOCH_NANOS)
             .setEndEpochNanos(END_EPOCH_NANOS)
             .setTotalRecordedLinks(0)
-            .setHasRemoteParent(false)
             .setHasEnded(true)
             .build();
 
