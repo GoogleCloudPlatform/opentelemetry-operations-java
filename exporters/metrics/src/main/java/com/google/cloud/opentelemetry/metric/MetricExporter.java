@@ -100,31 +100,30 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     MetricTimeSeriesBuilder builder =  new AggregateByLabelMetricTimeSeriesBuilder(projectId);
     for (final MetricData metricData : metrics) {
       // Extract all the underlying points.
-      switch(metricData.getType()) {
+      switch (metricData.getType()) {
         case LONG_GAUGE:
-          for(LongPoint point : metricData.getLongGaugeData().getPoints()) {
+          for (LongPoint point : metricData.getLongGaugeData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case LONG_SUM:
-          for(LongPoint point : metricData.getLongSumData().getPoints()) {
+          for (LongPoint point : metricData.getLongSumData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case DOUBLE_GAUGE:
-          for(DoublePoint point : metricData.getDoubleGaugeData().getPoints()) {
+          for (DoublePoint point : metricData.getDoubleGaugeData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case DOUBLE_SUM:
-          for(DoublePoint point : metricData.getDoubleSumData().getPoints()) {
+          for (DoublePoint point : metricData.getDoubleSumData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         default:
-          logger.error(
-          "Metric type {} not supported. Only gauge and cumulative types are supported.",
-          metricData.getType());
+          logger.error("Metric type {} not supported. Only gauge and cumulative types are supported.",
+              metricData.getType());
           continue;
       }
 
