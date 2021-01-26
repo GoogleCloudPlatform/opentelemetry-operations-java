@@ -46,7 +46,15 @@ jobs:
           path: ./exporters/metrics/build
       - store_artifacts:
           path: ./exporters/auto/build
+  style:
+    executor: jdk
+      steps:
+        - setup
 
+        - run:
+          name: SpotlessCheck
+          command: |
+            ./gradlew spotlessCheck
   test:
     executor: jdk
     steps:
@@ -77,3 +85,4 @@ workflows:
     jobs:
       - build
       - test
+      - style
