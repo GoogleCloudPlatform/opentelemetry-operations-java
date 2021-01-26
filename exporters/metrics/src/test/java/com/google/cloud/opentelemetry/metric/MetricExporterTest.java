@@ -137,7 +137,8 @@ public class MetricExporterTest {
             .build();
     ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient,
+            MetricDescriptorStrategy.ALWAYS_SEND);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -153,7 +154,8 @@ public class MetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
-    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient);
+    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient,
+        MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =
         MetricData.createDoubleSummary(

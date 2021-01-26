@@ -17,3 +17,14 @@ This project requires a mock server for Google Cloud APIs.  To build and test, d
 $ source get_mock_server.sh
 $ ./gradlew test -Dmock.server.path=$MOCKSERVER
 ```
+
+
+## Google Cloud Trace Exporter
+
+See [Tracing Readme](exporters/trace/README.md) for installation and usage instructions.
+
+## Google Cloud Monitoring Exporter
+
+*Note: This is an alpha-release.*
+
+See [Metrics Readme](exporters/metrics/README.md) for installation and usage instructions.

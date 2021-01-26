@@ -120,6 +120,7 @@ class TraceTranslator {
   static Attributes toAttributesProto(
           io.opentelemetry.api.common.Attributes attributes, Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
+    // TODO(jsuereth): pull instrumentation library/version from SpanData and add as attribute.
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
       attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());

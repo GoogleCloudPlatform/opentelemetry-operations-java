@@ -1,15 +1,12 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
-import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
-import static com.google.cloud.opentelemetry.metric.FakeData.someLabels;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -19,16 +16,9 @@ import com.google.api.Metric;
 import com.google.api.Metric.Builder;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
-import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.common.collect.ImmutableList;
-import com.google.monitoring.v3.Point;
-import com.google.monitoring.v3.TimeInterval;
-import com.google.monitoring.v3.TypedValue;
-import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
