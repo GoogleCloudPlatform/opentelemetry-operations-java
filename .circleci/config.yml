@@ -48,14 +48,14 @@ jobs:
           path: ./exporters/auto/build
   style:
     executor: jdk
-      steps:
-        - setup
+    steps:
+      - setup
 
-        - run:
-            name: SpotlessCheck
-            command: ./gradlew spotlessCheck
+      - run:
+          name: SpotlessCheck
+          command: ./gradlew spotlessCheck
 
-        - teardown
+      - teardown
   test:
     executor: jdk
     steps:
