@@ -1,13 +1,5 @@
 /*
- * Copied from: https://github.com/open-telemetry/opentelemetry-java/blob/v0.8.0/testing_internal/src/main/java/io/opentelemetry/sdk/trace/TestSpanData.java
- *
- * This file should be updated in the future to reflect any changes to
- * the remote. This was only copied in the first place as the original
- * TestSpanData was moved here: https://github.com/open-telemetry/opentelemetry-java/pull/1512
- */
-
-/*
- * Copyright 2020, OpenTelemetry Authors
+ * Copyright 2021 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.google.cloud.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
@@ -36,11 +27,10 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-
-import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.api.trace.Span}
@@ -75,7 +65,6 @@ public abstract class TestSpanData implements SpanData {
   }
 
   abstract boolean getInternalHasEnded();
-
 
   @Override
   public abstract String getParentSpanId();

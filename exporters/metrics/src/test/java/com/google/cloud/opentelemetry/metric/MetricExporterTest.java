@@ -1,10 +1,24 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
-import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
-import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -35,10 +49,9 @@ import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.junit.Before;
@@ -137,8 +150,9 @@ public class MetricExporterTest {
             .build();
     ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient,
-            MetricDescriptorStrategy.ALWAYS_SEND);
+    MetricExporter exporter =
+        MetricExporter.createWithClient(
+            aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -154,8 +168,9 @@ public class MetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
-    MetricExporter exporter = MetricExporter.createWithClient(aProjectId, mockClient,
-        MetricDescriptorStrategy.ALWAYS_SEND);
+    MetricExporter exporter =
+        MetricExporter.createWithClient(
+            aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =
         MetricData.createDoubleSummary(
