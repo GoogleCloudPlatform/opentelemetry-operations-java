@@ -73,7 +73,8 @@ subprojects {
         testLibraries = [
                 junit       : "junit:junit:${junitVersion}",
                 mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
-                slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}"
+                slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
+                opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
         ]
     }
 

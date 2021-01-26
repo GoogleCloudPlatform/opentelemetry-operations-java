@@ -24,6 +24,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.BufferedReader;
@@ -105,8 +106,7 @@ public class EndToEndTest {
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne =
-        TestSpanData.newBuilder()
-            .setParentSpanId(PARENT_SPAN_ID)
+        TestSpanData.builder()
             .setParentSpanContext(
                 SpanContext.createFromRemoteParent(
                     TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
