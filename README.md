@@ -19,6 +19,20 @@ $ ./gradlew test -Dmock.server.path=$MOCKSERVER
 ```
 
 
+## Contributing
+
+TODO(jsuereth): Add full contributing section.
+
+
+### Enforcing Style
+
+This project uses the spotless plugin to enforce style.  You can automatically correct any issues by running:
+
+```
+$ ./gradlew spotlessApply
+```
+
+
 ## Google Cloud Trace Exporter
 
 See [Tracing Readme](exporters/trace/README.md) for installation and usage instructions.
