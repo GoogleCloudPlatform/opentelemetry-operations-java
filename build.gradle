@@ -1,8 +1,12 @@
+plugins {
+    id "com.diffplug.spotless"
+}
 subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'java-library'
     apply plugin: 'maven'
     apply plugin: 'signing'
+    apply plugin: 'com.diffplug.spotless'
 
     group = "com.google.cloud.opentelemetry"
     version = "0.13.1-SNAPSHOT" // CURRENT_VERSION
@@ -17,6 +21,21 @@ subprojects {
         maven { url 'https://dl.bintray.com/open-telemetry/maven' }
     }
 
+    // Set up java codestyle checking and correction.
+    plugins.withId("java") {
+        plugins.apply('checkstyle')
+        plugins.apply('com.diffplug.spotless')
+    }
+
+    // Include license check and auto-format support.
+    spotless {
+        java {
+            googleJavaFormat("1.9")
+            licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+       }
+    }
+
+    // Make sure test failures include exception error messages for correction.
     test {
         testLogging {
             exceptionFormat = 'full'

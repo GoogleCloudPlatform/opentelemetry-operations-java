@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.opentelemetry.metric;
 
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
@@ -45,7 +60,8 @@ public class MetricTranslator {
     return metricBuilder.build();
   }
 
-  static MetricDescriptor mapMetricDescriptor(MetricData metric, io.opentelemetry.sdk.metrics.data.Point metricPoint) {
+  static MetricDescriptor mapMetricDescriptor(
+      MetricData metric, io.opentelemetry.sdk.metrics.data.Point metricPoint) {
     MetricDescriptor.Builder builder =
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
@@ -98,7 +114,8 @@ public class MetricTranslator {
     return builder.build();
   }
 
-  static TimeInterval mapInterval(io.opentelemetry.sdk.metrics.data.Point point, MetricDataType metricType) {
+  static TimeInterval mapInterval(
+      io.opentelemetry.sdk.metrics.data.Point point, MetricDataType metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
     if (GAUGE_TYPES.contains(metricType)) {

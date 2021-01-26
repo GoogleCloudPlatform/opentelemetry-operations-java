@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
@@ -14,7 +29,8 @@ import java.util.Random;
 
 public class TraceExporterExample {
   // TODO: Update this to NON-global OpenTelemetry.  Only APIs/Frameworks should be using global.
-  private static final Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
+  private static final Tracer tracer =
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
   private static final Random random = new Random();
 
   private static void setupTraceExporter() {
@@ -39,8 +55,8 @@ public class TraceExporterExample {
     try (Scope scope = span.makeCurrent()) {
       span.addEvent("Event A");
       // Do some work for the use case
-      for (int i=0; i<3; i++) {
-        String work = String.format("%s - Work #%d", description, (i+1));
+      for (int i = 0; i < 3; i++) {
+        String work = String.format("%s - Work #%d", description, (i + 1));
         doWork(work);
       }
 

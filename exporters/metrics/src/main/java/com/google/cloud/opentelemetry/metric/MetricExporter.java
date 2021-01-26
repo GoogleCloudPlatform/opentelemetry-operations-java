@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.opentelemetry.metric;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
@@ -16,10 +31,9 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.DoublePoint;
-
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -45,7 +59,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final MetricDescriptorStrategy metricDescriptorStrategy;
   private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
-  MetricExporter(String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
+  MetricExporter(
+      String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
     this.projectId = projectId;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
@@ -56,40 +71,63 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     return MetricExporter.createWithConfiguration(configuration);
   }
 
-  public static MetricExporter createWithConfiguration(MetricConfiguration configuration) throws IOException {
+  public static MetricExporter createWithConfiguration(MetricConfiguration configuration)
+      throws IOException {
     String projectId = configuration.getProjectId();
     MetricServiceStub stub = configuration.getMetricServiceStub();
 
     if (stub == null) {
-      Credentials credentials = configuration.getCredentials() == null ? GoogleCredentials.getApplicationDefault()
-          : configuration.getCredentials();
+      Credentials credentials =
+          configuration.getCredentials() == null
+              ? GoogleCredentials.getApplicationDefault()
+              : configuration.getCredentials();
 
-      return MetricExporter.createWithCredentials(projectId, credentials, configuration.getDeadline(),
+      return MetricExporter.createWithCredentials(
+          projectId,
+          credentials,
+          configuration.getDeadline(),
           configuration.getDescriptorStrategy());
     }
-    return MetricExporter.createWithClient(projectId, new CloudMetricClientImpl(MetricServiceClient.create(stub)),
+    return MetricExporter.createWithClient(
+        projectId,
+        new CloudMetricClientImpl(MetricServiceClient.create(stub)),
         configuration.getDescriptorStrategy());
   }
 
   @VisibleForTesting
-  static MetricExporter createWithClient(String projectId, CloudMetricClient metricServiceClient,
+  static MetricExporter createWithClient(
+      String projectId,
+      CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy) {
     return new MetricExporter(projectId, metricServiceClient, descriptorStrategy);
   }
 
-  private static MetricExporter createWithCredentials(String projectId, Credentials credentials, Duration deadline,
-      MetricDescriptorStrategy descriptorStrategy) throws IOException {
-    MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder().setCredentialsProvider(
-        FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
-    builder.createMetricDescriptorSettings()
+  private static MetricExporter createWithCredentials(
+      String projectId,
+      Credentials credentials,
+      Duration deadline,
+      MetricDescriptorStrategy descriptorStrategy)
+      throws IOException {
+    MetricServiceSettings.Builder builder =
+        MetricServiceSettings.newBuilder()
+            .setCredentialsProvider(
+                FixedCredentialsProvider.create(
+                    checkNotNull(credentials, "Credentials not provided.")));
+    builder
+        .createMetricDescriptorSettings()
         .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(projectId, new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
+    return new MetricExporter(
+        projectId,
+        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         descriptorStrategy);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
-    metricServiceClient.createMetricDescriptor(CreateMetricDescriptorRequest.newBuilder()
-        .setName(PROJECT_NAME_PREFIX + projectId).setMetricDescriptor(descriptor).build());
+    metricServiceClient.createMetricDescriptor(
+        CreateMetricDescriptorRequest.newBuilder()
+            .setName(PROJECT_NAME_PREFIX + projectId)
+            .setMetricDescriptor(descriptor)
+            .build());
   }
 
   @Override
@@ -123,7 +161,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           }
           break;
         default:
-          logger.error("Metric type {} not supported. Only gauge and cumulative types are supported.",
+          logger.error(
+              "Metric type {} not supported. Only gauge and cumulative types are supported.",
               metricData.getType());
           continue;
       }
@@ -154,7 +193,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   // Fragment metrics into batches and send to GCM.
-  private static void createTimeSeriesBatch(CloudMetricClient metricServiceClient, ProjectName projectName,
+  private static void createTimeSeriesBatch(
+      CloudMetricClient metricServiceClient,
+      ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {
@@ -163,8 +204,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   /**
-   * The exporter does not batch metrics, so this method will immediately return
-   * with success.
+   * The exporter does not batch metrics, so this method will immediately return with success.
    *
    * @return always Success
    */

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.cloud.opentelemetry.trace;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -118,7 +133,8 @@ class TraceTranslator {
   // attributes like the agent.
   @VisibleForTesting
   static Attributes toAttributesProto(
-          io.opentelemetry.api.common.Attributes attributes, Map<String, AttributeValue> fixedAttributes) {
+      io.opentelemetry.api.common.Attributes attributes,
+      Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
     // TODO(jsuereth): pull instrumentation library/version from SpanData and add as attribute.
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
@@ -132,7 +148,8 @@ class TraceTranslator {
     return toAttributesProto(attributes, ImmutableMap.of());
   }
 
-  private static Attributes.Builder toAttributesBuilderProto(io.opentelemetry.api.common.Attributes attributes) {
+  private static Attributes.Builder toAttributesBuilderProto(
+      io.opentelemetry.api.common.Attributes attributes) {
     Attributes.Builder attributesBuilder =
         // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
         Attributes.newBuilder().setDroppedAttributesCount(0);
@@ -206,7 +223,6 @@ class TraceTranslator {
       case ERROR:
         statusBuilder.setCode(2);
         break;
-
     }
 
     if (status.getDescription() != null) {
@@ -216,8 +232,7 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static Links toLinksProto(
-      List<LinkData> links, int totalRecordedLinks) {
+  static Links toLinksProto(List<LinkData> links, int totalRecordedLinks) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(Math.max(0, totalRecordedLinks - links.size()));
     for (LinkData link : links) {
