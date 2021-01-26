@@ -9,5 +9,6 @@ dependencies {
     api(libraries.google_cloud_trace)
     api(libraries.google_cloud_trace_grpc)
     testImplementation(testLibraries.junit)
+    testImplementation(testLibraries.opentelemetry_sdk_testing)
     testAnnotationProcessor(libraries.auto_value)
 }
