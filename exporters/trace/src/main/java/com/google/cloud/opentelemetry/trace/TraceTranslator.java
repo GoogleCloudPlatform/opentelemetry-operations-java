@@ -43,13 +43,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 class TraceTranslator {
-
-  // TODO(nilebox): Extract the constant
-  private static final String OPEN_TELEMETRY_LIBRARY_VERSION = "0.14.1";
   private static final String AGENT_LABEL_KEY = "g.co/agent";
   private static final String AGENT_LABEL_VALUE_STRING =
       "opentelemetry-java "
-          + OPEN_TELEMETRY_LIBRARY_VERSION
+          + TraceVersions.SDK_VERSION
           + "; google-cloud-trace-exporter "
           + TraceVersions.EXPORTER_VERSION;
   private static final AttributeValue AGENT_LABEL_VALUE =
