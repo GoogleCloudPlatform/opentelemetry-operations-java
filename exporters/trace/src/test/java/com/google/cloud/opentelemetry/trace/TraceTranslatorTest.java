@@ -147,7 +147,7 @@ public class TraceTranslatorTest {
     assertTrue(translatedAttributes.containsAttributeMap("g.co/agent"));
     assertEquals(
         translatedAttributes.getAttributeMapMap().get("g.co/agent").getStringValue().getValue(),
-        "opentelemetry-java 0.6.0; google-cloud-trace-exporter 0.1.0");
+        "opentelemetry-java 0.14.1; google-cloud-trace-exporter 0.14.0");
   }
 
   @Test
@@ -191,7 +191,7 @@ public class TraceTranslatorTest {
     Map<String, AttributeValue> attributeMap = attributes.getAttributeMapMap();
     assertEquals("value", attributeMap.get("key").getStringValue().getValue());
     assertEquals(
-        "opentelemetry-java 0.6.0; google-cloud-trace-exporter 0.1.0",
+        "opentelemetry-java 0.14.1; google-cloud-trace-exporter 0.14.0",
         attributeMap.get("g.co/agent").getStringValue().getValue());
   }
 
