@@ -124,6 +124,7 @@ subprojects {
 			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}",
 			opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
 			opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",

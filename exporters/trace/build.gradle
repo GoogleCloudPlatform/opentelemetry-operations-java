@@ -20,10 +20,27 @@ dependencies {
 	annotationProcessor(libraries.auto_value)
 	api(libraries.opentelemetry_api)
 	api(libraries.opentelemetry_sdk)
+	api(libraries.opentelemetry_semconv)
 	api(libraries.google_cloud_core)
 	api(libraries.google_cloud_trace)
 	api(libraries.google_cloud_trace_grpc)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
 	testAnnotationProcessor(libraries.auto_value)
+}
+
+// Configure a version.properties file that writes important versions.
+ext.propertiesDir = "build/generated/properties/com/google/cloud/opentelemetry/trace"
+sourceSets {
+	main {
+		output.dir("build/generated/properties", builtBy: 'generateVersionResource')
+	}
+}
+task generateVersionResource {
+	doLast {
+		def folder = file(propertiesDir)
+		folder.mkdirs()
+		def propertiesFile = new File(folder.getAbsolutePath(), "version.properties")
+		propertiesFile.write("exporter.version=${project.version}")
+	}
 }
