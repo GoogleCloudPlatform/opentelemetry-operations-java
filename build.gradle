@@ -40,6 +40,8 @@ if (file('.git').exists()) {
     releaseTask = tasks.register('release')
 }
 
+ext.isReleaseVersion = !version.toString().endsWith("-SNAPSHOT")
+
 subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'java-library'
@@ -203,7 +205,7 @@ subprojects {
                 def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
                 url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
                 credentials {
-                    username = rootProject.hasProperty.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
+                    username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
                     password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
                 }
             }
