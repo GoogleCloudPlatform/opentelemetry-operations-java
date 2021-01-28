@@ -26,7 +26,7 @@ public interface MetricDescriptorStrategy {
    * Determines what to do with metrci descriptors.
    *
    * @param batchDescriptors The set of metrics being exported in a batch.
-   * @param client A consumer that will ensure metric descriptors are registered to cloud
+   * @param export A consumer that will ensure metric descriptors are registered to cloud
    *     monitoring.
    */
   void exportDescriptors(
