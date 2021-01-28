@@ -44,6 +44,7 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'java-library'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     apply plugin: 'signing'
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'nebula.nebula-release'
@@ -64,6 +65,9 @@ subprojects {
     plugins.withId("java") {
         plugins.apply('checkstyle')
         plugins.apply('com.diffplug.spotless')
+
+        // Configure our default module name for maven publishing
+        archivesBaseName = "${project.name}"
     }
 
     // Include license check and auto-format support.
@@ -146,51 +150,72 @@ subprojects {
         if (rootProject.hasProperty('signingUseGpgCmd')) {
           useGpgCmd()
         }
-        sign configurations.archives
+        //sign publishing.publications.mavenJava
+        afterEvaluate {
+            if (publishing.publications.findByName('mavenJava') != null) {
+                sign publishing.publications.mavenJava
+            }
+        }
     }
 
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    javadoc {
+        if(JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+    }
 
-                def configureAuth = {
-                    if (rootProject.hasProperty('ossrhUsername') && rootProject.hasProperty('ossrhPassword')) {
-                        authentication(userName: rootProject.ossrhUsername, password: rootProject.ossrhPassword)
-                    }
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+                groupId = 'com.google.cloud.opentelemetry'
+                afterEvaluate {
+                  artifactId = archivesBaseName
                 }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/", configureAuth)
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/", configureAuth)
-
-                pom.project {
-                    name 'OpenTelemetry Operations Java'
-                    description 'OpenTelemetry exporters to Google Cloud Trace and Google Cloud Monitoring'
-                    packaging 'jar'
-                    url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-
-                    scm {
-                        connection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        developerConnection 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        url 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                    }
-
+                versionMapping {	
+                    allVariants {	
+                        fromResolutionResult()	
+                    }	
+                }
+                pom {
+                    name = 'OpenTelemetry Operations Java'
+                    url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
                     licenses {
                         license {
-                            name 'The Apache License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
-
                     developers {
                         developer {
-                            id 'com.google.cloud.opentelemetry'
-                            name 'OpenTelemetry Operations Contributors'
-                            email 'opentelemetry-team@google.com'
+                            id = 'com.google.cloud.opentelemetry'
+                            name = 'OpenTelemetry Operations Contributors'
+                            email = 'opentelemetry-team@google.com'
                             organization = 'Google Inc'
-                            organizationUrl 'https://cloud.google.com/products/operations'
+                            organizationUrl = 'https://cloud.google.com/products/operations'
                         }
+                    }
+                    scm {
+                        connection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        developerConnection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                        url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+                    }
+                    afterEvaluate {	
+                        // description is not available until evaluated.	
+                        description = project.description	
+                    }
+                }
+                repositories {
+                    maven {
+                        // change URLs to point to your repos, e.g. http://my.org/repo
+                        def releasesRepoUrl = "$buildDir/repos/releases"
+                        def snapshotsRepoUrl = "$buildDir/repos/snapshots"
+                        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                     }
                 }
             }
