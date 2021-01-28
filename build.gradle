@@ -13,11 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import nebula.plugin.release.git.opinion.Strategies
+
 plugins {
-    id "com.diffplug.spotless"
-    id 'nebula.release'
+	id "com.diffplug.spotless"
+	id 'nebula.release'
+}
+
+// Format the root build too.
+spotless {
+	groovyGradle {
+		target '*.gradle' // default target of groovyGradle
+		greclipse()
+		licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(import|pluginManagement)'
+	}
 }
 
 // Configure release mechanism.
@@ -25,203 +34,208 @@ plugins {
 // out. This supports building from the zip archive downloaded from GitHub.
 def releaseTask
 if (file('.git').exists()) {
-    release {
-        defaultVersionStrategy = Strategies.getSNAPSHOT()
-    }
-    nebulaRelease {
-        addReleaseBranchPattern(/v\d+\.\d+\.x/)
-    }
+	release {
+		defaultVersionStrategy = Strategies.getSNAPSHOT()
+	}
+	nebulaRelease {
+		addReleaseBranchPattern(/v\d+\.\d+\.x/)
+	}
 
-    releaseTask = tasks.named("release")
-    releaseTask.configure {
-        mustRunAfter("snapshotSetup", "finalSetup")
-    }
+	releaseTask = tasks.named("release")
+	releaseTask.configure {
+		mustRunAfter("snapshotSetup", "finalSetup")
+	}
 } else {
-    releaseTask = tasks.register('release')
+	releaseTask = tasks.register('release')
 }
 
 ext.isReleaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 subprojects {
-    apply plugin: 'jacoco'
-    apply plugin: 'java-library'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
-    apply plugin: 'com.diffplug.spotless'
-    apply plugin: 'nebula.nebula-release'
-    group = "com.google.cloud.opentelemetry"
-    version = "0.14.0-SNAPSHOT" // CURRENT_VERSION
+	apply plugin: 'jacoco'
+	apply plugin: 'java-library'
+	apply plugin: 'maven'
+	apply plugin: 'maven-publish'
+	apply plugin: 'signing'
+	apply plugin: 'com.diffplug.spotless'
+	apply plugin: 'nebula.nebula-release'
+	group = "com.google.cloud.opentelemetry"
+	version = "0.14.0-SNAPSHOT" // CURRENT_VERSION
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
 
-    repositories {
-        mavenCentral()
-        mavenLocal()
-        maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
-        maven { url 'https://dl.bintray.com/open-telemetry/maven' }
-    }
+	repositories {
+		mavenCentral()
+		mavenLocal()
+		maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+		maven { url 'https://dl.bintray.com/open-telemetry/maven' }
+	}
 
-    // Set up java codestyle checking and correction.
-    plugins.withId("java") {
-        plugins.apply('com.diffplug.spotless')
+	// Set up java codestyle checking and correction.
+	plugins.withId("java") {
+		plugins.apply('com.diffplug.spotless')
 
-        // Configure our default module name for maven publishing
-        archivesBaseName = "${project.name}"
-    }
+		// Configure our default module name for maven publishing
+		archivesBaseName = "${project.name}"
+	}
 
-    // Include license check and auto-format support.
-    spotless {
-        java {
-            googleJavaFormat("1.9")
-            licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
-       }
-    }
+	// Include license check and auto-format support.
+	spotless {
+		java {
+			googleJavaFormat("1.9")
+			licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+		}
+		groovyGradle {
+			target '*.gradle' // default target of groovyGradle
+			greclipse()
+			licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(plugins|description)'
+		}
+	}
 
-    // Make sure test failures include exception error messages for correction.
-    test {
-        testLogging {
-            exceptionFormat = 'full'
-        }
-    }
+	// Make sure test failures include exception error messages for correction.
+	test {
+		testLogging {
+			exceptionFormat = 'full'
+		}
+	}
 
-    ext {
-        autoServiceVersion = '1.0-rc7'
-        autoValueVersion = '1.7.4'
-        slf4jVersion = '1.7.30'
-        googleCloudVersion = '1.0.2'
-        cloudMonitoringVersion = '2.0.1'
-        openTelemetryVersion = '0.14.1'
-        openTelemetryInstrumentationVersion = '0.14.0'
-        junitVersion = '4.13'
-        mockitoVersion = '3.5.10'
+	ext {
+		autoServiceVersion = '1.0-rc7'
+		autoValueVersion = '1.7.4'
+		slf4jVersion = '1.7.30'
+		googleCloudVersion = '1.0.2'
+		cloudMonitoringVersion = '2.0.1'
+		openTelemetryVersion = '0.14.1'
+		openTelemetryInstrumentationVersion = '0.14.0'
+		junitVersion = '4.13'
+		mockitoVersion = '3.5.10'
 
-        libraries = [
-                auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
-                auto_service                 : "com.google.auto.service:auto-service:${autoServiceVersion}",
-                auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-                auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
-                google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
-                google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
-                google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
-                google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
-                google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
-                slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
-                opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
-                opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
-                opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
-                opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
-                opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",
-        ]
-        testLibraries = [
-                junit       : "junit:junit:${junitVersion}",
-                mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
-                slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
-                opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
-        ]
-    }
+		libraries = [
+			auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+			auto_service                 : "com.google.auto.service:auto-service:${autoServiceVersion}",
+			auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+			auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
+			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
+			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
+			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
+			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
+			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
+			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
+			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
+			opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+			opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
+			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
+			opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",
+		]
+		testLibraries = [
+			junit       : "junit:junit:${junitVersion}",
+			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
+			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
+			opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
+		]
+	}
 
-    task javadocJar(type: Jar) {
-        archiveClassifier.set('javadoc')
-        from javadoc
-    }
+	task javadocJar(type: Jar) {
+		archiveClassifier.set('javadoc')
+		from javadoc
+	}
 
-    task sourcesJar(type: Jar) {
-        archiveClassifier.set('sources')
-        from sourceSets.main.allSource
-    }
+	task sourcesJar(type: Jar) {
+		archiveClassifier.set('sources')
+		from sourceSets.main.allSource
+	}
 
-    test {
-        systemProperty 'mock.server.path', System.getProperty('mock.server.path')
-        finalizedBy jacocoTestReport
-    }
+	test {
+		systemProperty 'mock.server.path', System.getProperty('mock.server.path')
+		finalizedBy jacocoTestReport
+	}
 
-    jacocoTestReport {
-        dependsOn test // tests are required to run before generating the report
-    }
+	jacocoTestReport {
+		dependsOn test // tests are required to run before generating the report
+	}
 
-    artifacts {
-        archives javadocJar, sourcesJar
-    }
+	artifacts {
+		archives javadocJar, sourcesJar
+	}
 
-    javadoc {
-        if(JavaVersion.current().isJava9Compatible()) {
-            options.addBooleanOption('html5', true)
-        }
-    }
+	javadoc {
+		if(JavaVersion.current().isJava9Compatible()) {
+			options.addBooleanOption('html5', true)
+		}
+	}
 
-    java {
-        withJavadocJar()
-        withSourcesJar()
-    }
-    
-    releaseTask.configure {	
-      finalizedBy(tasks.named('publish'))
-    }
+	java {
+		withJavadocJar()
+		withSourcesJar()
+	}
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from components.java
-                groupId = 'com.google.cloud.opentelemetry'
-                afterEvaluate {
-                  artifactId = archivesBaseName
-                }
-                versionMapping {	
-                    allVariants {	
-                        fromResolutionResult()	
-                    }	
-                }
-                pom {
-                    name = 'OpenTelemetry Operations Java'
-                    url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                    licenses {
-                        license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'com.google.cloud.opentelemetry'
-                            name = 'OpenTelemetry Operations Contributors'
-                            email = 'opentelemetry-team@google.com'
-                            organization = 'Google Inc'
-                            organizationUrl = 'https://cloud.google.com/products/operations'
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        developerConnection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                        url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-                    }
-                    afterEvaluate {	
-                        // description is not available until evaluated.	
-                        description = project.description	
-                    }
-                }
-            }
-        }
-        repositories {
-            maven {
-                def ossrhRelease = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
-                url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
-                credentials {
-                    username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
-                    password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
-                }
-            }
-        }
-    }
+	releaseTask.configure {
+		finalizedBy(tasks.named('publish'))
+	}
 
-    signing {
-        required false
-        // Allow using the GPG agent on linux instead of passwords in a .properties file.
-        if (rootProject.hasProperty('signingUseGpgCmd')) {
-          useGpgCmd()
-        }
-        sign publishing.publications.maven
-    }
+	publishing {
+		publications {
+			maven(MavenPublication) {
+				from components.java
+				groupId = 'com.google.cloud.opentelemetry'
+				afterEvaluate {
+					artifactId = archivesBaseName
+				}
+				versionMapping {
+					allVariants {
+						fromResolutionResult()
+					}
+				}
+				pom {
+					name = 'OpenTelemetry Operations Java'
+					url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+					licenses {
+						license {
+							name = 'The Apache License, Version 2.0'
+							url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+						}
+					}
+					developers {
+						developer {
+							id = 'com.google.cloud.opentelemetry'
+							name = 'OpenTelemetry Operations Contributors'
+							email = 'opentelemetry-team@google.com'
+							organization = 'Google Inc'
+							organizationUrl = 'https://cloud.google.com/products/operations'
+						}
+					}
+					scm {
+						connection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+						developerConnection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+						url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+					}
+					afterEvaluate {
+						// description is not available until evaluated.
+						description = project.description
+					}
+				}
+			}
+		}
+		repositories {
+			maven {
+				def ossrhRelease = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+				def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
+				url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
+				credentials {
+					username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
+					password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
+				}
+			}
+		}
+	}
+
+	signing {
+		required false
+		// Allow using the GPG agent on linux instead of passwords in a .properties file.
+		if (rootProject.hasProperty('signingUseGpgCmd')) {
+			useGpgCmd()
+		}
+		sign publishing.publications.maven
+	}
 }

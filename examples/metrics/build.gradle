@@ -13,37 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 plugins {
-    id 'java'
+	id 'java'
 }
 
 jar {
-    manifest {
-        attributes(
-                'Main-Class': 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
-        )
-    }
+	manifest {
+		attributes(
+				'Main-Class': 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
+				)
+	}
 }
 
 task fatJar(type: Jar) {
-    manifest.from jar.manifest
-    archiveClassifier = 'all'
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    } {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
-    }
-    with jar
+	manifest.from jar.manifest
+	archiveClassifier = 'all'
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	} {
+		exclude "META-INF/*.SF"
+		exclude "META-INF/*.DSA"
+		exclude "META-INF/*.RSA"
+	}
+	with jar
 }
 
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
-    compile(libraries.opentelemetry_api_metrics)
-    compile(libraries.opentelemetry_sdk_metrics)
-    compile(libraries.google_cloud_monitoring)
-    compile project(':exporter-metrics')
+	compile(libraries.opentelemetry_api_metrics)
+	compile(libraries.opentelemetry_sdk_metrics)
+	compile(libraries.google_cloud_monitoring)
+	compile project(':exporter-metrics')
 }

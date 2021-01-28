@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 plugins {
-    id "com.github.johnrengelman.shadow"
+	id "com.github.johnrengelman.shadow"
 }
 
 description = 'Auto Exporter for OpenTelemetry'
 
 dependencies {
-    api(libraries.auto_service_annotations)
-    api(libraries.auto_value_annotations)
-    annotationProcessor(libraries.auto_service)
-    annotationProcessor(libraries.auto_value)
-    implementation(libraries.opentelemetry_auto)
-    implementation(libraries.opentelemetry_sdk)
-    implementation(project(':exporter-metrics'))
-    implementation(project(':exporter-trace'))
+	api(libraries.auto_service_annotations)
+	api(libraries.auto_value_annotations)
+	annotationProcessor(libraries.auto_service)
+	annotationProcessor(libraries.auto_value)
+	implementation(libraries.opentelemetry_auto)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(project(':exporter-metrics'))
+	implementation(project(':exporter-trace'))
 }
 
 jar.enabled = false
@@ -36,5 +35,5 @@ jar.enabled = false
 tasks.build.dependsOn tasks.shadowJar
 
 shadowJar{
-    classifier = null
+	classifier = null
 }

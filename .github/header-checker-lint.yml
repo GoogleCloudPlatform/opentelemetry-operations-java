@@ -4,3 +4,5 @@ sourceFileExtensions:
   - gradle
   - java
   - sh
+allowedCopyrightHolders:
+  - Google
