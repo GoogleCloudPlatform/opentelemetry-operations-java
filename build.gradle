@@ -60,7 +60,7 @@ subprojects {
 	apply plugin: 'com.diffplug.spotless'
 	apply plugin: 'nebula.nebula-release'
 	group = "com.google.cloud.opentelemetry"
-	version = "0.14.0-SNAPSHOT" // CURRENT_VERSION
+	// Note: Version now comes from nebula plugin
 
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8

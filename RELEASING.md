@@ -45,6 +45,22 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
 
 ### Using GPG-Agent for artifact signing
 
+If you're running in linux and would like to use the GPG agent to remember your PGP key passwords instead of keeping them in a plain-text file on your home directory,
+you can configure the following in `<your-home-directory>/.gradle/gradle.properties`:
+
+    ```text
+    signing.gnupg.executable=gpg
+    signing.gnupg.keyName=<secret key id (large hash)>
+    signing.secretKeyRingFile=<your-home-directory>/.gnupg/pubring.kbx
+    ```
+
+Note: these instructions are for modern linux where `gpg` refers to the 2.0 version.
+
+### Ensuring you can push tags to Github upstream
+
+Before any push to the upstream repository you need to create a [personal access
+token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
+
 
 ## Download the mock server
 
@@ -64,87 +80,45 @@ If you've followed the above steps, you can release snapshots for consumption us
 $ ./gradlew snapshot -Dmock.server.path=$MOCKSERVER
 ```
 
+## Releasing a Candidate
 
-## Tagging the Release
+After following the above steps, you can release candidates from `master` or `v<major>.<minor>.x` branches.
 
-The first step in the release process is to create a release branch, bump
-versions, and create a tag for the release. Our release branches follow the
-naming convention of `v<major>.<minor>.x`, while the tags include the patch
-version `v<major>.<minor>.<patch>`. For example, the same branch `v0.4.x` would
-be used to create all `v0.4` tags (e.g. `v0.4.0`, `v0.4.1`).
+For example, to release the v0.14.0-RC1 candidate, do the following:
 
-In this section upstream repository refers to the main
-opentelemetry-operations-java github repository.
+```bash
+# Create the Candidate.
+$ ./gradlew candidate -Prelease.version=0.14.0-RC1 -Dmock.server.path=$MOCKSERVER
+# Push the tag publically.
+$ git push origin v0.14.0-RC1
+```
 
-Before any push to the upstream repository you need to create a [personal access
-token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
+Next follow [Releasing on Maven Central](#releasing-on-maven-central) to close + publish the
+[repository on OSSRH](https://oss.sonatype.org/#stagingRepositories).
 
-1. Create the release branch and push it to GitHub:
 
-    ```bash
-    $ MAJOR=0 MINOR=4 PATCH=0 # Set appropriately for new release
-    $ git checkout -b v$MAJOR.$MINOR.x master
-    $ git push upstream v$MAJOR.$MINOR.x
-    ```
+Note:  In the future, the `-Prelease.version` flag should not be required.
 
-2. Prepare `master` for the next development cycle by changing the build file to
-        the next minor snapshot (e.g. `0.5.0-SNAPSHOT`).
+## Release a final verison
 
-    _If there are breaking changes in this release, and the example project code
-    must be changed before the build would pass, you can skip `./gradlew build`
-    for now and fix the example code after you complete the remaining steps in
-    this document._
+After following the above steps, you can release candidates from `master` or `v<major>.<minor>.x` branches.
 
-    ```bash
-    $ git checkout -b bump-version master
-    # Change version to next minor (and keep -SNAPSHOT)
-    $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' build.gradle
-    # Run build with the path to the mock server executable
-    $ ./gradlew build -Dmock.server.path=$MOCKSERVER
-    $ git commit -a -m "Start $MAJOR.$((MINOR+1)).0 development cycle"
-    $ git push upstream bump-version
-    # Create a pull request to merge into master once this deployment is complete
-    ```
+For example, to release the v0.14.0 candidate, do the following:
 
-3. For `vMajor.Minor.x` branch:
+```bash
+# Create the Candidate.
+$ ./gradlew candidate -Prelease.version=0.14.0 -Dmock.server.path=$MOCKSERVER
+# Push the tag publically.
+$ git push origin v0.14.0
+```
 
-    - Change build file to remove "-SNAPSHOT" for the next release version (e.g.
-        `0.4.0`). Commit the result and make a tag:
+Next follow [Releasing on Maven Central](#releasing-on-maven-central) to close + publish the
+[repository on OSSRH](https://oss.sonatype.org/#stagingRepositories).
 
-    ```bash
-    $ git checkout -b release v$MAJOR.$MINOR.x
-    # Change version to remove -SNAPSHOT
-    $ sed -i 's/-SNAPSHOT\(.*CURRENT_VERSION\)/\1/' build.gradle
-    $ ./gradlew build -Dmock.server.path=$MOCKSERVER
-    $ git commit -a -m "Bump version to $MAJOR.$MINOR.$PATCH"
-    $ git tag -a v$MAJOR.$MINOR.$PATCH -m "Version $MAJOR.$MINOR.$PATCH"
-    ```
+After this, follow the [Announcment](#Announcement) documentation to advertise the release and update README files.
 
-    - Change root build files to the next snapshot version (e.g.
-        `0.4.1-SNAPSHOT`). Commit the result:
 
-    ```bash
-    # Change version to next patch and add -SNAPSHOT
-    $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_VERSION\)/'$MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT'\1/' build.gradle
-    $ ./gradlew build -Dmock.server.path=$MOCKSERVER
-    $ git commit -a -m "Bump version to $MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT"
-    ```
-
-    - Go through PR review and push the release tag and updated release branch
-        to GitHub (note: do not squash the commits when you merge otherwise you
-        will lose the release tag):
-
-    ```bash
-    $ git checkout v$MAJOR.$MINOR.x
-    $ git merge --ff-only release
-    $ git push upstream v$MAJOR.$MINOR.$PATCH
-    $ git push upstream v$MAJOR.$MINOR.x
-    ```
-
-## Deployment
-
-Deployment to Maven Central (or the snapshot repo) is for all the artifacts from
-the project.
+Note:  In the future, the `-Prelease.version` flag should not be required.
 
 ### Branch
 
@@ -156,23 +130,6 @@ gone through code review. For the current release use:
 $ git checkout -b v$MAJOR.$MINOR.$PATCH tags/v$MAJOR.$MINOR.$PATCH
 ```
 
-### Building and Deploying
-
-The following command will build the whole project and upload it to Maven
-Central. Parallel building [is not safe during
-uploadArchives](https://issues.gradle.org/browse/GRADLE-3420).
-
-```bash
-$ ./gradlew clean build  -Dmock.server.path=$MOCKSERVER && ./gradlew -Dorg.gradle.parallel=false uploadArchives
-```
-
-If the version has the `-SNAPSHOT` suffix, the artifacts will automatically go
-to the snapshot repository, otherwise it's a release deployment, and the
-artifacts will go to a staging repository.
-
-When deploying a Release, the deployment will create [a new staging
-repository](https://oss.sonatype.org/#stagingRepositories).
-
 ## Releasing on Maven Central
 
 Once all the artifacts have been pushed to the staging repository, the
@@ -182,6 +139,8 @@ the repository. If this completes successfully, the repository can then be
 Central (the staging repository will be destroyed in the process). You can see
 the complete process for releasing to Maven Central on the [OSSRH
 site](http://central.sonatype.org/pages/releasing-the-deployment.html).
+
+Note: This can/will be automated in the future.
 
 ## Announcement
 
