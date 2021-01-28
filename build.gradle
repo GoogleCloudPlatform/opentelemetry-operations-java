@@ -76,7 +76,12 @@ subprojects {
         java {
             googleJavaFormat("1.9")
             licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
-       }
+        }
+        groovyGradle {
+            target '*.gradle' // default target of groovyGradle
+            greclipse()
+            licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(plugins|description)'
+        }
     }
 
     // Make sure test failures include exception error messages for correction.
