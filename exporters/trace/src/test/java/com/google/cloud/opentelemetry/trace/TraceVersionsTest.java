@@ -34,6 +34,6 @@ public class TraceVersionsTest {
   @Test
   public void findsSdkVersion() {
     assertNotNull(TraceVersions.SDK_VERSION);
-    assertNotEquals("unknown", TraceVersions.EXPORTER_VERSION);
+    assertNotEquals("unknown", TraceVersions.SDK_VERSION);
   }
 }
