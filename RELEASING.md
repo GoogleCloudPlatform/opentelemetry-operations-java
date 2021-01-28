@@ -43,6 +43,9 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     checkstyle.ignoreFailures=false
     ```
 
+### Using GPG-Agent for artifact signing
+
+
 ## Download the mock server
 
 - Run the `get_mock_server.sh` script, which downloads the [mock server
@@ -52,6 +55,15 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     ```bash
     $ source ./get_mock_server.sh
     ```
+
+## Release a Snapshot
+
+If you've followed the above steps, you can release snapshots for consumption using the following:
+
+```bash
+$ ./gradlew snapshot -Dmock.server.path=$MOCKSERVER
+```
+
 
 ## Tagging the Release
 

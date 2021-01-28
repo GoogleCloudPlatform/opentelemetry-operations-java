@@ -16,3 +16,5 @@ out/
 build/
 bin/
 
+# Mock server download
+mock_server*
