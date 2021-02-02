@@ -59,8 +59,9 @@ jobs:
   test:
     executor: jdk
     steps:
+      - setup_remote_docker:
+        version: 19.03.13
       - setup
-
       - run:
           cache_checksum_file: build.gradle
           cache_key: v1
