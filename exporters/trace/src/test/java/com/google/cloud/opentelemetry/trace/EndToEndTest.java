@@ -38,9 +38,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -60,44 +64,26 @@ public class EndToEndTest {
   private TraceExporter exporter;
   private Process mockServerProcess;
 
+  @Rule
+  public GenericContainer mockContainer = 
+    new GenericContainer(DockerImageName.parse("cloud-operations-api-mock"))
+    .withExposedPorts(8080)
+    .waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
+
   @Before
   public void setup() throws MockServerStartupException {
     try {
-      // Find a free port to spin up our server at.
-      ServerSocket socket = new ServerSocket(0);
-      int port = socket.getLocalPort();
-      String address = String.format("%s:%d", LOCALHOST, port);
-      socket.close();
-
-      // Start the mock server. This assumes the binary is present and in $PATH.
-      // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-      String[] cmdArray =
-          new String[] {System.getProperty("mock.server.path"), "-address", address};
-      ProcessBuilder pb = new ProcessBuilder(cmdArray);
-      pb.redirectErrorStream(true);
-      mockServerProcess = pb.start();
-
-      // Setup the mock trace client.
-      mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
-
-      // Block until the mock server starts (it will output the address after starting).
-      BufferedReader br =
-          new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
-      br.readLine();
+      mockCloudTraceClient = 
+        new MockCloudTraceClient(mockContainer.getContainerIpAddress(),
+           mockContainer.getFirstMappedPort());
     } catch (Exception e) {
       StringBuilder error = new StringBuilder();
-      error.append("Unable to start Google API Mock Server: ");
-      error.append(System.getProperty("mock.server.path"));
+      error.append("Unable to start Google API Mock Server.");
       error.append("\n\tMake sure you're following the direction to run tests");
-      error.append("\n\t$ source get_mock_server.sh");
-      error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
+      error.append("\n\t1. Set up Docker");
+      error.append("\n\t2. make sure docker run cloud-operations-api-mock succeeds\n");
       throw new MockServerStartupException(error.toString(), e);
     }
-  }
-
-  @After
-  public void tearDown() {
-    mockServerProcess.destroy();
   }
 
   @Test
