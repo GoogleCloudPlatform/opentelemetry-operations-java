@@ -21,14 +21,19 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -39,44 +44,25 @@ public class EndToEndTest {
   private MetricExporter exporter;
   private MockCloudMetricClient mockClient;
 
-  @Before
-  public void setup() throws MockServerStartupException {
-    try {
-      // Find a free port to spin up our server at.
-      ServerSocket socket = new ServerSocket(0);
-      int port = socket.getLocalPort();
-      String address = String.format("%s:%d", LOCALHOST, port);
-      socket.close();
 
-      // Start the mock server. This assumes the binary is present and in $PATH.
-      // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-      String[] cmdArray =
-          new String[] {System.getProperty("mock.server.path"), "-address", address};
-      ProcessBuilder pb = new ProcessBuilder(cmdArray);
-      pb.redirectErrorStream(true);
-      mockServerProcess = pb.start();
+  /** A test-container instance that loads the Cloud-Ops-Mock server container. */
+  private static class CloudOperationsMockContainer extends GenericContainer<CloudOperationsMockContainer> {
+    CloudOperationsMockContainer() {
+      super(DockerImageName.parse("cloud-operations-api-mock"));
+      this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
+    }
 
-      // Setup the mock metric client
-      mockClient = new MockCloudMetricClient(LOCALHOST, port);
-
-      // Block until the mock server starts (it will output the address after starting).
-      BufferedReader br =
-          new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
-      br.readLine();
-    } catch (Exception e) {
-      StringBuilder error = new StringBuilder();
-      error.append("Unable to start Google API Mock Server: ");
-      error.append(System.getProperty("mock.server.path"));
-      error.append("\n\tMake sure you're following the direction to run tests");
-      error.append("\n\t$ source get_mock_server.sh");
-      error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
-      throw new MockServerStartupException(error.toString(), e);
+    public MockCloudMetricClient newCloudMetricClient() throws IOException {
+      return new MockCloudMetricClient(getContainerIpAddress(), getFirstMappedPort());
     }
   }
 
-  @After
-  public void tearDown() {
-    mockServerProcess.destroy();
+  @Rule
+  public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
+
+  @Before
+  public void setup() throws Exception {
+    mockClient = mockContainer.newCloudMetricClient();
   }
 
   @Test
