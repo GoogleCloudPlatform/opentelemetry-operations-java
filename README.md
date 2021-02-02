@@ -14,9 +14,11 @@ Provides OpenTelemetry Exporters for Google Cloud Operations.
 This project requires a mock server for Google Cloud APIs.  To build and test, do the following:
 
 ```
-$ source get_mock_server.sh
-$ ./gradlew test -Dmock.server.path=$MOCKSERVER
+$ ./gradlew test
 ```
+
+Note: This project uses [Test Containers](http://testcontainers.org), which requires
+docker to be runnable locally by the current users.  Please version `docker busybox echo hello` works, and if not configure your local docker before building.
 
 
 ## Contributing
