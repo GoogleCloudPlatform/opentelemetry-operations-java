@@ -59,7 +59,8 @@ public class EndToEndTest {
   private TraceExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
-  private static class CloudOperationsMockContainer extends GenericContainer<CloudOperationsMockContainer> {
+  private static class CloudOperationsMockContainer
+      extends GenericContainer<CloudOperationsMockContainer> {
     CloudOperationsMockContainer() {
       super(DockerImageName.parse("cloud-operations-api-mock"));
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
@@ -70,8 +71,7 @@ public class EndToEndTest {
     }
   }
 
-  @Rule
-  public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
+  @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
   @Before
   public void setup() {

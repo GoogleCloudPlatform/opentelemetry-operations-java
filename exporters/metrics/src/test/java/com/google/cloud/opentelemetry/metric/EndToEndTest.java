@@ -20,12 +20,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.util.ArrayList;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,9 +40,9 @@ public class EndToEndTest {
   private MetricExporter exporter;
   private MockCloudMetricClient mockClient;
 
-
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
-  private static class CloudOperationsMockContainer extends GenericContainer<CloudOperationsMockContainer> {
+  private static class CloudOperationsMockContainer
+      extends GenericContainer<CloudOperationsMockContainer> {
     CloudOperationsMockContainer() {
       super(DockerImageName.parse("cloud-operations-api-mock"));
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
@@ -57,8 +53,7 @@ public class EndToEndTest {
     }
   }
 
-  @Rule
-  public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
+  @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
   @Before
   public void setup() throws Exception {
