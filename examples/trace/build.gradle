@@ -20,7 +20,7 @@ plugins {
 jar {
 	manifest {
 		attributes(
-				'Main-Class': 'com.google.cloud.opentelemetry.example.trace.TraceExample'
+				'Main-Class': 'com.google.cloud.opentelemetry.example.trace.TraceExporterExample'
 				)
 	}
 }
@@ -45,4 +45,5 @@ dependencies {
 	compile(libraries.opentelemetry_sdk)
 	compile(libraries.google_cloud_trace)
 	compile project(':exporter-trace')
+	compile project(':detector-resources')
 }
