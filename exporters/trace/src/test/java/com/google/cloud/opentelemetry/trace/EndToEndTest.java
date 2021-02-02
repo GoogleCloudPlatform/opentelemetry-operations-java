@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -62,7 +62,16 @@ public class EndToEndTest {
   private static class CloudOperationsMockContainer
       extends GenericContainer<CloudOperationsMockContainer> {
     CloudOperationsMockContainer() {
-      super(DockerImageName.parse("cloud-operations-api-mock"));
+      super(
+          new ImageFromDockerfile()
+              .withDockerfileFromBuilder(
+                  builder ->
+                      builder
+                          .from("golang")
+                          .run("go get github.com/googleinterns/cloud-operations-api-mock/cmd")
+                          .cmd(
+                              "go run github.com/googleinterns/cloud-operations-api-mock/cmd --address=:8080")
+                          .build()));
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
     }
 
