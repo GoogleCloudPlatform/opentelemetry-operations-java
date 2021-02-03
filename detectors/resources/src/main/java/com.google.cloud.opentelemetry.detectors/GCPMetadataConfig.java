@@ -18,70 +18,70 @@ import java.nio.charset.Charset;
  */
 final class GCPMetadataConfig {
 
-    private static final String METADATA_URL = "http://metadata.google.internal/computeMetadata/v1/";
+  private static final String METADATA_URL = "http://metadata.google.internal/computeMetadata/v1/";
 
-    private GCPMetadataConfig() {}
+  private GCPMetadataConfig() {}
 
-    static boolean isRunningOnGcp() {
-        return !getProjectId().isEmpty();
+  static boolean isRunningOnGcp() {
+    return !getProjectId().isEmpty();
+  }
+
+  static String getProjectId() {
+    return getAttribute("project/project-id");
+  }
+
+  static String getZone() {
+    String zone = getAttribute("instance/zone");
+    if (zone.contains("/")) {
+      return zone.substring(zone.lastIndexOf('/') + 1);
     }
+    return zone;
+  }
 
-    static String getProjectId() {
-        return getAttribute("project/project-id");
+  static String getMachineType() {
+    String machineType = getAttribute("instance/machine-type");
+    if (machineType.contains("/")) {
+      return machineType.substring(machineType.lastIndexOf('/') + 1);
     }
+    return machineType;
+  }
 
-    static String getZone() {
-        String zone = getAttribute("instance/zone");
-        if (zone.contains("/")) {
-            return zone.substring(zone.lastIndexOf('/') + 1);
-        }
-        return zone;
-    }
+  static String getInstanceId() {
+    return getAttribute("instance/id");
+  }
 
-    static String getMachineType() {
-        String machineType = getAttribute("instance/machine-type");
-        if (machineType.contains("/")) {
-            return machineType.substring(machineType.lastIndexOf('/') + 1);
-        }
-        return machineType;
-    }
+  static String getClusterName() {
+    return getAttribute("instance/attributes/cluster-name");
+  }
 
-    static String getInstanceId() {
-        return getAttribute("instance/id");
-    }
+  static String getInstanceName() {
+    return getAttribute("instance/hostname");
+  }
 
-    static String getClusterName() {
-        return getAttribute("instance/attributes/cluster-name");
-    }
+  static String getInstanceHostname() {
+    return getAttribute("instance/name");
+  }
 
-    static String getInstanceName() {
-        return getAttribute("instance/hostname");
-    }
-
-    static String getInstanceHostname() {
-        return getAttribute("instance/name");
-    }
-
-    private static String getAttribute(String attributeName) {
+  private static String getAttribute(String attributeName) {
+    try {
+      URL url = new URL(METADATA_URL + attributeName);
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setRequestProperty("Metadata-Flavor", "Google");
+      InputStream input = connection.getInputStream();
+      if (connection.getResponseCode() == 200) {
+        BufferedReader reader = null;
         try {
-            URL url = new URL(METADATA_URL + attributeName);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("Metadata-Flavor", "Google");
-            InputStream input = connection.getInputStream();
-            if (connection.getResponseCode() == 200) {
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(input, Charset.forName("UTF-8")));
-                    return firstNonNull(reader.readLine(), "");
-                } finally {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                }
-            }
-        } catch (IOException ignore) {
-            // ignore
+          reader = new BufferedReader(new InputStreamReader(input, Charset.forName("UTF-8")));
+          return firstNonNull(reader.readLine(), "");
+        } finally {
+          if (reader != null) {
+            reader.close();
+          }
         }
-        return "";
+      }
+    } catch (IOException ignore) {
+      // ignore
     }
+    return "";
+  }
 }
