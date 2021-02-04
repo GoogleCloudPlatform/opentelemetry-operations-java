@@ -2,13 +2,16 @@ package com.google.cloud.opentelemetry.detectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.*;
+
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import io.opentelemetry.api.common.Attributes;
 
 @RunWith(JUnit4.class)
 public class GCEResourceTest {
@@ -27,33 +30,39 @@ public class GCEResourceTest {
                     .withBody(responseBody)));
   }
 
-
   @Test
   public void nonGCEResourceShouldReturnEmptyAttribute() {
-    stubEndpoint("/project/project-id", "");
+    GCEResource test = new GCEResource();
 
-    Attributes attr = testResource.getAttributes();
+    Attributes attr = test.getAttributes();
 
     assertTrue(attr.isEmpty());
   }
 
   @Test
   public void fullGCEResourceShouldPopulateAttributes() {
-    stubEndpoint("/project/project-id", "cyan-pid");
+    stubEndpoint("/project/project-id", "GCE-pid");
     stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "cyan-instance-id");
-    stubEndpoint("/instance/hostname", "cyan-instance-hostname");
-    stubEndpoint("/instance/name", "cyan-instance-name");
-    stubEndpoint("/instance/machine-type", "cyan-instance-type");
+    stubEndpoint("/instance/id", "GCE-instance-id");
+    stubEndpoint("/instance/name", "GCE-instance-name");
+    stubEndpoint("/instance/machine-type", "GCE-instance-type");
 
     Attributes attr = testResource.getAttributes();
 
-    assertEquals("gcp", attr.get(SemanticAttributes.CLOUD_PROVIDER));
-    assertEquals("cyan-pid", attr.get(SemanticAttributes.CLOUD_ACCOUNT_ID));
-    assertEquals("country-region-zone", attr.get(SemanticAttributes.CLOUD_ZONE));
-    assertEquals("country-region", attr.get(SemanticAttributes.CLOUD_REGION));
-    assertEquals("cyan-instance-id", attr.get(SemanticAttributes.HOST_ID));
-    assertEquals("cyan-instance-hostname", attr.get(SemanticAttributes.HOST_NAME));
-    assertEquals("cyan-instance-type", attr.get(SemanticAttributes.HOST_TYPE));
+    Map<AttributeKey, String> expectedAttributes =
+        Map.of(
+            SemanticAttributes.CLOUD_PROVIDER, "gcp",
+            SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid",
+            SemanticAttributes.CLOUD_ZONE, "country-region-zone",
+            SemanticAttributes.CLOUD_REGION, "country-region",
+            SemanticAttributes.HOST_ID, "GCE-instance-id",
+            SemanticAttributes.HOST_NAME, "GCE-instance-name",
+            SemanticAttributes.HOST_TYPE, "GCE-instance-type");
+
+    assertEquals(7, attr.size());
+    attr.forEach(
+        (key, value) -> {
+          assertEquals(expectedAttributes.get(key), value);
+        });
   }
 }

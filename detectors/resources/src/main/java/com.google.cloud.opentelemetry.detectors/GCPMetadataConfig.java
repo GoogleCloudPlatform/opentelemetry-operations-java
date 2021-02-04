@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Retrieves Google Cloud project-id and a limited set of instance attributes from Metadata server.
@@ -59,11 +59,11 @@ final class GCPMetadataConfig {
     return getAttribute("instance/attributes/cluster-name");
   }
 
-  String getInstanceName() {
+  String getInstanceHostName() {
     return getAttribute("instance/hostname");
   }
 
-  String getInstanceHostname() {
+  String getInstanceName() {
     return getAttribute("instance/name");
   }
 
@@ -74,14 +74,9 @@ final class GCPMetadataConfig {
       connection.setRequestProperty("Metadata-Flavor", "Google");
       InputStream input = connection.getInputStream();
       if (connection.getResponseCode() == 200) {
-        BufferedReader reader = null;
-        try {
-          reader = new BufferedReader(new InputStreamReader(input, Charset.forName("UTF-8")));
+        try (BufferedReader reader =
+            new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
           return firstNonNull(reader.readLine(), "");
-        } finally {
-          if (reader != null) {
-            reader.close();
-          }
         }
       }
     } catch (IOException ignore) {

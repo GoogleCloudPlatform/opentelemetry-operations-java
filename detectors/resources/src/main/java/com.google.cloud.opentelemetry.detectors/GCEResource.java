@@ -53,11 +53,6 @@ public final class GCEResource extends ResourceProvider {
       attrBuilders.put(SemanticAttributes.HOST_NAME, instanceName);
     }
 
-    String hostName = metadata.getInstanceHostname();
-    if (!hostName.isEmpty()) {
-      attrBuilders.put(SemanticAttributes.HOST_NAME, hostName);
-    }
-
     String hostType = metadata.getMachineType();
     if (!hostType.isEmpty()) {
       attrBuilders.put(SemanticAttributes.HOST_TYPE, hostType);
