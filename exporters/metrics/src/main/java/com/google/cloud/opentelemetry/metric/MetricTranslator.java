@@ -28,11 +28,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +58,12 @@ public class MetricTranslator {
   static final Set<MetricDataType> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
   static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
+
+  private static final Map<String, AttributeKey<String>> gceMap =
+      Map.of(
+          "project_id", SemanticAttributes.CLOUD_ACCOUNT_ID,
+          "instance_id", SemanticAttributes.HOST_ID,
+          "zone", SemanticAttributes.CLOUD_ZONE);
 
   static Metric mapMetric(Labels labels, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
@@ -135,10 +146,22 @@ public class MetricTranslator {
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 
-  static MonitoredResource mapResource(String projectId) {
+  static MonitoredResource mapResource(Attributes attributes, String projectId) {
     // This is mapping to the global resource type temporarily:
     // https://cloud.google.com/monitoring/api/resources#tag_global
     // It should be mapped properly in the future.
+    String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
+    if (provider != null && provider.equals("gcp")) {
+      return MonitoredResource.newBuilder()
+          .setType("gce_instance")
+          .putAllLabels(
+              gceMap.entrySet().stream()
+                  .collect(
+                      Collectors.toMap(
+                          e -> (String) e.getKey(), e -> attributes.get(e.getValue()))))
+          .build();
+    }
+
     return MonitoredResource.newBuilder()
         .setType(DEFAULT_RESOURCE_TYPE)
         .putLabels(RESOURCE_PROJECT_ID_LABEL, projectId)
