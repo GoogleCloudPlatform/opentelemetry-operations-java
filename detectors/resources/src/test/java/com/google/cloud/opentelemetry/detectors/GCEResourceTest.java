@@ -31,7 +31,7 @@ public class GCEResourceTest {
   }
 
   @Test
-  public void nonGCEResourceShouldReturnEmptyAttribute() {
+  public void testGCEResourceWithEmptyAttributesReturnsEmpty() {
     GCEResource test = new GCEResource();
 
     Attributes attr = test.getAttributes();
@@ -40,7 +40,7 @@ public class GCEResourceTest {
   }
 
   @Test
-  public void fullGCEResourceShouldPopulateAttributes() {
+  public void testGCEResourceWithAttributesSucceeds() {
     stubEndpoint("/project/project-id", "GCE-pid");
     stubEndpoint("/instance/zone", "country-region-zone");
     stubEndpoint("/instance/id", "GCE-instance-id");
