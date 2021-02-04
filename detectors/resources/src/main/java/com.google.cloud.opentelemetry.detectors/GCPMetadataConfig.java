@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Retrieves Google Cloud project-id and a limited set of instance attributes from Metadata server.
@@ -17,20 +17,25 @@ import java.nio.charset.Charset;
  *     https://cloud.google.com/compute/docs/storing-retrieving-metadata</a>
  */
 final class GCPMetadataConfig {
+  private static final String DEFAULT_URL = "http://metadata.google.internal/computeMetadata/v1/";
+  public static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig(DEFAULT_URL);
 
-  private static final String METADATA_URL = "http://metadata.google.internal/computeMetadata/v1/";
+  private final String url;
 
-  private GCPMetadataConfig() {}
+  // For testing only
+  public GCPMetadataConfig(String url) {
+    this.url = url;
+  }
 
-  static boolean isRunningOnGcp() {
+  boolean isRunningOnGcp() {
     return !getProjectId().isEmpty();
   }
 
-  static String getProjectId() {
+  String getProjectId() {
     return getAttribute("project/project-id");
   }
 
-  static String getZone() {
+  String getZone() {
     String zone = getAttribute("instance/zone");
     if (zone.contains("/")) {
       return zone.substring(zone.lastIndexOf('/') + 1);
@@ -38,7 +43,7 @@ final class GCPMetadataConfig {
     return zone;
   }
 
-  static String getMachineType() {
+  String getMachineType() {
     String machineType = getAttribute("instance/machine-type");
     if (machineType.contains("/")) {
       return machineType.substring(machineType.lastIndexOf('/') + 1);
@@ -46,37 +51,32 @@ final class GCPMetadataConfig {
     return machineType;
   }
 
-  static String getInstanceId() {
+  String getInstanceId() {
     return getAttribute("instance/id");
   }
 
-  static String getClusterName() {
+  String getClusterName() {
     return getAttribute("instance/attributes/cluster-name");
   }
 
-  static String getInstanceName() {
+  String getInstanceHostName() {
     return getAttribute("instance/hostname");
   }
 
-  static String getInstanceHostname() {
+  String getInstanceName() {
     return getAttribute("instance/name");
   }
 
-  private static String getAttribute(String attributeName) {
+  String getAttribute(String attributeName) {
     try {
-      URL url = new URL(METADATA_URL + attributeName);
+      URL url = new URL(this.url + attributeName);
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
       connection.setRequestProperty("Metadata-Flavor", "Google");
       InputStream input = connection.getInputStream();
       if (connection.getResponseCode() == 200) {
-        BufferedReader reader = null;
-        try {
-          reader = new BufferedReader(new InputStreamReader(input, Charset.forName("UTF-8")));
+        try (BufferedReader reader =
+            new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
           return firstNonNull(reader.readLine(), "");
-        } finally {
-          if (reader != null) {
-            reader.close();
-          }
         }
       }
     } catch (IOException ignore) {

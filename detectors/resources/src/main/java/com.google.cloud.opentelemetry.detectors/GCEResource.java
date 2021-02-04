@@ -7,21 +7,32 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Arrays;
 
 public final class GCEResource extends ResourceProvider {
+  private final GCPMetadataConfig metadata;
+
+  public GCEResource() {
+    this(GCPMetadataConfig.DEFAULT_INSTANCE);
+  }
+
+  // For testing only
+  public GCEResource(GCPMetadataConfig metadataConfig) {
+    this.metadata = metadataConfig;
+  }
+
   @Override
   public Attributes getAttributes() {
-    if (!GCPMetadataConfig.isRunningOnGcp()) {
+    if (!metadata.isRunningOnGcp()) {
       return Attributes.empty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(SemanticAttributes.CLOUD_PROVIDER, "gcp");
 
-    String projectId = GCPMetadataConfig.getProjectId();
+    String projectId = metadata.getProjectId();
     if (!projectId.isEmpty()) {
       attrBuilders.put(SemanticAttributes.CLOUD_ACCOUNT_ID, projectId);
     }
 
-    String zone = GCPMetadataConfig.getZone();
+    String zone = metadata.getZone();
     if (!zone.isEmpty()) {
       attrBuilders.put(SemanticAttributes.CLOUD_ZONE, zone);
 
@@ -32,31 +43,21 @@ public final class GCEResource extends ResourceProvider {
       }
     }
 
-    String instanceId = GCPMetadataConfig.getInstanceId();
+    String instanceId = metadata.getInstanceId();
     if (!instanceId.isEmpty()) {
       attrBuilders.put(SemanticAttributes.HOST_ID, instanceId);
     }
 
-    String instanceName = GCPMetadataConfig.getInstanceName();
+    String instanceName = metadata.getInstanceName();
     if (!instanceName.isEmpty()) {
       attrBuilders.put(SemanticAttributes.HOST_NAME, instanceName);
     }
 
-    String hostName = GCPMetadataConfig.getInstanceHostname();
-    if (!hostName.isEmpty()) {
-      attrBuilders.put(SemanticAttributes.HOST_NAME, hostName);
-    }
-
-    String hostType = GCPMetadataConfig.getMachineType();
+    String hostType = metadata.getMachineType();
     if (!hostType.isEmpty()) {
       attrBuilders.put(SemanticAttributes.HOST_TYPE, hostType);
     }
 
-    Attributes res = attrBuilders.build();
-    res.forEach(
-        (key, value) -> {
-          System.out.println(key + " - " + value);
-        });
-    return res;
+    return attrBuilders.build();
   }
 }
