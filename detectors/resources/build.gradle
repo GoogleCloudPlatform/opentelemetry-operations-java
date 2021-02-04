@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 plugins {
-    id 'java'
-    id 'com.github.sherter.google-java-format' version '0.9'
+	id 'java'
+	id 'com.github.sherter.google-java-format' version '0.9'
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    compile(libraries.opentelemetry_api)
-    compile(libraries.opentelemetry_sdk)
-    compile(libraries.google_cloud_trace)
-    compile(libraries.opentelemetry_semconv)
-    compile(testLibraries.junit)
-    compile(testLibraries.wiremock)
+	compile(libraries.opentelemetry_api)
+	compile(libraries.opentelemetry_sdk)
+	compile(libraries.google_cloud_trace)
+	compile(libraries.opentelemetry_semconv)
+	compile(testLibraries.junit)
+	compile(testLibraries.wiremock)
 }

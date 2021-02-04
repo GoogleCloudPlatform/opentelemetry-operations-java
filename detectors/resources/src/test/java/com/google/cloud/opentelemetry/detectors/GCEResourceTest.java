@@ -15,8 +15,12 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.api.common.AttributeKey;
@@ -46,16 +50,18 @@ public class GCEResourceTest {
   }
 
   @Test
-  public void testGCEResourceWithEmptyAttributesReturnsEmpty() {
+  public void testGCEResourceNotGCP() {
     GCEResource test = new GCEResource();
 
+    /* The default meta data url is unreachable through testing so getAttributes should not detect a
+    GCP environment, hence returning empty attributes */
     Attributes attr = test.getAttributes();
 
     assertTrue(attr.isEmpty());
   }
 
   @Test
-  public void testGCEResourceWithAttributesSucceeds() {
+  public void testGCEResourceWithGCEAttributesSucceeds() {
     stubEndpoint("/project/project-id", "GCE-pid");
     stubEndpoint("/instance/zone", "country-region-zone");
     stubEndpoint("/instance/id", "GCE-instance-id");
