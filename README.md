@@ -18,7 +18,7 @@ $ ./gradlew test
 ```
 
 Note: This project uses [Test Containers](http://testcontainers.org), which requires
-docker to be runnable locally by the current users.  Please version `docker busybox echo hello` works, and if not configure your local docker before building.
+docker to be runnable locally by the current users.  Please verify `docker busybox echo hello` works, and if not configure your local docker before building.
 
 
 ## Contributing
