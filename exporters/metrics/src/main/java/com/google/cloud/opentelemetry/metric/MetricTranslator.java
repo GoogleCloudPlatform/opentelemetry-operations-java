@@ -59,6 +59,7 @@ public class MetricTranslator {
   static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
+  // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gce_instance
   private static final Map<String, AttributeKey<String>> gceMap =
       Map.of(
           "project_id", SemanticAttributes.CLOUD_ACCOUNT_ID,
@@ -147,9 +148,9 @@ public class MetricTranslator {
   }
 
   static MonitoredResource mapResource(Attributes attributes, String projectId) {
-    // This is mapping to the global resource type temporarily:
-    // https://cloud.google.com/monitoring/api/resources#tag_global
-    // It should be mapped properly in the future.
+    // First, we try to map to known GCP resources
+
+    // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
     if (provider != null && provider.equals("gcp")) {
       return MonitoredResource.newBuilder()
@@ -162,6 +163,8 @@ public class MetricTranslator {
           .build();
     }
 
+    // If none of the standard resource types apply, use the "global" resource:
+    // https://cloud.google.com/monitoring/api/resources#tag_global
     return MonitoredResource.newBuilder()
         .setType(DEFAULT_RESOURCE_TYPE)
         .putLabels(RESOURCE_PROJECT_ID_LABEL, projectId)

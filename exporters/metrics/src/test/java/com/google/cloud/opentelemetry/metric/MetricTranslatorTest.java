@@ -31,6 +31,7 @@ import com.google.api.Metric;
 import com.google.api.Metric.Builder;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
+import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -139,8 +140,7 @@ public class MetricTranslatorTest {
         });
     Attributes attributes = attrBuilder.build();
 
-    Map<String, String> monitoredResourceMap =
-        MetricTranslator.mapResource(attributes, "GCE_pid").getLabelsMap();
+    MonitoredResource monitoredResource = MetricTranslator.mapResource(attributes, "GCE_pid");
 
     Map<String, String> expectedMappings =
         Map.of(
@@ -148,6 +148,9 @@ public class MetricTranslatorTest {
             "zone", "country-region-zone",
             "project_id", "GCE-pid");
 
+    assertEquals("gce_instance", monitoredResource.getType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
     assertEquals(3, monitoredResourceMap.size());
     expectedMappings.forEach(
         (key, value) -> {
