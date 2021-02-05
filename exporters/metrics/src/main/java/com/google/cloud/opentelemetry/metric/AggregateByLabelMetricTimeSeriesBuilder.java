@@ -86,7 +86,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
     return TimeSeries.newBuilder()
         .setMetric(mapMetric(labels, descriptor.getType()))
         .setMetricKind(descriptor.getMetricKind())
-        .setResource(mapResource(metric.getResource().getAttributes(), projectId));
+        .setResource(mapResource(metric.getResource(), projectId));
   }
 
   @Override

@@ -33,6 +33,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
 import java.util.Set;
@@ -152,8 +153,9 @@ public class MetricTranslator {
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 
-  static MonitoredResource mapResource(Attributes attributes, String projectId) {
+  static MonitoredResource mapResource(Resource resource, String projectId) {
     // First, we try to map to known GCP resources
+    Attributes attributes = resource.getAttributes();
 
     // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);

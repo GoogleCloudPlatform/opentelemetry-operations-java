@@ -38,6 +38,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -146,7 +147,8 @@ public class MetricTranslatorTest {
         });
     Attributes attributes = attrBuilder.build();
 
-    MonitoredResource monitoredResource = MetricTranslator.mapResource(attributes, "GCE_pid");
+    MonitoredResource monitoredResource =
+        MetricTranslator.mapResource(Resource.create(attributes), "GCE_pid");
 
     Map<String, String> expectedMappings =
         Stream.of(
