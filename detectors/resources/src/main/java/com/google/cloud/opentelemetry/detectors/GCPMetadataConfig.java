@@ -50,6 +50,7 @@ final class GCPMetadataConfig {
     return getAttribute("project/project-id");
   }
 
+  // Example response: projects/640212054955/zones/australia-southeast1-a
   String getZone() {
     String zone = getAttribute("instance/zone");
     if (zone.contains("/")) {
@@ -58,6 +59,7 @@ final class GCPMetadataConfig {
     return zone;
   }
 
+  // Example response: projects/640212054955/machineTypes/e2-medium
   String getMachineType() {
     String machineType = getAttribute("instance/machine-type");
     if (machineType.contains("/")) {

@@ -46,10 +46,12 @@ public final class GCEResource extends ResourceProvider {
       attrBuilders.put(SemanticAttributes.CLOUD_ACCOUNT_ID, projectId);
     }
 
+    // Example zone: australia-southeast1-a
     String zone = metadata.getZone();
     if (!zone.isEmpty()) {
       attrBuilders.put(SemanticAttributes.CLOUD_ZONE, zone);
 
+      // Parsing required to scope up to a region
       String[] splitArr = zone.split("-");
       if (splitArr.length > 2) {
         attrBuilders.put(SemanticAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
