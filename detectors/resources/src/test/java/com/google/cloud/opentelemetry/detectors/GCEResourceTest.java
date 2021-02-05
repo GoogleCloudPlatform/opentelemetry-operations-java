@@ -27,6 +27,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,15 +72,19 @@ public class GCEResourceTest {
 
     Attributes attr = testResource.getAttributes();
 
-    Map<AttributeKey, String> expectedAttributes =
-        Map.of(
-            SemanticAttributes.CLOUD_PROVIDER, "gcp",
-            SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid",
-            SemanticAttributes.CLOUD_ZONE, "country-region-zone",
-            SemanticAttributes.CLOUD_REGION, "country-region",
-            SemanticAttributes.HOST_ID, "GCE-instance-id",
-            SemanticAttributes.HOST_NAME, "GCE-instance-name",
-            SemanticAttributes.HOST_TYPE, "GCE-instance-type");
+    Map<AttributeKey<String>, String> expectedAttributes =
+        Stream.of(
+                new Object[][] {
+                  {SemanticAttributes.CLOUD_PROVIDER, "gcp"},
+                  {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
+                  {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {SemanticAttributes.CLOUD_REGION, "country-region"},
+                  {SemanticAttributes.HOST_ID, "GCE-instance-id"},
+                  {SemanticAttributes.HOST_NAME, "GCE-instance-name"},
+                  {SemanticAttributes.HOST_TYPE, "GCE-instance-type"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
 
     assertEquals(7, attr.size());
     attr.forEach(

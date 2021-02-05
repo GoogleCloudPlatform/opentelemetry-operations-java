@@ -40,6 +40,8 @@ import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -125,14 +127,18 @@ public class MetricTranslatorTest {
   @Test
   public void testMapResourcesWithGCEResource() {
     Map<AttributeKey<String>, String> testAttributes =
-        Map.of(
-            SemanticAttributes.CLOUD_PROVIDER, "gcp",
-            SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid",
-            SemanticAttributes.CLOUD_ZONE, "country-region-zone",
-            SemanticAttributes.CLOUD_REGION, "country-region",
-            SemanticAttributes.HOST_ID, "GCE-instance-id",
-            SemanticAttributes.HOST_NAME, "GCE-instance-name",
-            SemanticAttributes.HOST_TYPE, "GCE-instance-type");
+        Stream.of(
+                new Object[][] {
+                  {SemanticAttributes.CLOUD_PROVIDER, "gcp"},
+                  {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
+                  {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {SemanticAttributes.CLOUD_REGION, "country-region"},
+                  {SemanticAttributes.HOST_ID, "GCE-instance-id"},
+                  {SemanticAttributes.HOST_NAME, "GCE-instance-name"},
+                  {SemanticAttributes.HOST_TYPE, "GCE-instance-type"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(
         (key, value) -> {
@@ -143,11 +149,13 @@ public class MetricTranslatorTest {
     MonitoredResource monitoredResource = MetricTranslator.mapResource(attributes, "GCE_pid");
 
     Map<String, String> expectedMappings =
-        Map.of(
-            "instance_id", "GCE-instance-id",
-            "zone", "country-region-zone",
-            "project_id", "GCE-pid");
-
+        Stream.of(
+                new Object[][] {
+                  {"instance_id", "GCE-instance-id"},
+                  {"zone", "country-region-zone"},
+                  {"project_id", "GCE-pid"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     assertEquals("gce_instance", monitoredResource.getType());
 
     Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
