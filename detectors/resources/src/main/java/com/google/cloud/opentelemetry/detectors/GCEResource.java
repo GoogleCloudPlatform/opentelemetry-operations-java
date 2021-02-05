@@ -19,7 +19,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.util.Arrays;
 
 public final class GCEResource extends ResourceProvider {
   private final GCPMetadataConfig metadata;
@@ -53,8 +52,7 @@ public final class GCEResource extends ResourceProvider {
 
       String[] splitArr = zone.split("-");
       if (splitArr.length > 2) {
-        attrBuilders.put(
-            SemanticAttributes.CLOUD_REGION, String.join("-", Arrays.copyOfRange(splitArr, 0, 2)));
+        attrBuilders.put(SemanticAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
       }
     }
 

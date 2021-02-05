@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +62,14 @@ public class MetricTranslator {
 
   // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gce_instance
   private static final Map<String, AttributeKey<String>> gceMap =
-      Map.of(
-          "project_id", SemanticAttributes.CLOUD_ACCOUNT_ID,
-          "instance_id", SemanticAttributes.HOST_ID,
-          "zone", SemanticAttributes.CLOUD_ZONE);
+      Stream.of(
+              new Object[][] {
+                {"project_id", SemanticAttributes.CLOUD_ACCOUNT_ID},
+                {"instance_id", SemanticAttributes.HOST_ID},
+                {"zone", SemanticAttributes.CLOUD_ZONE}
+              })
+          .collect(
+              Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
 
   static Metric mapMetric(Labels labels, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);

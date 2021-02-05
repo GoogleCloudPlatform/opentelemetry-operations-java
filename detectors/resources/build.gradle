@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-	id 'java'
-	id 'com.github.sherter.google-java-format' version '0.9'
-}
-
-repositories {
-	mavenCentral()
-}
+description = 'Cloud auto resource detector for OpenTelemetry'
 
 dependencies {
-	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_sdk)
-	compile(libraries.google_cloud_trace)
-	compile(libraries.opentelemetry_semconv)
-	compile(testLibraries.junit)
-	compile(testLibraries.wiremock)
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	testImplementation(testLibraries.junit)
+	testImplementation(testLibraries.wiremock)
 }
