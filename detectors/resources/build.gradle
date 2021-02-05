@@ -18,6 +18,7 @@ description = 'Cloud auto resource detector for OpenTelemetry'
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.google_cloud_trace)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.wiremock)
 }
