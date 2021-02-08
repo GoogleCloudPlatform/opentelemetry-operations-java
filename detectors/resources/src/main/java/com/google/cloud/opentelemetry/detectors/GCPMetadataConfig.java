@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Retrieves Google Cloud project-id and a limited set of instance attributes from Metadata server.
@@ -36,6 +38,7 @@ final class GCPMetadataConfig {
   public static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig(DEFAULT_URL);
 
   private final String url;
+  private Map<String, String> cachedAttributes = new HashMap<>();
 
   // For testing only
   public GCPMetadataConfig(String url) {
@@ -47,41 +50,81 @@ final class GCPMetadataConfig {
   }
 
   String getProjectId() {
-    return getAttribute("project/project-id");
+    if (cachedAttributes.containsKey("project/project-id")) {
+      return cachedAttributes.get("project/project-id");
+    } else {
+      String projectId = getAttribute("project/project-id");
+      cachedAttributes.put("project/project-id", projectId);
+      return projectId;
+    }
   }
 
   // Example response: projects/640212054955/zones/australia-southeast1-a
   String getZone() {
-    String zone = getAttribute("instance/zone");
-    if (zone.contains("/")) {
-      return zone.substring(zone.lastIndexOf('/') + 1);
+    if (cachedAttributes.containsKey("instance/zone")) {
+      return cachedAttributes.get("instance/zone");
+    } else {
+      String zone = getAttribute("instance/zone");
+      if (zone.contains("/")) {
+        zone = zone.substring(zone.lastIndexOf('/') + 1);
+      }
+      cachedAttributes.put("instance/zone", zone);
+      return zone;
     }
-    return zone;
   }
 
   // Example response: projects/640212054955/machineTypes/e2-medium
   String getMachineType() {
-    String machineType = getAttribute("instance/machine-type");
-    if (machineType.contains("/")) {
-      return machineType.substring(machineType.lastIndexOf('/') + 1);
+    if (cachedAttributes.containsKey("instance/machine-type")) {
+      return cachedAttributes.get("instance/machine-type");
+    } else {
+      String machineType = getAttribute("instance/machine-type");
+      if (machineType.contains("/")) {
+        machineType = machineType.substring(machineType.lastIndexOf('/') + 1);
+      }
+      cachedAttributes.put("instance/machine-type", machineType);
+      return machineType;
     }
-    return machineType;
   }
 
   String getInstanceId() {
-    return getAttribute("instance/id");
+    if (cachedAttributes.containsKey("instance/id")) {
+      return cachedAttributes.get("instance/id");
+    } else {
+      String instanceId = getAttribute("instance/id");
+      cachedAttributes.put("instance/id", instanceId);
+      return instanceId;
+    }
   }
 
   String getClusterName() {
-    return getAttribute("instance/attributes/cluster-name");
+    if (cachedAttributes.containsKey("instance/attributes/cluster-name")) {
+      return cachedAttributes.get("instance/attributes/cluster-name");
+    } else {
+      String clusterName = getAttribute("instance/attributes/cluster-name");
+      cachedAttributes.put("instance/attributes/cluster-name", clusterName);
+      return clusterName;
+    }
   }
 
   String getInstanceHostName() {
-    return getAttribute("instance/hostname");
+    if (cachedAttributes.containsKey("instance/hostname")) {
+      return cachedAttributes.get("instance/hostname");
+    } else {
+      String instanceHostName = getAttribute("instance/hostname");
+      cachedAttributes.put("instance/hostname", instanceHostName);
+      return instanceHostName;
+    }
   }
 
   String getInstanceName() {
-    return getAttribute("instance/name");
+    if (cachedAttributes.containsKey("instance/name")) {
+      return cachedAttributes.get("instance/name");
+    } else {
+      String instanceName = getAttribute("instance/name");
+      cachedAttributes.put("instance/name", instanceName);
+      return instanceName;
+    }
   }
 
   String getAttribute(String attributeName) {
