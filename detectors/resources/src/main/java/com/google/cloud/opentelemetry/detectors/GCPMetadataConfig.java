@@ -38,7 +38,27 @@ final class GCPMetadataConfig {
   public static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig(DEFAULT_URL);
 
   private final String url;
-  private Map<String, String> cachedAttributes = new HashMap<>();
+  private final Map<String, String> cachedAttributes = new HashMap<>();
+
+  public enum AttributeEndpoints {
+    projectId("project/project-id"),
+    zone("instance/zone"),
+    machineType("instance/machine-type"),
+    instanceId("instance/id"),
+    clusterName("instance/attributes/cluster-name"),
+    instanceHostName("instance/hostname"),
+    instanceName("instance/name");
+
+    private final String endpointString;
+
+    private AttributeEndpoints(String s) {
+      endpointString = s;
+    }
+
+    public String toString() {
+      return this.endpointString;
+    }
+  }
 
   // For testing only
   public GCPMetadataConfig(String url) {
@@ -50,79 +70,79 @@ final class GCPMetadataConfig {
   }
 
   String getProjectId() {
-    if (cachedAttributes.containsKey("project/project-id")) {
-      return cachedAttributes.get("project/project-id");
+    if (cachedAttributes.containsKey(AttributeEndpoints.projectId.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.projectId.toString());
     } else {
-      String projectId = getAttribute("project/project-id");
-      cachedAttributes.put("project/project-id", projectId);
+      String projectId = getAttribute(AttributeEndpoints.projectId.toString());
+      cachedAttributes.put(AttributeEndpoints.projectId.toString(), projectId);
       return projectId;
     }
   }
 
   // Example response: projects/640212054955/zones/australia-southeast1-a
   String getZone() {
-    if (cachedAttributes.containsKey("instance/zone")) {
-      return cachedAttributes.get("instance/zone");
+    if (cachedAttributes.containsKey(AttributeEndpoints.zone.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.zone.toString());
     } else {
-      String zone = getAttribute("instance/zone");
+      String zone = getAttribute(AttributeEndpoints.zone.toString());
       if (zone.contains("/")) {
         zone = zone.substring(zone.lastIndexOf('/') + 1);
       }
-      cachedAttributes.put("instance/zone", zone);
+      cachedAttributes.put(AttributeEndpoints.zone.toString(), zone);
       return zone;
     }
   }
 
   // Example response: projects/640212054955/machineTypes/e2-medium
   String getMachineType() {
-    if (cachedAttributes.containsKey("instance/machine-type")) {
-      return cachedAttributes.get("instance/machine-type");
+    if (cachedAttributes.containsKey(AttributeEndpoints.machineType.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.machineType.toString());
     } else {
-      String machineType = getAttribute("instance/machine-type");
+      String machineType = getAttribute(AttributeEndpoints.machineType.toString());
       if (machineType.contains("/")) {
         machineType = machineType.substring(machineType.lastIndexOf('/') + 1);
       }
-      cachedAttributes.put("instance/machine-type", machineType);
+      cachedAttributes.put(AttributeEndpoints.machineType.toString(), machineType);
       return machineType;
     }
   }
 
   String getInstanceId() {
-    if (cachedAttributes.containsKey("instance/id")) {
-      return cachedAttributes.get("instance/id");
+    if (cachedAttributes.containsKey(AttributeEndpoints.instanceId.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.instanceId.toString());
     } else {
-      String instanceId = getAttribute("instance/id");
-      cachedAttributes.put("instance/id", instanceId);
+      String instanceId = getAttribute(AttributeEndpoints.instanceId.toString());
+      cachedAttributes.put(AttributeEndpoints.instanceId.toString(), instanceId);
       return instanceId;
     }
   }
 
   String getClusterName() {
-    if (cachedAttributes.containsKey("instance/attributes/cluster-name")) {
-      return cachedAttributes.get("instance/attributes/cluster-name");
+    if (cachedAttributes.containsKey(AttributeEndpoints.clusterName.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.clusterName.toString());
     } else {
-      String clusterName = getAttribute("instance/attributes/cluster-name");
-      cachedAttributes.put("instance/attributes/cluster-name", clusterName);
+      String clusterName = getAttribute(AttributeEndpoints.clusterName.toString());
+      cachedAttributes.put(AttributeEndpoints.clusterName.toString(), clusterName);
       return clusterName;
     }
   }
 
   String getInstanceHostName() {
-    if (cachedAttributes.containsKey("instance/hostname")) {
-      return cachedAttributes.get("instance/hostname");
+    if (cachedAttributes.containsKey(AttributeEndpoints.instanceHostName.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.instanceHostName.toString());
     } else {
-      String instanceHostName = getAttribute("instance/hostname");
-      cachedAttributes.put("instance/hostname", instanceHostName);
+      String instanceHostName = getAttribute(AttributeEndpoints.instanceHostName.toString());
+      cachedAttributes.put(AttributeEndpoints.instanceHostName.toString(), instanceHostName);
       return instanceHostName;
     }
   }
 
   String getInstanceName() {
-    if (cachedAttributes.containsKey("instance/name")) {
-      return cachedAttributes.get("instance/name");
+    if (cachedAttributes.containsKey(AttributeEndpoints.instanceName.toString())) {
+      return cachedAttributes.get(AttributeEndpoints.instanceName.toString());
     } else {
-      String instanceName = getAttribute("instance/name");
-      cachedAttributes.put("instance/name", instanceName);
+      String instanceName = getAttribute(AttributeEndpoints.instanceName.toString());
+      cachedAttributes.put(AttributeEndpoints.instanceName.toString(), instanceName);
       return instanceName;
     }
   }
