@@ -89,8 +89,9 @@ final class GCPMetadataConfig {
       URL url = new URL(this.url + attributeName);
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
       connection.setRequestProperty("Metadata-Flavor", "Google");
-      InputStream input = connection.getInputStream();
-      if (connection.getResponseCode() == 200) {
+      if (connection.getResponseCode() == 200
+          && ("Google").equals(connection.getHeaderField("Metadata-Flavor"))) {
+        InputStream input = connection.getInputStream();
         try (BufferedReader reader =
             new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
           return firstNonNull(reader.readLine(), "");

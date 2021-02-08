@@ -45,5 +45,5 @@ dependencies {
 	compile(libraries.opentelemetry_sdk)
 	compile(libraries.google_cloud_trace)
 	compile project(':exporter-trace')
-	compile project(':detector-resources')
+	runtimeOnly project(':detector-resources')
 }

@@ -45,10 +45,7 @@ public class GCEResourceTest {
     stubFor(
         get(urlEqualTo(endpointPath))
             .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "text/plain")
-                    .withBody(responseBody)));
+                aResponse().withHeader("Metadata-Flavor", "Google").withBody(responseBody)));
   }
 
   @Test
@@ -91,5 +88,14 @@ public class GCEResourceTest {
         (key, value) -> {
           assertEquals(expectedAttributes.get(key), value);
         });
+  }
+
+  @Test
+  public void testGCEResourceNonGCPEndpoint() {
+    stubFor(
+        get(urlEqualTo("/project/project-id"))
+            .willReturn(aResponse().withBody("nonGCPendpointTest")));
+
+    assertEquals(0, testResource.getAttributes().size());
   }
 }
