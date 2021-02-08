@@ -74,7 +74,8 @@ final class GCPMetadataConfig {
       return cachedAttributes.get(AttributeEndpoints.projectId.toString());
     } else {
       String projectId = getAttribute(AttributeEndpoints.projectId.toString());
-      if (!projectId.equals("")) cachedAttributes.put(AttributeEndpoints.projectId.toString(), projectId);
+      if (!projectId.equals(""))
+        cachedAttributes.put(AttributeEndpoints.projectId.toString(), projectId);
       return projectId;
     }
   }
@@ -102,7 +103,8 @@ final class GCPMetadataConfig {
       if (machineType.contains("/")) {
         machineType = machineType.substring(machineType.lastIndexOf('/') + 1);
       }
-      if (!machineType.equals("")) cachedAttributes.put(AttributeEndpoints.machineType.toString(), machineType);
+      if (!machineType.equals(""))
+        cachedAttributes.put(AttributeEndpoints.machineType.toString(), machineType);
       return machineType;
     }
   }
@@ -112,7 +114,8 @@ final class GCPMetadataConfig {
       return cachedAttributes.get(AttributeEndpoints.instanceId.toString());
     } else {
       String instanceId = getAttribute(AttributeEndpoints.instanceId.toString());
-      if (!instanceId.equals(""))cachedAttributes.put(AttributeEndpoints.instanceId.toString(), instanceId);
+      if (!instanceId.equals(""))
+        cachedAttributes.put(AttributeEndpoints.instanceId.toString(), instanceId);
       return instanceId;
     }
   }
@@ -122,7 +125,8 @@ final class GCPMetadataConfig {
       return cachedAttributes.get(AttributeEndpoints.clusterName.toString());
     } else {
       String clusterName = getAttribute(AttributeEndpoints.clusterName.toString());
-      if (!clusterName.equals("")) cachedAttributes.put(AttributeEndpoints.clusterName.toString(), clusterName);
+      if (!clusterName.equals(""))
+        cachedAttributes.put(AttributeEndpoints.clusterName.toString(), clusterName);
       return clusterName;
     }
   }
@@ -132,7 +136,8 @@ final class GCPMetadataConfig {
       return cachedAttributes.get(AttributeEndpoints.instanceHostName.toString());
     } else {
       String instanceHostName = getAttribute(AttributeEndpoints.instanceHostName.toString());
-      if (!instanceHostName.equals("")) cachedAttributes.put(AttributeEndpoints.instanceHostName.toString(), instanceHostName);
+      if (!instanceHostName.equals(""))
+        cachedAttributes.put(AttributeEndpoints.instanceHostName.toString(), instanceHostName);
       return instanceHostName;
     }
   }
@@ -142,7 +147,8 @@ final class GCPMetadataConfig {
       return cachedAttributes.get(AttributeEndpoints.instanceName.toString());
     } else {
       String instanceName = getAttribute(AttributeEndpoints.instanceName.toString());
-      if (!instanceName.equals("")) cachedAttributes.put(AttributeEndpoints.instanceName.toString(), instanceName);
+      if (!instanceName.equals(""))
+        cachedAttributes.put(AttributeEndpoints.instanceName.toString(), instanceName);
       return instanceName;
     }
   }
