@@ -42,13 +42,13 @@ public final class GCEResource extends ResourceProvider {
     attrBuilders.put(SemanticAttributes.CLOUD_PROVIDER, "gcp");
 
     String projectId = metadata.getProjectId();
-    if (!projectId.isEmpty()) {
+    if (projectId != null) {
       attrBuilders.put(SemanticAttributes.CLOUD_ACCOUNT_ID, projectId);
     }
 
     // Example zone: australia-southeast1-a
     String zone = metadata.getZone();
-    if (!zone.isEmpty()) {
+    if (zone != null) {
       attrBuilders.put(SemanticAttributes.CLOUD_ZONE, zone);
 
       // Parsing required to scope up to a region
@@ -59,17 +59,17 @@ public final class GCEResource extends ResourceProvider {
     }
 
     String instanceId = metadata.getInstanceId();
-    if (!instanceId.isEmpty()) {
+    if (instanceId != null) {
       attrBuilders.put(SemanticAttributes.HOST_ID, instanceId);
     }
 
     String instanceName = metadata.getInstanceName();
-    if (!instanceName.isEmpty()) {
+    if (instanceName != null) {
       attrBuilders.put(SemanticAttributes.HOST_NAME, instanceName);
     }
 
     String hostType = metadata.getMachineType();
-    if (!hostType.isEmpty()) {
+    if (hostType != null) {
       attrBuilders.put(SemanticAttributes.HOST_TYPE, hostType);
     }
 

@@ -46,17 +46,19 @@ final class GCPMetadataConfig {
   }
 
   boolean isRunningOnGcp() {
-    return !getProjectId().isEmpty();
+    return getProjectId() != null && !getProjectId().isEmpty();
   }
 
+  // Returns null on failure to retrieve from metadata server
   String getProjectId() {
     return getAttribute("project/project-id");
   }
 
   // Example response: projects/640212054955/zones/australia-southeast1-a
+  // Returns null on failure to retrieve from metadata server
   String getZone() {
     String zone = getAttribute("instance/zone");
-    if (zone.contains("/")) {
+    if (zone != null && zone.contains("/")) {
       zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
     return zone;
@@ -65,43 +67,39 @@ final class GCPMetadataConfig {
   // Example response: projects/640212054955/machineTypes/e2-medium
   String getMachineType() {
     String machineType = getAttribute("instance/machine-type");
-    if (machineType.contains("/")) {
+    if (machineType != null && machineType.contains("/")) {
       machineType = machineType.substring(machineType.lastIndexOf('/') + 1);
     }
     return machineType;
   }
 
+  // Returns null on failure to retrieve from metadata server
   String getInstanceId() {
     return getAttribute("instance/id");
   }
 
+  // Returns null on failure to retrieve from metadata server
   String getClusterName() {
     return getAttribute("instance/attributes/cluster-name");
   }
 
+  // Returns null on failure to retrieve from metadata server
   String getInstanceHostName() {
     return getAttribute("instance/hostname");
   }
 
+  // Returns null on failure to retrieve from metadata server
   String getInstanceName() {
     return getAttribute("instance/name");
   }
 
-  String getAttribute(String attributeName) {
-    String val = cachedAttributes.get(attributeName);
-    if (val != null) {
-      return val;
-    }
-
-    val = fetchAttribute(attributeName);
-    if (!val.isEmpty()) {
-      cachedAttributes.put(attributeName, val);
-    }
-
-    return val;
+  // Returns null on failure to retrieve from metadata server
+  private String getAttribute(String attributeName) {
+    return cachedAttributes.computeIfAbsent(attributeName, this::fetchAttribute);
   }
 
-  String fetchAttribute(String attributeName) {
+  // Return the attribute received at <attributeName> relative path or null on failure
+  private String fetchAttribute(String attributeName) {
     try {
       URL url = new URL(this.url + attributeName);
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -117,6 +115,6 @@ final class GCPMetadataConfig {
     } catch (IOException ignore) {
       // ignore
     }
-    return "";
+    return null;
   }
 }
