@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-description = 'Cloud auto resource detector for OpenTelemetry'
+description = 'Google Cloud resource provider for OpenTelemetry'
 
 dependencies {
 	implementation(libraries.opentelemetry_api)
