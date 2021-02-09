@@ -15,7 +15,10 @@
  */
 plugins {
 	id 'java'
+	id 'com.google.cloud.tools.jib' version '2.7.1'
 }
+
+jib.to.image = 'gcr.io/clamclamyan-otel/metrics-example'
 
 jar {
 	manifest {
@@ -45,4 +48,5 @@ dependencies {
 	compile(libraries.opentelemetry_sdk_metrics)
 	compile(libraries.google_cloud_monitoring)
 	compile project(':exporter-metrics')
+	compile("org.slf4j:slf4j-log4j12:1.7.30")
 }

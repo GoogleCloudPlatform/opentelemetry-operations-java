@@ -167,7 +167,12 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           continue;
       }
       // Update metric descriptors based on configured strategy.
-      metricDescriptorStrategy.exportDescriptors(builder.getDescriptors(), this::exportDescriptor);
+      try {
+        metricDescriptorStrategy
+            .exportDescriptors(builder.getDescriptors(), this::exportDescriptor);
+      } catch (Exception e) {
+        logger.error("Failed to create metric descriptors", e);
+      }
 
       // TODO: Filter metrics by last updated time....
       // MetricWithLabels updateKey =
