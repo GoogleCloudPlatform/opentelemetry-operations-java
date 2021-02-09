@@ -110,6 +110,7 @@ subprojects {
 		openTelemetryInstrumentationVersion = '0.14.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
+		wiremockVersion = '2.27.2'
 
 		libraries = [
 			auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -134,6 +135,7 @@ subprojects {
 			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
 			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
 			opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
+			wiremock    : "com.github.tomakehurst:wiremock-jre8:${wiremockVersion}"
 		]
 	}
 

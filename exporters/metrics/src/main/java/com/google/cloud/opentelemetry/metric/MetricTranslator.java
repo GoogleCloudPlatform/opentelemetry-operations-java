@@ -28,11 +28,18 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Longs;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +60,17 @@ public class MetricTranslator {
   static final Set<MetricDataType> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
   static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
+
+  // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+  private static final Map<String, AttributeKey<String>> gceMap =
+      Stream.of(
+              new Object[][] {
+                {"project_id", SemanticAttributes.CLOUD_ACCOUNT_ID},
+                {"instance_id", SemanticAttributes.HOST_ID},
+                {"zone", SemanticAttributes.CLOUD_ZONE}
+              })
+          .collect(
+              Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
 
   static Metric mapMetric(Labels labels, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
@@ -135,10 +153,25 @@ public class MetricTranslator {
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
   }
 
-  static MonitoredResource mapResource(String projectId) {
-    // This is mapping to the global resource type temporarily:
+  static MonitoredResource mapResource(Resource resource, String projectId) {
+    // First, we try to map to known GCP resources
+    Attributes attributes = resource.getAttributes();
+
+    // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+    String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
+    if (provider != null && provider.equals("gcp")) {
+      return MonitoredResource.newBuilder()
+          .setType("gce_instance")
+          .putAllLabels(
+              gceMap.entrySet().stream()
+                  .collect(
+                      Collectors.toMap(
+                          e -> (String) e.getKey(), e -> attributes.get(e.getValue()))))
+          .build();
+    }
+
+    // If none of the standard resource types apply, use the "global" resource:
     // https://cloud.google.com/monitoring/api/resources#tag_global
-    // It should be mapped properly in the future.
     return MonitoredResource.newBuilder()
         .setType(DEFAULT_RESOURCE_TYPE)
         .putLabels(RESOURCE_PROJECT_ID_LABEL, projectId)

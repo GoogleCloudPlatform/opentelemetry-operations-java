@@ -15,9 +15,11 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aCloudZone;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
@@ -139,8 +141,10 @@ public class MetricExporterTest {
             .setMetricKind(expectedDescriptor.getMetricKind())
             .setResource(
                 MonitoredResource.newBuilder()
-                    .setType("global")
+                    .setType("gce_instance")
                     .putLabels("project_id", aProjectId)
+                    .putLabels("instance_id", aHostId)
+                    .putLabels("zone", aCloudZone)
                     .build())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
