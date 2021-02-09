@@ -15,8 +15,6 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,7 +107,7 @@ final class GCPMetadataConfig {
         InputStream input = connection.getInputStream();
         try (BufferedReader reader =
             new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-          return firstNonNull(reader.readLine(), "");
+          return reader.readLine();
         }
       }
     } catch (IOException ignore) {
