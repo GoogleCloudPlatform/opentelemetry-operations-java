@@ -39,7 +39,7 @@ public final class GCEResource extends ResourceProvider {
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
-    attrBuilders.put(SemanticAttributes.CLOUD_PROVIDER, "gcp");
+    attrBuilders.put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.GCP);
 
     String projectId = metadata.getProjectId();
     if (projectId != null) {
