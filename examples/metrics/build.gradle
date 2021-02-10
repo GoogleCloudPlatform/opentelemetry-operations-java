@@ -18,7 +18,9 @@ plugins {
 	id 'com.google.cloud.tools.jib' version '2.7.1'
 }
 
-jib.to.image = 'gcr.io/clamclamyan-otel/metrics-example'
+// Set jib image path up using Google Container Registry
+// https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin#configuration
+//jib.to.image = <IMAGE-PATH>
 
 jar {
 	manifest {
@@ -49,4 +51,5 @@ dependencies {
 	compile(libraries.google_cloud_monitoring)
 	compile project(':exporter-metrics')
 	compile("org.slf4j:slf4j-log4j12:1.7.30")
+	runtimeOnly project(':detector-resources')
 }

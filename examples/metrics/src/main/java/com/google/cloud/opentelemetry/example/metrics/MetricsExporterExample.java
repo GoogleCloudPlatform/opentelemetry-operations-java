@@ -18,9 +18,7 @@ package com.google.cloud.opentelemetry.example.metrics;
 import static java.util.Collections.singleton;
 
 import com.google.cloud.opentelemetry.metric.MetricExporter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
@@ -33,7 +31,8 @@ import org.slf4j.LoggerFactory;
 public class MetricsExporterExample {
   private static final Logger logger = LoggerFactory.getLogger(MetricsExporterExample.class);
 
-  private static SdkMeterProvider METER_PROVIDER = SdkMeterProvider.builder().buildAndRegisterGlobal();
+  private static SdkMeterProvider METER_PROVIDER =
+      SdkMeterProvider.builder().buildAndRegisterGlobal();
   private static final Meter METER =
       METER_PROVIDER.get("instrumentation-library-name", "semver:1.0.0");
   private static final Random RANDOM = new Random();
@@ -87,7 +86,7 @@ public class MetricsExporterExample {
     setupMetricExporter();
 
     try {
-      int i=0;
+      int i = 0;
       while (true) {
         System.out.println("Running example use case: #" + i);
         myUseCase();
@@ -104,6 +103,5 @@ public class MetricsExporterExample {
 
       System.out.println("Shutdown complete");
     }
-
   }
 }
