@@ -28,6 +28,7 @@ include ":examples-trace"
 include ":exporter-metrics"
 include ":examples-metrics"
 include ":exporter-auto"
+include ":detector-resources"
 
 project(':exporter-trace').projectDir =
 		"$rootDir/exporters/trace" as File
@@ -43,3 +44,6 @@ project(':examples-metrics').projectDir =
 
 project(':exporter-auto').projectDir =
 		"$rootDir/exporters/auto" as File
+
+project(':detector-resources').projectDir =
+		"$rootDir/detectors/resources" as File

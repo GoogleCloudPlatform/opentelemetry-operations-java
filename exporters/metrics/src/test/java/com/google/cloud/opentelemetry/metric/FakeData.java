@@ -37,6 +37,8 @@ public class FakeData {
   private static final long NANO_PER_SECOND = (long) 1e9;
 
   static final String aProjectId = "TestProjectId";
+  static final String aHostId = "TestHostId";
+  static final String aCloudZone = "TestCloudZone";
 
   static final Credentials aFakeCredential =
       GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
@@ -46,9 +48,9 @@ public class FakeData {
 
   static final Attributes someGceAttributes =
       Attributes.builder()
-          .put("cloud.account.id", 123)
-          .put("host.id", "host")
-          .put("cloud.zone", "US")
+          .put("cloud.account.id", aProjectId)
+          .put("host.id", aHostId)
+          .put("cloud.zone", aCloudZone)
           .put("cloud.provider", "gcp")
           .put("extra_info", "extra")
           .put("not_gcp_resource", "value")

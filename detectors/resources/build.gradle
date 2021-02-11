@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-description = 'Cloud Monitoring Exporter for OpenTelemetry'
+description = 'Google Cloud resource provider for OpenTelemetry'
 
 dependencies {
-	api(libraries.auto_value_annotations)
-	api(libraries.slf4j)
-	annotationProcessor(libraries.auto_value)
-	api(libraries.opentelemetry_api_metrics)
-	api(libraries.opentelemetry_sdk_metrics)
-	api(libraries.google_cloud_core)
-	api(libraries.google_cloud_monitoring)
-	implementation(libraries.opentelemetry_semconv)
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
 	testImplementation(testLibraries.junit)
-	testImplementation(testLibraries.mockito)
-	testImplementation(testLibraries.slf4j_simple)
-	testImplementation(testLibraries.test_containers)
+	testImplementation(testLibraries.wiremock)
 }
