@@ -179,68 +179,75 @@ subprojects {
 		finalizedBy(tasks.named('publish'))
 	}
 
-	publishing {
-		publications {
-			maven(MavenPublication) {
-				from components.java
-				groupId = 'com.google.cloud.opentelemetry'
-				afterEvaluate {
-					artifactId = archivesBaseName
-				}
-				versionMapping {
-					allVariants {
-						fromResolutionResult()
-					}
-				}
-				pom {
-					name = 'OpenTelemetry Operations Java'
-					url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-					licenses {
-						license {
-							name = 'The Apache License, Version 2.0'
-							url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-						}
-					}
-					developers {
-						developer {
-							id = 'com.google.cloud.opentelemetry'
-							name = 'OpenTelemetry Operations Contributors'
-							email = 'opentelemetry-team@google.com'
-							organization = 'Google Inc'
-							organizationUrl = 'https://cloud.google.com/products/operations'
-						}
-					}
-					scm {
-						connection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-						developerConnection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-						url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
-					}
+	if (findProperty("release.enabled") == "true") {
+		publishing {
+			publications {
+				maven(MavenPublication) {
+					from components.java
+					groupId = 'com.google.cloud.opentelemetry'
 					afterEvaluate {
-						// description is not available until evaluated.
-						description = project.description
+						artifactId = archivesBaseName
+						if (findProperty("release.qualifier") != null) {
+							String[] versionParts = version.split('-')
+							versionParts[0] = "${versionParts[0]}-${findProperty("release.qualifier")}"
+							version = versionParts.join("-")
+						}
+					}
+					versionMapping {
+						allVariants {
+							fromResolutionResult()
+						}
+					}
+					pom {
+						name = 'OpenTelemetry Operations Java'
+						url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+						licenses {
+							license {
+								name = 'The Apache License, Version 2.0'
+								url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+							}
+						}
+						developers {
+							developer {
+								id = 'com.google.cloud.opentelemetry'
+								name = 'OpenTelemetry Operations Contributors'
+								email = 'opentelemetry-team@google.com'
+								organization = 'Google Inc'
+								organizationUrl = 'https://cloud.google.com/products/operations'
+							}
+						}
+						scm {
+							connection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+							developerConnection = 'scm:git:https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+							url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
+						}
+						afterEvaluate {
+							// description is not available until evaluated.
+							description = project.description
+						}
+					}
+				}
+			}
+			repositories {
+				maven {
+					def ossrhRelease = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+					def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
+					url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
+					credentials {
+						username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
+						password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
 					}
 				}
 			}
 		}
-		repositories {
-			maven {
-				def ossrhRelease = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-				def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
-				url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
-				credentials {
-					username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
-					password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
-				}
-			}
-		}
-	}
 
-	signing {
-		required false
-		// Allow using the GPG agent on linux instead of passwords in a .properties file.
-		if (rootProject.hasProperty('signingUseGpgCmd')) {
-			useGpgCmd()
+		signing {
+			required false
+			// Allow using the GPG agent on linux instead of passwords in a .properties file.
+			if (rootProject.hasProperty('signingUseGpgCmd')) {
+				useGpgCmd()
+			}
+			sign publishing.publications.maven
 		}
-		sign publishing.publications.maven
 	}
 }
