@@ -27,20 +27,20 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
@@ -54,50 +54,37 @@ public class EndToEndTest {
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
   private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
-  private static final String LOCALHOST = "127.0.0.1";
 
   private MockCloudTraceClient mockCloudTraceClient;
   private TraceExporter exporter;
-  private Process mockServerProcess;
 
-  @Before
-  public void setup() throws MockServerStartupException {
-    try {
-      // Find a free port to spin up our server at.
-      ServerSocket socket = new ServerSocket(0);
-      int port = socket.getLocalPort();
-      String address = String.format("%s:%d", LOCALHOST, port);
-      socket.close();
+  /** A test-container instance that loads the Cloud-Ops-Mock server container. */
+  private static class CloudOperationsMockContainer
+      extends GenericContainer<CloudOperationsMockContainer> {
+    CloudOperationsMockContainer() {
+      super(
+          new ImageFromDockerfile()
+              .withDockerfileFromBuilder(
+                  builder ->
+                      builder
+                          .from("golang")
+                          .run("go get github.com/googleinterns/cloud-operations-api-mock/cmd")
+                          .cmd(
+                              "go run github.com/googleinterns/cloud-operations-api-mock/cmd --address=:8080")
+                          .build()));
+      this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
+    }
 
-      // Start the mock server. This assumes the binary is present and in $PATH.
-      // Typically, the CI will be the one that curls the binary and adds it to $PATH.
-      String[] cmdArray =
-          new String[] {System.getProperty("mock.server.path"), "-address", address};
-      ProcessBuilder pb = new ProcessBuilder(cmdArray);
-      pb.redirectErrorStream(true);
-      mockServerProcess = pb.start();
-
-      // Setup the mock trace client.
-      mockCloudTraceClient = new MockCloudTraceClient(LOCALHOST, port);
-
-      // Block until the mock server starts (it will output the address after starting).
-      BufferedReader br =
-          new BufferedReader(new InputStreamReader(mockServerProcess.getInputStream()));
-      br.readLine();
-    } catch (Exception e) {
-      StringBuilder error = new StringBuilder();
-      error.append("Unable to start Google API Mock Server: ");
-      error.append(System.getProperty("mock.server.path"));
-      error.append("\n\tMake sure you're following the direction to run tests");
-      error.append("\n\t$ source get_mock_server.sh");
-      error.append("\n\t$ ./gradlew test -Dmock.server.path=$MOCKSERVER\n");
-      throw new MockServerStartupException(error.toString(), e);
+    public MockCloudTraceClient newCloudTraceClient() {
+      return new MockCloudTraceClient(getContainerIpAddress(), getFirstMappedPort());
     }
   }
 
-  @After
-  public void tearDown() {
-    mockServerProcess.destroy();
+  @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
+
+  @Before
+  public void setup() {
+    mockCloudTraceClient = mockContainer.newCloudTraceClient();
   }
 
   @Test

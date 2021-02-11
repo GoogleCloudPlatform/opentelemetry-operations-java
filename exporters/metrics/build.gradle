@@ -27,4 +27,5 @@ dependencies {
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.mockito)
 	testImplementation(testLibraries.slf4j_simple)
+	testImplementation(testLibraries.test_containers)
 }
