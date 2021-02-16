@@ -15,8 +15,15 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
+/** Provides API to fetch environment variables */
 public interface EnvVars {
   EnvVars DEFAULT_INSTANCE = new EnvVarImpl();
 
+  /**
+   * Grabs the
+   *
+   * @param key the key of the environment variable in System.getenv()
+   * @return the value received by System.getenv(key)
+   */
   String get(String key);
 }

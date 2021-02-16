@@ -174,7 +174,7 @@ public class MetricTranslator {
 
     // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
-    if (provider != null && provider.equals(SemanticAttributes.CloudProviderValues.GCP)) {
+    if (SemanticAttributes.CloudProviderValues.GCP.equals(provider)) {
       String namespace = attributes.get(SemanticAttributes.K8S_NAMESPACE_NAME);
       if (namespace != null) {
         return MonitoredResource.newBuilder()

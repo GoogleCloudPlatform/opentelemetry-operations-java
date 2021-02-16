@@ -18,9 +18,9 @@ plugins {
 	id 'com.google.cloud.tools.jib' version '2.7.1'
 }
 
-// Set jib image path up using Google Container Registry
+// Set Docker image path here, e.g. using Google Container Registry or Docker Hub
 // https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin#configuration
-//jib.to.image = <IMAGE-PATH>
+jib.to.image = 'gcr.io/my-gcp-project/my-app'
 
 jar {
 	manifest {
