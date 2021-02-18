@@ -54,6 +54,8 @@ public class GKEResourceTest {
 
     /* The default meta data url is unreachable through testing so getAttributes should not detect a
     GCP environment, hence returning empty attributes */
+    // Note: Currently this does not support GKE outside of Google Cloud (e.g. GKE on AWS, GKE on
+    // premise)
     Attributes attr = test.getAttributes();
 
     assertTrue(attr.isEmpty());

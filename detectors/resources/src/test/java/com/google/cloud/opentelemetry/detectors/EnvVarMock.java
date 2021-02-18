@@ -17,7 +17,7 @@ package com.google.cloud.opentelemetry.detectors;
 
 import java.util.Map;
 
-public class EnvVarMock implements EnvVars {
+class EnvVarMock implements EnvVars {
   private final Map<String, String> mock;
 
   public EnvVarMock(Map<String, String> mock) {

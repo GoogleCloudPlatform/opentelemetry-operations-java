@@ -15,15 +15,18 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-/** Provides API to fetch environment variables */
+/**
+ * Provides API to fetch environment variables. This is useful in order to create a mock class for
+ * testing.
+ */
 public interface EnvVars {
-  EnvVars DEFAULT_INSTANCE = new EnvVarImpl();
+  EnvVars DEFAULT_INSTANCE = System::getenv;
 
   /**
-   * Grabs the
+   * Grabs the system environment variable. Returns null on failure.
    *
-   * @param key the key of the environment variable in System.getenv()
-   * @return the value received by System.getenv(key)
+   * @param key the key of the environment variable in {@code System.getenv()}
+   * @return the value received by {@code System.getenv(key)}
    */
   String get(String key);
 }

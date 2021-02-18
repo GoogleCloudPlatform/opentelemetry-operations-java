@@ -24,13 +24,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import java.io.IOException;
 import java.util.Random;
-import org.apache.log4j.BasicConfigurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MetricsExporterExample {
-  private static final Logger logger = LoggerFactory.getLogger(MetricsExporterExample.class);
-
   private static SdkMeterProvider METER_PROVIDER =
       SdkMeterProvider.builder().buildAndRegisterGlobal();
   private static final Meter METER =
@@ -59,7 +54,7 @@ public class MetricsExporterExample {
   private static void myUseCase() {
     LongCounter counter =
         METER
-            .longCounterBuilder("clamclamyan_example_counter")
+            .longCounterBuilder("example_counter")
             .setDescription("Processed jobs")
             .setUnit("1")
             .build();
@@ -79,9 +74,6 @@ public class MetricsExporterExample {
 
   public static void main(String[] args) throws InterruptedException {
     System.out.println("Starting the metrics-example application");
-
-    BasicConfigurator.configure();
-    logger.info("Test log message");
 
     setupMetricExporter();
 

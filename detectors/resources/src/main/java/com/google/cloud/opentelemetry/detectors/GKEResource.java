@@ -46,6 +46,8 @@ public final class GKEResource extends ResourceProvider {
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
+    attrBuilders.putAll(gceAttributes);
+
     attrBuilders.put(SemanticAttributes.K8S_NAMESPACE_NAME, envVars.get("NAMESPACE"));
     attrBuilders.put(SemanticAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
 
@@ -59,7 +61,6 @@ public final class GKEResource extends ResourceProvider {
       attrBuilders.put(SemanticAttributes.K8S_CLUSTER_NAME, clusterName);
     }
 
-    attrBuilders.putAll(gceAttributes);
     return attrBuilders.build();
   }
 }
