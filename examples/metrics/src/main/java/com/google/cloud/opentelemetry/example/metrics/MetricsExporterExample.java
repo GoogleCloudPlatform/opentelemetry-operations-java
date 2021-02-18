@@ -18,8 +18,7 @@ package com.google.cloud.opentelemetry.example.metrics;
 import static java.util.Collections.singleton;
 
 import com.google.cloud.opentelemetry.metric.MetricExporter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
@@ -27,8 +26,10 @@ import java.io.IOException;
 import java.util.Random;
 
 public class MetricsExporterExample {
+  private static SdkMeterProvider METER_PROVIDER =
+      SdkMeterProvider.builder().buildAndRegisterGlobal();
   private static final Meter METER =
-      GlobalMetricsProvider.getMeter("instrumentation-library-name", "semver:1.0.0");
+      METER_PROVIDER.get("instrumentation-library-name", "semver:1.0.0");
   private static final Random RANDOM = new Random();
   private static io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter;
   private static IntervalMetricReader intervalMetricReader;
@@ -43,7 +44,7 @@ public class MetricsExporterExample {
               // seconds.
               .setExportIntervalMillis(20000)
               .setMetricExporter(metricExporter)
-              .setMetricProducers(singleton(SdkMeterProvider.builder().buildAndRegisterGlobal()))
+              .setMetricProducers(singleton(METER_PROVIDER))
               .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -51,16 +52,16 @@ public class MetricsExporterExample {
   }
 
   private static void myUseCase() {
-    LongUpDownCounter counter =
+    LongCounter counter =
         METER
-            .longUpDownCounterBuilder("processed_jobs")
+            .longCounterBuilder("example_counter")
             .setDescription("Processed jobs")
             .setUnit("1")
             .build();
     doWork(counter);
   }
 
-  private static void doWork(LongUpDownCounter counter) {
+  private static void doWork(LongCounter counter) {
     try {
       for (int i = 0; i < 10; i++) {
         counter.add(RANDOM.nextInt(100));
@@ -72,13 +73,27 @@ public class MetricsExporterExample {
   }
 
   public static void main(String[] args) throws InterruptedException {
+    System.out.println("Starting the metrics-example application");
+
     setupMetricExporter();
 
-    myUseCase();
-    Thread.sleep(10000);
+    try {
+      int i = 0;
+      while (true) {
+        System.out.println("Running example use case: #" + i);
+        myUseCase();
+        Thread.sleep(10000);
+        i++;
 
-    intervalMetricReader.shutdown();
-    metricExporter.flush();
-    metricExporter.shutdown();
+        metricExporter.flush();
+      }
+    } finally {
+      System.out.println("Shutting down the metrics-example application");
+
+      intervalMetricReader.shutdown();
+      metricExporter.shutdown();
+
+      System.out.println("Shutdown complete");
+    }
   }
 }
