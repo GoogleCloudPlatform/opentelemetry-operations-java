@@ -130,7 +130,7 @@ public class MetricTranslatorTest {
     Map<AttributeKey<String>, String> testAttributes =
         Stream.of(
                 new Object[][] {
-                  {SemanticAttributes.CLOUD_PROVIDER, "gcp"},
+                  {SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.GCP},
                   {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
                   {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
                   {SemanticAttributes.CLOUD_REGION, "country-region"},
@@ -150,6 +150,11 @@ public class MetricTranslatorTest {
     MonitoredResource monitoredResource =
         MetricTranslator.mapResource(Resource.create(attributes), "GCE_pid");
 
+    assertEquals("gce_instance", monitoredResource.getType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    assertEquals(3, monitoredResourceMap.size());
+
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
@@ -158,10 +163,54 @@ public class MetricTranslatorTest {
                   {"project_id", "GCE-pid"}
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
-    assertEquals("gce_instance", monitoredResource.getType());
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
 
+  @Test
+  public void testMapResourcesWithGKEResource() {
+    Map<AttributeKey<String>, String> testAttributes =
+        Stream.of(
+                new Object[][] {
+                  {SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.GCP},
+                  {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
+                  {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {SemanticAttributes.CLOUD_REGION, "country-region"},
+                  {SemanticAttributes.HOST_ID, "GCE-instance-id"},
+                  {SemanticAttributes.HOST_NAME, "GCE-instance-name"},
+                  {SemanticAttributes.HOST_TYPE, "GCE-instance-type"},
+                  {SemanticAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"},
+                  {SemanticAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"},
+                  {SemanticAttributes.K8S_POD_NAME, "GKE-testHostName"},
+                  {SemanticAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    MonitoredResource monitoredResource =
+        MetricTranslator.mapResource(Resource.create(attributes), "GCE_pid");
+
+    assertEquals("gke_container", monitoredResource.getType());
     Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
-    assertEquals(3, monitoredResourceMap.size());
+    assertEquals(7, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"instance_id", "GCE-instance-id"},
+                  {"zone", "country-region-zone"},
+                  {"project_id", "GCE-pid"},
+                  {"cluster_name", "GKE-cluster-name"},
+                  {"pod_id", "GKE-testHostName"},
+                  {"container_name", "GKE-testContainerName"},
+                  {"namespace_id", "GKE-testNameSpace"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
         (key, value) -> {
           assertEquals(value, monitoredResourceMap.get(key));

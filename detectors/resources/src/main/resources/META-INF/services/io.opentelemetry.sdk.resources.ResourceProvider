@@ -1,1 +1,2 @@
 com.google.cloud.opentelemetry.detectors.GCEResource
+com.google.cloud.opentelemetry.detectors.GKEResource

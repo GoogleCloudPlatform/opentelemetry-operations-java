@@ -72,6 +72,21 @@ public class MetricTranslator {
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
 
+  // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gke_container
+  private static final Map<String, AttributeKey<String>> gkeMap =
+      Stream.of(
+              new Object[][] {
+                {"project_id", SemanticAttributes.CLOUD_ACCOUNT_ID},
+                {"cluster_name", SemanticAttributes.K8S_CLUSTER_NAME},
+                {"namespace_id", SemanticAttributes.K8S_NAMESPACE_NAME},
+                {"instance_id", SemanticAttributes.HOST_ID},
+                {"pod_id", SemanticAttributes.K8S_POD_NAME},
+                {"container_name", SemanticAttributes.K8S_CONTAINER_NAME},
+                {"zone", SemanticAttributes.CLOUD_ZONE}
+              })
+          .collect(
+              Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
+
   static Metric mapMetric(Labels labels, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
     labels.forEach(metricBuilder::putLabels);
@@ -159,7 +174,18 @@ public class MetricTranslator {
 
     // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
-    if (provider != null && provider.equals("gcp")) {
+    if (SemanticAttributes.CloudProviderValues.GCP.equals(provider)) {
+      String namespace = attributes.get(SemanticAttributes.K8S_NAMESPACE_NAME);
+      if (namespace != null) {
+        return MonitoredResource.newBuilder()
+            .setType("gke_container")
+            .putAllLabels(
+                gkeMap.entrySet().stream()
+                    .collect(
+                        Collectors.toMap(
+                            e -> (String) e.getKey(), e -> attributes.get(e.getValue()))))
+            .build();
+      }
       return MonitoredResource.newBuilder()
           .setType("gce_instance")
           .putAllLabels(
