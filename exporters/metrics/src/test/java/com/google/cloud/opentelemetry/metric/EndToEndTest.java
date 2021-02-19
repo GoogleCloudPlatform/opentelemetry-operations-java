@@ -45,7 +45,7 @@ public class EndToEndTest {
               .withDockerfileFromBuilder(
                   builder ->
                       builder
-                          .from("golang")
+                          .from("golang:1.15")
                           .run("go get github.com/googleinterns/cloud-operations-api-mock/cmd")
                           .cmd(
                               "go run github.com/googleinterns/cloud-operations-api-mock/cmd --address=:8080")
