@@ -96,6 +96,7 @@ subprojects {
 	// Make sure test failures include exception error messages for correction.
 	test {
 		testLogging {
+			events "passed", "skipped", "failed", "standardOut", "standardError"
 			exceptionFormat = 'full'
 		}
 	}
