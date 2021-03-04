@@ -42,11 +42,12 @@ public class TraceExporterExample {
     try {
       TraceExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
       // Register the TraceExporter with OpenTelemetry
-      return OpenTelemetrySdk.builder().setTracerProvider(
-        SdkTracerProvider.builder()
-          .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-          .build())
-        .buildAndRegisterGlobal();
+      return OpenTelemetrySdk.builder()
+          .setTracerProvider(
+              SdkTracerProvider.builder()
+                  .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                  .build())
+          .buildAndRegisterGlobal();
     } catch (IOException e) {
       System.out.println("Uncaught Exception");
       return null;
