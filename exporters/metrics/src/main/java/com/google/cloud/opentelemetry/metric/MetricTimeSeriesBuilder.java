@@ -17,8 +17,8 @@ package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
 import com.google.monitoring.v3.TimeSeries;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 import java.util.List;
@@ -26,9 +26,9 @@ import java.util.List;
 /** An interface that denotes how we build our API calls from metric data. */
 public interface MetricTimeSeriesBuilder {
   /** Records a LongPoint of the given metric. */
-  void recordPoint(MetricData metric, LongPoint point);
+  void recordPoint(MetricData metric, LongPointData point);
   /** Records a DoublePoint of the given metric. */
-  void recordPoint(MetricData metric, DoublePoint point);
+  void recordPoint(MetricData metric, DoublePointData point);
 
   /** The set of descriptors assocaited with the current time series. */
   Collection<MetricDescriptor> getDescriptors();

@@ -29,18 +29,16 @@ import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +48,11 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
 
   private static final String PROJECT_NAME_PREFIX = "projects/";
-  private static final long WRITE_INTERVAL_SECOND = 12;
   private static final int MAX_BATCH_SIZE = 200;
-  private static final long NANO_PER_SECOND = (long) 1e9;
 
   private final CloudMetricClient metricServiceClient;
   private final String projectId;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
-  private final Map<MetricWithLabels, Long> lastUpdatedTime = new HashMap<>();
 
   MetricExporter(
       String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
@@ -141,22 +136,22 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       // Extract all the underlying points.
       switch (metricData.getType()) {
         case LONG_GAUGE:
-          for (LongPoint point : metricData.getLongGaugeData().getPoints()) {
+          for (LongPointData point : metricData.getLongGaugeData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case LONG_SUM:
-          for (LongPoint point : metricData.getLongSumData().getPoints()) {
+          for (LongPointData point : metricData.getLongSumData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case DOUBLE_GAUGE:
-          for (DoublePoint point : metricData.getDoubleGaugeData().getPoints()) {
+          for (DoublePointData point : metricData.getDoubleGaugeData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;
         case DOUBLE_SUM:
-          for (DoublePoint point : metricData.getDoubleSumData().getPoints()) {
+          for (DoublePointData point : metricData.getDoubleSumData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;

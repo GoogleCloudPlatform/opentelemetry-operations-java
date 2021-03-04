@@ -107,8 +107,8 @@ subprojects {
 		slf4jVersion = '1.7.30'
 		googleCloudVersion = '1.0.2'
 		cloudMonitoringVersion = '2.0.1'
-		openTelemetryVersion = '0.14.1'
-		openTelemetryInstrumentationVersion = '0.14.0'
+		openTelemetryVersion = '1.0.0'
+		openTelemetryInstrumentationVersion = '0.17.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
 		testContainersVersion = '1.15.1'
@@ -127,10 +127,11 @@ subprojects {
 			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
-			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}",
+			opentelemetry_autoconfigure  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
+			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
 			opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
-			opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}",
+			opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}-alpha",
 		]
 		testLibraries = [
 			junit       : "junit:junit:${junitVersion}",

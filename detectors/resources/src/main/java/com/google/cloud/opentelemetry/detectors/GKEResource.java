@@ -17,10 +17,12 @@ package com.google.cloud.opentelemetry.detectors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
-public final class GKEResource extends ResourceProvider {
+public final class GKEResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
@@ -35,7 +37,6 @@ public final class GKEResource extends ResourceProvider {
     this.envVars = envVars;
   }
 
-  @Override
   public Attributes getAttributes() {
     GCEResource gce = new GCEResource(this.metadata);
 
@@ -48,19 +49,24 @@ public final class GKEResource extends ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.putAll(gceAttributes);
 
-    attrBuilders.put(SemanticAttributes.K8S_NAMESPACE_NAME, envVars.get("NAMESPACE"));
-    attrBuilders.put(SemanticAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
+    attrBuilders.put(ResourceAttributes.K8S_NAMESPACE_NAME, envVars.get("NAMESPACE"));
+    attrBuilders.put(ResourceAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
 
     String containerName = envVars.get("CONTAINER_NAME");
     if (containerName != null && !containerName.isEmpty()) {
-      attrBuilders.put(SemanticAttributes.K8S_CONTAINER_NAME, containerName);
+      attrBuilders.put(ResourceAttributes.K8S_CONTAINER_NAME, containerName);
     }
 
     String clusterName = metadata.getClusterName();
     if (clusterName != null && !clusterName.isEmpty()) {
-      attrBuilders.put(SemanticAttributes.K8S_CLUSTER_NAME, clusterName);
+      attrBuilders.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName);
     }
 
     return attrBuilders.build();
+  }
+
+  @Override
+  public Resource createResource(ConfigProperties config) {
+    return Resource.create(getAttributes());
   }
 }

@@ -24,7 +24,7 @@ import com.google.devtools.cloudtrace.v2.Span;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ public class TraceTranslatorTest {
     String serverPrefixSpanName = "Recv. mySpanName";
     String clientPrefixSpanName = "Sent. mySpanName";
     String regularSpanName = "regularSpanName";
-    Kind serverSpanKind = Kind.SERVER;
-    Kind clientSpanKind = Kind.CLIENT;
+    SpanKind serverSpanKind = SpanKind.SERVER;
+    SpanKind clientSpanKind = SpanKind.CLIENT;
 
     assertEquals(
         serverPrefixSpanName, TraceTranslator.toDisplayName(serverPrefixSpanName, serverSpanKind));

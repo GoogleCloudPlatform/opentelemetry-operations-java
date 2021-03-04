@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -82,17 +82,17 @@ public class GKEResourceTest {
     Map<AttributeKey<String>, String> expectedAttributes =
         Stream.of(
                 new Object[][] {
-                  {SemanticAttributes.CLOUD_PROVIDER, "gcp"},
-                  {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
-                  {SemanticAttributes.CLOUD_REGION, "country-region"},
-                  {SemanticAttributes.HOST_ID, "GCE-instance-id"},
-                  {SemanticAttributes.HOST_NAME, "GCE-instance-name"},
-                  {SemanticAttributes.HOST_TYPE, "GCE-instance-type"},
-                  {SemanticAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"},
-                  {SemanticAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"},
-                  {SemanticAttributes.K8S_POD_NAME, "GKE-testHostName"},
-                  {SemanticAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName"}
+                  {ResourceAttributes.CLOUD_PROVIDER, "gcp"},
+                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
+                  {ResourceAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {ResourceAttributes.CLOUD_REGION, "country-region"},
+                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
+                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
+                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"},
+                  {ResourceAttributes.K8S_POD_NAME, "GKE-testHostName"},
+                  {ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName"}
                 })
             .collect(
                 Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));

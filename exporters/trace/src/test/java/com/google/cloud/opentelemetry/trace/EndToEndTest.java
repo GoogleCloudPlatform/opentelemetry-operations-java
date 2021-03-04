@@ -18,9 +18,9 @@ package com.google.cloud.opentelemetry.trace;
 import static org.junit.Assert.assertTrue;
 
 import com.google.devtools.cloudtrace.v2.AttributeValue;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -97,10 +97,11 @@ public class EndToEndTest {
             .setParentSpanContext(
                 SpanContext.createFromRemoteParent(
                     TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
-            .setSpanId(SPAN_ID)
-            .setTraceId(TRACE_ID)
+            .setSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
             .setName(SPAN_NAME)
-            .setKind(Kind.SERVER)
+            .setKind(SpanKind.SERVER)
             .setEvents(Collections.emptyList())
             .setStatus(SPAN_DATA_STATUS)
             .setStartEpochNanos(START_EPOCH_NANOS)

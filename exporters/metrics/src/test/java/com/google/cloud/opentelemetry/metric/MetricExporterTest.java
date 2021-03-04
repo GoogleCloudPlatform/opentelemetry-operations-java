@@ -52,7 +52,6 @@ import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,7 +125,7 @@ public class MetricExporterTest {
             .build();
     Point expectedPoint =
         Point.newBuilder()
-            .setValue(TypedValue.newBuilder().setInt64Value(((LongPoint) aLongPoint).getValue()))
+            .setValue(TypedValue.newBuilder().setInt64Value(aLongPoint.getValue()))
             .setInterval(expectedTimeInterval)
             .build();
     TimeSeries expectedTimeSeries =
