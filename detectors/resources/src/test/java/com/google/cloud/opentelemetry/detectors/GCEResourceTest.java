@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,13 +72,13 @@ public class GCEResourceTest {
     Map<AttributeKey<String>, String> expectedAttributes =
         Stream.of(
                 new Object[][] {
-                  {SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.GCP},
-                  {SemanticAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {SemanticAttributes.CLOUD_ZONE, "country-region-zone"},
-                  {SemanticAttributes.CLOUD_REGION, "country-region"},
-                  {SemanticAttributes.HOST_ID, "GCE-instance-id"},
-                  {SemanticAttributes.HOST_NAME, "GCE-instance-name"},
-                  {SemanticAttributes.HOST_TYPE, "GCE-instance-type"}
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
+                  {ResourceAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {ResourceAttributes.CLOUD_REGION, "country-region"},
+                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
+                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
+                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"}
                 })
             .collect(
                 Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));

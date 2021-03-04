@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.time.Duration;
@@ -33,19 +34,22 @@ public class TraceExporterExample {
       GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
   private static final Random random = new Random();
 
-  private static void setupTraceExporter() {
+  private static OpenTelemetrySdk setupTraceExporter() {
     // Using default project ID and Credentials
     TraceConfiguration configuration =
         TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
 
     try {
       TraceExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
-
       // Register the TraceExporter with OpenTelemetry
-      OpenTelemetrySdk.getGlobalTracerManagement()
-          .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build());
+      return OpenTelemetrySdk.builder().setTracerProvider(
+        SdkTracerProvider.builder()
+          .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+          .build())
+        .buildAndRegisterGlobal();
     } catch (IOException e) {
       System.out.println("Uncaught Exception");
+      return null;
     }
   }
 
@@ -81,13 +85,13 @@ public class TraceExporterExample {
 
   public static void main(String[] args) {
     // Configure the OpenTelemetry pipeline with CloudTrace exporter
-    setupTraceExporter();
+    OpenTelemetrySdk otel = setupTraceExporter();
 
     // Application-specific logic
     myUseCase("One");
     myUseCase("Two");
 
     // Flush all buffered traces
-    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
+    otel.getSdkTracerProvider().shutdown();
   }
 }

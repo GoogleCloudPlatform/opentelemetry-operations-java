@@ -30,11 +30,11 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -65,9 +65,9 @@ public class MetricTranslator {
   private static final Map<String, AttributeKey<String>> gceMap =
       Stream.of(
               new Object[][] {
-                {"project_id", SemanticAttributes.CLOUD_ACCOUNT_ID},
-                {"instance_id", SemanticAttributes.HOST_ID},
-                {"zone", SemanticAttributes.CLOUD_ZONE}
+                {"project_id", ResourceAttributes.CLOUD_ACCOUNT_ID},
+                {"instance_id", ResourceAttributes.HOST_ID},
+                {"zone", ResourceAttributes.CLOUD_ZONE}
               })
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
@@ -76,13 +76,13 @@ public class MetricTranslator {
   private static final Map<String, AttributeKey<String>> gkeMap =
       Stream.of(
               new Object[][] {
-                {"project_id", SemanticAttributes.CLOUD_ACCOUNT_ID},
-                {"cluster_name", SemanticAttributes.K8S_CLUSTER_NAME},
-                {"namespace_id", SemanticAttributes.K8S_NAMESPACE_NAME},
-                {"instance_id", SemanticAttributes.HOST_ID},
-                {"pod_id", SemanticAttributes.K8S_POD_NAME},
-                {"container_name", SemanticAttributes.K8S_CONTAINER_NAME},
-                {"zone", SemanticAttributes.CLOUD_ZONE}
+                {"project_id", ResourceAttributes.CLOUD_ACCOUNT_ID},
+                {"cluster_name", ResourceAttributes.K8S_CLUSTER_NAME},
+                {"namespace_id", ResourceAttributes.K8S_NAMESPACE_NAME},
+                {"instance_id", ResourceAttributes.HOST_ID},
+                {"pod_id", ResourceAttributes.K8S_POD_NAME},
+                {"container_name", ResourceAttributes.K8S_CONTAINER_NAME},
+                {"zone", ResourceAttributes.CLOUD_ZONE}
               })
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
@@ -94,7 +94,7 @@ public class MetricTranslator {
   }
 
   static MetricDescriptor mapMetricDescriptor(
-      MetricData metric, io.opentelemetry.sdk.metrics.data.Point metricPoint) {
+      MetricData metric, io.opentelemetry.sdk.metrics.data.PointData metricPoint) {
     MetricDescriptor.Builder builder =
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
@@ -148,7 +148,7 @@ public class MetricTranslator {
   }
 
   static TimeInterval mapInterval(
-      io.opentelemetry.sdk.metrics.data.Point point, MetricDataType metricType) {
+      io.opentelemetry.sdk.metrics.data.PointData point, MetricDataType metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
     if (GAUGE_TYPES.contains(metricType)) {
@@ -173,9 +173,9 @@ public class MetricTranslator {
     Attributes attributes = resource.getAttributes();
 
     // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-    String provider = attributes.get(SemanticAttributes.CLOUD_PROVIDER);
-    if (SemanticAttributes.CloudProviderValues.GCP.equals(provider)) {
-      String namespace = attributes.get(SemanticAttributes.K8S_NAMESPACE_NAME);
+    String provider = attributes.get(ResourceAttributes.CLOUD_PROVIDER);
+    if (ResourceAttributes.CloudProviderValues.GCP.equals(provider)) {
+      String namespace = attributes.get(ResourceAttributes.K8S_NAMESPACE_NAME);
       if (namespace != null) {
         return MonitoredResource.newBuilder()
             .setType("gke_container")

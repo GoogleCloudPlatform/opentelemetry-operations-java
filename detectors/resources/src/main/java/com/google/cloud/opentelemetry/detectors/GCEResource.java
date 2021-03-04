@@ -17,10 +17,12 @@ package com.google.cloud.opentelemetry.detectors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
-public final class GCEResource extends ResourceProvider {
+public final class GCEResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
 
   public GCEResource() {
@@ -32,47 +34,51 @@ public final class GCEResource extends ResourceProvider {
     this.metadata = metadataConfig;
   }
 
-  @Override
   public Attributes getAttributes() {
     if (!metadata.isRunningOnGcp()) {
       return Attributes.empty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
-    attrBuilders.put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.GCP);
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
 
     String projectId = metadata.getProjectId();
     if (projectId != null) {
-      attrBuilders.put(SemanticAttributes.CLOUD_ACCOUNT_ID, projectId);
+      attrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, projectId);
     }
 
     // Example zone: australia-southeast1-a
     String zone = metadata.getZone();
     if (zone != null) {
-      attrBuilders.put(SemanticAttributes.CLOUD_ZONE, zone);
+      attrBuilders.put(ResourceAttributes.CLOUD_ZONE, zone);
 
       // Parsing required to scope up to a region
       String[] splitArr = zone.split("-");
       if (splitArr.length > 2) {
-        attrBuilders.put(SemanticAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
+        attrBuilders.put(ResourceAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
       }
     }
 
     String instanceId = metadata.getInstanceId();
     if (instanceId != null) {
-      attrBuilders.put(SemanticAttributes.HOST_ID, instanceId);
+      attrBuilders.put(ResourceAttributes.HOST_ID, instanceId);
     }
 
     String instanceName = metadata.getInstanceName();
     if (instanceName != null) {
-      attrBuilders.put(SemanticAttributes.HOST_NAME, instanceName);
+      attrBuilders.put(ResourceAttributes.HOST_NAME, instanceName);
     }
 
     String hostType = metadata.getMachineType();
     if (hostType != null) {
-      attrBuilders.put(SemanticAttributes.HOST_TYPE, hostType);
+      attrBuilders.put(ResourceAttributes.HOST_TYPE, hostType);
     }
 
     return attrBuilders.build();
+  }
+
+  @Override
+  public Resource createResource(ConfigProperties config) {
+    return Resource.create(getAttributes());
   }
 }

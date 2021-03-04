@@ -24,9 +24,9 @@ import com.google.api.MetricDescriptor;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   }
 
   @Override
-  public void recordPoint(MetricData metric, LongPoint point) {
+  public void recordPoint(MetricData metric, LongPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
     if (descriptor == null) {
       return;
@@ -64,7 +64,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   }
 
   @Override
-  public void recordPoint(MetricData metric, DoublePoint point) {
+  public void recordPoint(MetricData metric, DoublePointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
     if (descriptor == null) {
       return;

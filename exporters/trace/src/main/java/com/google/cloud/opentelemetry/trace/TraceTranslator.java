@@ -29,7 +29,7 @@ import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -100,12 +100,12 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static String toDisplayName(String spanName, @javax.annotation.Nullable Kind spanKind) {
-    if (spanKind == Kind.SERVER && !spanName.startsWith(SERVER_PREFIX)) {
+  static String toDisplayName(String spanName, @javax.annotation.Nullable SpanKind spanKind) {
+    if (spanKind == SpanKind.SERVER && !spanName.startsWith(SERVER_PREFIX)) {
       return SERVER_PREFIX + spanName;
     }
 
-    if (spanKind == Kind.CLIENT && !spanName.startsWith(CLIENT_PREFIX)) {
+    if (spanKind == SpanKind.CLIENT && !spanName.startsWith(CLIENT_PREFIX)) {
       return CLIENT_PREFIX + spanName;
     }
 
@@ -240,8 +240,8 @@ class TraceTranslator {
   private static Link toLinkProto(LinkData link) {
     checkNotNull(link);
     return Link.newBuilder()
-        .setTraceId(link.getSpanContext().getTraceIdAsHexString())
-        .setSpanId(link.getSpanContext().getSpanIdAsHexString())
+        .setTraceId(link.getSpanContext().getTraceId())
+        .setSpanId(link.getSpanContext().getSpanId())
         .setType(Link.Type.TYPE_UNSPECIFIED)
         .setAttributes(toAttributesBuilderProto(link.getAttributes()))
         .build();

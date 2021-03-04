@@ -20,12 +20,12 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -61,22 +61,22 @@ public class FakeData {
   static final InstrumentationLibraryInfo anInstrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("instrumentName", "0");
 
-  static final LongPoint aLongPoint =
-      LongPoint.create(
+  static final LongPointData aLongPoint =
+      LongPointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Labels.of("label1", "value1", "label2", "False"),
           32L);
 
-  static final DoublePoint aDoublePoint =
-      DoublePoint.create(
+  static final DoublePointData aDoublePoint =
+      DoublePointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Labels.of("label1", "value1", "label2", "False"),
           32d);
 
-  static final DoubleSummaryPoint aDoubleSummaryPoint =
-      DoubleSummaryPoint.create(
+  static final DoubleSummaryPointData aDoubleSummaryPoint =
+      DoubleSummaryPointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Labels.of("label1", "value1", "label2", "False"),

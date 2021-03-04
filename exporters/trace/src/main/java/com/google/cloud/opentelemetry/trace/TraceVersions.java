@@ -15,7 +15,7 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
-import static io.opentelemetry.api.trace.attributes.SemanticAttributes.TELEMETRY_SDK_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
 // import static
 // io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
 
@@ -31,7 +31,7 @@ public class TraceVersions {
 
   @Nullable
   private static String readSdkVersion() {
-    return Resource.getTelemetrySdk().getAttributes().get(TELEMETRY_SDK_VERSION);
+    return Resource.getDefault().getAttributes().get(TELEMETRY_SDK_VERSION);
   }
 
   @Nullable
