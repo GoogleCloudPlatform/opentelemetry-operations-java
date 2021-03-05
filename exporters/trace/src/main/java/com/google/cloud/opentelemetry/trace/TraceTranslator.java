@@ -27,6 +27,7 @@ import com.google.devtools.cloudtrace.v2.Span.Links;
 import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
+import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
@@ -214,7 +215,7 @@ class TraceTranslator {
     final StatusCode statusCode = status.getStatusCode();
     switch (statusCode) {
       case OK:
-        statusBuilder.setCode(0);
+        statusBuilder.setCode(Code.OK.getNumber());
         break;
       case UNSET:
         // We do not specify a code in the UNSET case.
@@ -228,7 +229,7 @@ class TraceTranslator {
         break;
       default:
         // Handle new/unknown codes as unknown
-        statusBuilder.setCode(2);
+        statusBuilder.setCode(Code.UNKNOWN.getNumber());
         break;
     }
     return statusBuilder.build();
