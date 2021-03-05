@@ -25,6 +25,7 @@ import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
@@ -205,6 +206,13 @@ public class TraceTranslatorTest {
 
     // The int representation is 0 for canonical code "OK".
     assertEquals(0, spanStatus.getCode());
+
+    Status failStatus = TraceTranslator.toStatusProto(StatusData.create(StatusCode.ERROR, "FAIL!"));
+    assertEquals(2, failStatus.getCode());
+    assertEquals("FAIL!", failStatus.getMessage());
+
+    Status unsetStatus = TraceTranslator.toStatusProto(StatusData.unset());
+    assertEquals("Unset status should not create protos", null, unsetStatus);
   }
 
   @Test

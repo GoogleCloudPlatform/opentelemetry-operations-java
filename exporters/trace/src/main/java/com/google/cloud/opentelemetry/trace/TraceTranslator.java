@@ -84,7 +84,10 @@ class TraceTranslator {
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     StatusData status = spanData.getStatus();
     if (status != null) {
-      spanBuilder.setStatus(toStatusProto(status));
+      Status statusProto = toStatusProto(status);
+      if (statusProto != null) {
+        spanBuilder.setStatus(statusProto);
+      }
     }
     long end = spanData.getEndEpochNanos();
     if (end != 0) {
@@ -214,15 +217,19 @@ class TraceTranslator {
         statusBuilder.setCode(0);
         break;
       case UNSET:
-        statusBuilder.setCode(1);
-        break;
+        // We do not specify a code in the UNSET case.
+        return null;
       case ERROR:
         statusBuilder.setCode(2);
+        // Only set the status description if an error.
+        if (status.getDescription() != null) {
+          statusBuilder.setMessage(status.getDescription());
+        }
         break;
-    }
-
-    if (status.getDescription() != null) {
-      statusBuilder.setMessage(status.getDescription());
+      default:
+        // Handle new/unknown codes as unknown
+        statusBuilder.setCode(2);
+        break;
     }
     return statusBuilder.build();
   }
