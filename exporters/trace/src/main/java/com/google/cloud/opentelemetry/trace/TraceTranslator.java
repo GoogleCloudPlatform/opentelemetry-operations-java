@@ -27,6 +27,7 @@ import com.google.devtools.cloudtrace.v2.Span.Links;
 import com.google.devtools.cloudtrace.v2.SpanName;
 import com.google.devtools.cloudtrace.v2.TruncatableString;
 import com.google.protobuf.BoolValue;
+import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
@@ -84,7 +85,10 @@ class TraceTranslator {
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     StatusData status = spanData.getStatus();
     if (status != null) {
-      spanBuilder.setStatus(toStatusProto(status));
+      Status statusProto = toStatusProto(status);
+      if (statusProto != null) {
+        spanBuilder.setStatus(statusProto);
+      }
     }
     long end = spanData.getEndEpochNanos();
     if (end != 0) {
@@ -211,18 +215,22 @@ class TraceTranslator {
     final StatusCode statusCode = status.getStatusCode();
     switch (statusCode) {
       case OK:
-        statusBuilder.setCode(0);
+        statusBuilder.setCode(Code.OK.getNumber());
         break;
       case UNSET:
-        statusBuilder.setCode(1);
-        break;
+        // We do not specify a code in the UNSET case.
+        return null;
       case ERROR:
         statusBuilder.setCode(2);
+        // Only set the status description if an error.
+        if (status.getDescription() != null) {
+          statusBuilder.setMessage(status.getDescription());
+        }
         break;
-    }
-
-    if (status.getDescription() != null) {
-      statusBuilder.setMessage(status.getDescription());
+      default:
+        // Handle new/unknown codes as unknown
+        statusBuilder.setCode(Code.UNKNOWN.getNumber());
+        break;
     }
     return statusBuilder.build();
   }
