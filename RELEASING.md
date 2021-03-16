@@ -82,7 +82,7 @@ $ ./gradlew snapshot -Dmock.server.path=$MOCKSERVER
 
 ## Releasing a Candidate
 
-After following the above steps, you can release candidates from `master` or `v<major>.<minor>.x` branches.
+After following the above steps, you can release candidates from `main` or `v<major>.<minor>.x` branches.
 
 For example, to release the v0.14.0-RC1 candidate, do the following:
 
@@ -101,7 +101,7 @@ Note:  In the future, the `-Prelease.version` flag should not be required.
 
 ## Release a final verison
 
-After following the above steps, you can release candidates from `master` or `v<major>.<minor>.x` branches.
+After following the above steps, you can release candidates from `main` or `v<major>.<minor>.x` branches.
 
 For example, to release the v0.14.0 candidate, do the following:
 
