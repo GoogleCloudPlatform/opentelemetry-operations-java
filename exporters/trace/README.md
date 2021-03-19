@@ -1,7 +1,9 @@
 # Cloud Trace Exporter for OpenTelemetry
 
   OpenTelemetry Google Cloud Trace Exporter allows the user to send collected traces to Google Cloud. 
-  
+
+[![Maven Central][maven-image]][maven-url]
+
  [Google Cloud Trace](https://cloud.google.com/trace) is a distributed tracing backend system. It helps developers to gather timing data needed to troubleshoot latency problems in microservice & monolithic architectures. It manages both the collection and lookup of gathered trace data.
 
 ## Setup
@@ -27,7 +29,7 @@ config:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-trace</artifactId>
-  <version>0.11.0</version>
+  <version>0.14.0</version>
 </dependency>
 ```
 
@@ -86,3 +88,7 @@ Java 8 or above is required for using this exporter.
   - For more information on OpenTelemetry, visit: https://opentelemetry.io/  
   - For more about OpenTelemetry Java, visit: https://github.com/open-telemetry/opentelemetry-java  
   - Learn more about Google Cloud Trace at https://cloud.google.com/trace
+
+
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace

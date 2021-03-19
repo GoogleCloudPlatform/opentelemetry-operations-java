@@ -62,22 +62,12 @@ Before any push to the upstream repository you need to create a [personal access
 token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
 
 
-## Download the mock server
-
-- Run the `get_mock_server.sh` script, which downloads the [mock server
-  executable](https://github.com/googleinterns/cloud-operations-api-mock/releases),
-  and saves the path.
-
-    ```bash
-    $ source ./get_mock_server.sh
-    ```
-
 ## Release a Snapshot
 
 If you've followed the above steps, you can release snapshots for consumption using the following:
 
 ```bash
-$ ./gradlew snapshot -Dmock.server.path=$MOCKSERVER
+$ ./gradlew snapshot
 ```
 
 ## Releasing a Candidate
@@ -88,7 +78,7 @@ For example, to release the v0.14.0-RC1 candidate, do the following:
 
 ```bash
 # Create the Candidate.
-$ ./gradlew candidate -Prelease.version=0.14.0-RC1 -Dmock.server.path=$MOCKSERVER
+$ ./gradlew candidate -Prelease.version=0.14.0-RC1
 # Push the tag publically.
 $ git push origin v0.14.0-RC1
 ```
@@ -106,8 +96,8 @@ After following the above steps, you can release candidates from `main` or `v<ma
 For example, to release the v0.14.0 candidate, do the following:
 
 ```bash
-# Create the Candidate.
-$ ./gradlew candidate -Prelease.version=0.14.0 -Dmock.server.path=$MOCKSERVER
+# Create the Release.
+$ ./gradlew candidate -Prelease.version=0.14.0
 # Push the tag publically.
 $ git push origin v0.14.0
 ```

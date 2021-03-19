@@ -1,13 +1,8 @@
 # Open-Telemetry Operations Exporters for Java
 
-[![Build Status][circleci-image]][circleci-url]
+[![Maven Central][maven-image]][maven-url]
 
 Provides OpenTelemetry Exporters for Google Cloud Operations. 
-
-[circleci-image]: https://circleci.com/gh/GoogleCloudPlatform/opentelemetry-operations-java.svg?style=shield 
-[circleci-url]: https://circleci.com/gh/GoogleCloudPlatform/opentelemetry-operations-java
-
-
 
 ## Building
 
@@ -44,3 +39,8 @@ See [Tracing Readme](exporters/trace/README.md) for installation and usage instr
 *Note: This is an alpha-release.*
 
 See [Metrics Readme](exporters/metrics/README.md) for installation and usage instructions.
+
+
+
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace
