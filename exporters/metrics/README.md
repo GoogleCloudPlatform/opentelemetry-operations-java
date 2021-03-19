@@ -1,5 +1,7 @@
 # Metrics Exporter
 
+[![Maven Central][maven-image]][maven-url]
+
 *NOTE: Metrics are still Alpha in OpenTelemetry, and the API is not guaranteed to be stable across versions.*
 
 Opentelemetry Google Monitoring Metrics Exporter allows users to send collected metrics
@@ -73,3 +75,7 @@ IntervalMetricReader reader =
 | deadline      | ??? | ??? | The deadline limit on export calls to Cloud Monitoring API | 10 seconds |
 | metricDescriptorStrategy | ??? | ??? | How to adapt OpenTelemetry metric definition into google cloud. `ALWAYS_SEND` will try to create metric descriptors on every export.  `SEND_ONCE` will try to create metric descriptors once per Java instance/classloader. `NEVER_SEND` will rely on Cloud Monitoring's auto-generated MetricDescriptors from time series. | `SEND_ONCE` |
 
+
+
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-metrics/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-metrics
