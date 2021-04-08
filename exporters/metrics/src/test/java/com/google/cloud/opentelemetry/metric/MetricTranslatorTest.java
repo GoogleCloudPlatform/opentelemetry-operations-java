@@ -132,7 +132,7 @@ public class MetricTranslatorTest {
                 new Object[][] {
                   {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
                   {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
                   {ResourceAttributes.CLOUD_REGION, "country-region"},
                   {ResourceAttributes.HOST_ID, "GCE-instance-id"},
                   {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
@@ -176,7 +176,7 @@ public class MetricTranslatorTest {
                 new Object[][] {
                   {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
                   {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
                   {ResourceAttributes.CLOUD_REGION, "country-region"},
                   {ResourceAttributes.HOST_ID, "GCE-instance-id"},
                   {ResourceAttributes.HOST_NAME, "GCE-instance-name"},

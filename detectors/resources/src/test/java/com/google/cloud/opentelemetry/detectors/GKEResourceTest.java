@@ -84,7 +84,7 @@ public class GKEResourceTest {
                 new Object[][] {
                   {ResourceAttributes.CLOUD_PROVIDER, "gcp"},
                   {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_ZONE, "country-region-zone"},
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
                   {ResourceAttributes.CLOUD_REGION, "country-region"},
                   {ResourceAttributes.HOST_ID, "GCE-instance-id"},
                   {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
