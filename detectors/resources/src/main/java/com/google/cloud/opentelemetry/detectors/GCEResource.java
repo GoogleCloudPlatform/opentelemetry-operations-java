@@ -50,7 +50,7 @@ public final class GCEResource implements ResourceProvider {
     // Example zone: australia-southeast1-a
     String zone = metadata.getZone();
     if (zone != null) {
-      attrBuilders.put(ResourceAttributes.CLOUD_ZONE, zone);
+      attrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone);
 
       // Parsing required to scope up to a region
       String[] splitArr = zone.split("-");

@@ -67,7 +67,7 @@ public class MetricTranslator {
               new Object[][] {
                 {"project_id", ResourceAttributes.CLOUD_ACCOUNT_ID},
                 {"instance_id", ResourceAttributes.HOST_ID},
-                {"zone", ResourceAttributes.CLOUD_ZONE}
+                {"zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE}
               })
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
@@ -82,7 +82,7 @@ public class MetricTranslator {
                 {"instance_id", ResourceAttributes.HOST_ID},
                 {"pod_id", ResourceAttributes.K8S_POD_NAME},
                 {"container_name", ResourceAttributes.K8S_CONTAINER_NAME},
-                {"zone", ResourceAttributes.CLOUD_ZONE}
+                {"zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE}
               })
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));

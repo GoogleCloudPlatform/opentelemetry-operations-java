@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import java.util.Date;
 
@@ -48,10 +49,10 @@ public class FakeData {
 
   static final Attributes someGceAttributes =
       Attributes.builder()
-          .put("cloud.account.id", aProjectId)
-          .put("host.id", aHostId)
-          .put("cloud.zone", aCloudZone)
-          .put("cloud.provider", "gcp")
+          .put(ResourceAttributes.CLOUD_ACCOUNT_ID, aProjectId)
+          .put(ResourceAttributes.HOST_ID, aHostId)
+          .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, aCloudZone)
+          .put(ResourceAttributes.CLOUD_PROVIDER, "gcp")
           .put("extra_info", "extra")
           .put("not_gcp_resource", "value")
           .build();
