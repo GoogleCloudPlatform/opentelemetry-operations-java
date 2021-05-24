@@ -37,8 +37,8 @@ public class ScenarioHandlerManager {
   private Map<String, ScenarioHandler> scenarios = new HashMap<>();
 
   public ScenarioHandlerManager() {
-    register("health", this::health);
-    register("basicTrace", this::basicTrace);
+    register("/health", this::health);
+    register("/basicTrace", this::basicTrace);
   }
 
   /** Health check test. */
