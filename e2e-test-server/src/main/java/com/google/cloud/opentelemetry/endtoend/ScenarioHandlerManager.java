@@ -32,13 +32,12 @@ public class ScenarioHandlerManager {
 
   /** Health check test. */
   private Response health(Request request) {
-      return Response.ok("");
+    return Response.ok("");
   }
 
   private Response unimplemented(Request request) {
-      return Response.invalidArugment("Unimplemented.");
+    return Response.invalidArugment("Unimplemented.");
   }
-
 
   private void register(String scenario, ScenarioHandler handler) {
     scenarios.putIfAbsent(scenario, handler);

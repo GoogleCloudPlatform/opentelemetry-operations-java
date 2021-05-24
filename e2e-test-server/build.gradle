@@ -15,8 +15,13 @@
  */
 plugins {
 	id 'java'
+	id 'application'
+	id 'com.github.johnrengelman.shadow'
 }
 
+application {
+	mainClassName = 'com.google.cloud.opentelemetry.endtoend.Server'
+}
 
 description = 'End-To-End integration testing server'
 
@@ -28,3 +33,5 @@ dependencies {
 	compile project(':exporter-trace')
 	runtimeOnly project(':detector-resources')
 }
+
+tasks.build.dependsOn tasks.shadowJar

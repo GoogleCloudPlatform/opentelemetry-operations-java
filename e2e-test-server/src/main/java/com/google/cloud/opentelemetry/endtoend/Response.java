@@ -45,7 +45,7 @@ public interface Response {
   }
 
   static Response ok(String response) {
-      return make(Code.OK, ByteString.copyFromUtf8(response));
+    return make(Code.OK, ByteString.copyFromUtf8(response));
   }
 
   public static Response EMPTY = make(Code.UNKNOWN, ByteString.EMPTY);
