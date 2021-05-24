@@ -64,7 +64,7 @@ public class Server implements AutoCloseable {
     final PubsubMessage message =
         PubsubMessage.newBuilder()
             .putAttributes(Constants.TEST_ID, testId)
-            .putAttributes(Constants.STATUS_CODE, response.statusCode().toString())
+            .putAttributes(Constants.STATUS_CODE, Integer.toString(response.statusCode().ordinal()))
             .setData(response.data())
             .build();
     ApiFuture<String> messageIdFuture = publisher.publish(message);
