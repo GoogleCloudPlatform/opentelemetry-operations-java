@@ -27,18 +27,25 @@ public class ScenarioHandlerManager {
   private Map<String, ScenarioHandler> scenarios = new HashMap<>();
 
   public ScenarioHandlerManager() {
-    register(
-        "",
-        (request) -> {
-          return null;
-        });
+    register("health", this::health);
   }
+
+  /** Health check test. */
+  private Response health(Request request) {
+      return Response.ok("");
+  }
+
+  private Response unimplemented(Request request) {
+      return Response.invalidArugment("Unimplemented.");
+  }
+
 
   private void register(String scenario, ScenarioHandler handler) {
     scenarios.putIfAbsent(scenario, handler);
   }
 
   public Response handleScenario(String scenario, Request request) {
-    return null;
+    ScenarioHandler handler = scenarios.getOrDefault(scenario, this::unimplemented);
+    return handler.handle(request);
   }
 }

@@ -18,6 +18,7 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.protobuf.ByteString;
 
+/** A pubsub response. */
 public interface Response {
   Code statusCode();
 
@@ -41,6 +42,10 @@ public interface Response {
 
   static Response invalidArugment(String message) {
     return make(Code.INVALID_ARGUMENT, ByteString.copyFromUtf8(message));
+  }
+
+  static Response ok(String response) {
+      return make(Code.OK, ByteString.copyFromUtf8(response));
   }
 
   public static Response EMPTY = make(Code.UNKNOWN, ByteString.EMPTY);

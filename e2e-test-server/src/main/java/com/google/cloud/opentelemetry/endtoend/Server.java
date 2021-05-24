@@ -15,52 +15,70 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
-import java.io.IOException;
 
-public class Server {
+public class Server implements AutoCloseable {
   private final ScenarioHandlerManager scenarioHandlers = new ScenarioHandlerManager();
+  private final Publisher publisher;
+  private final Subscriber subscriber;
 
-  public void pullForever() throws IOException {
-    MessageReceiver receiver =
-        (PubsubMessage message, AckReplyConsumer consumer) -> {
-          System.out.println("got message: " + message.getData().toStringUtf8());
-          consumer.ack();
-        };
+  public Server() throws Exception {
+    this.publisher = Publisher.newBuilder(Constants.getResponseChannel()).build();
+    this.subscriber =
+        Subscriber.newBuilder(Constants.getRequestSubscription(), this::handleMessage).build();
+    subscriber.addListener(
+        new Subscriber.Listener() {
+          @Override
+          public void failed(Subscriber.State from, Throwable failure) {
+            // Handle failure. This is called when the Subscriber encountered a fatal error and is
+            // shutting down.
+            System.err.println(failure);
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
 
-    Subscriber subscriber = null;
-    try {
-      subscriber =
-          Subscriber.newBuilder(Constants.getRequestSubscription(), this::handleMessage).build();
-      subscriber.addListener(
-          new Subscriber.Listener() {
-            @Override
-            public void failed(Subscriber.State from, Throwable failure) {
-              // Handle failure. This is called when the Subscriber encountered a fatal error and is
-              // shutting down.
-              System.err.println(failure);
-            }
-          },
-          MoreExecutors.directExecutor());
-      subscriber.startAsync().awaitRunning();
-      // Docs for Subscriber recommend doing this to block main thread while daemon thread consumes
-      // stuff.
-      for (; ; ) {
-        Thread.sleep(Long.MAX_VALUE);
-      }
-    } finally {
-      if (subscriber != null) {
-        subscriber.stopAsync();
-      }
+  /** Starts the subcriber pulling requests. */
+  public void start() {
+    subscriber.startAsync().awaitRunning();
+  }
+
+  /** Closes our subscriptions. */
+  public void close() {
+    if (subscriber != null) {
+      subscriber.stopAsync();
+    }
+    if (publisher != null) {
+      publisher.shutdown();
     }
   }
 
-  public void respond(String testId, Response response) {
-    // TODO - implement.
+  public void respond(final String testId, final Response response) {
+    final PubsubMessage message =
+        PubsubMessage.newBuilder()
+            .putAttributes(Constants.TEST_ID, testId)
+            .putAttributes(Constants.STATUS_CODE, response.statusCode().toString())
+            .setData(response.data())
+            .build();
+    ApiFuture<String> messageIdFuture = publisher.publish(message);
+    ApiFutures.addCallback(
+        messageIdFuture,
+        new ApiFutureCallback<String>() {
+          public void onSuccess(String messageId) {}
+
+          public void onFailure(Throwable t) {
+            System.out.println("failed to publish response to test: " + testId);
+            t.printStackTrace();
+          }
+        },
+        MoreExecutors.directExecutor());
   }
 
   /** Execute a scenario based on the incoming message from the test runner. */
@@ -87,6 +105,18 @@ public class Server {
     } finally {
       respond(testId, response);
       consumer.ack();
+    }
+  }
+
+  /** Runs our server. */
+  public static void main(String[] args) throws Exception {
+    try (Server server = new Server()) {
+      server.start();
+      // Docs for Subscriber recommend doing this to block main thread while daemon thread consumes
+      // stuff.
+      for (; ; ) {
+        Thread.sleep(Long.MAX_VALUE);
+      }
     }
   }
 }
