@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
- * Server implements the "integretation test driver" for this language.
+ * Server implements the "integration test driver" for this language.
  *
  * <p>It is responsible for the following:
  *
@@ -106,7 +106,7 @@ public class Server implements AutoCloseable {
     }
     String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
     if (!message.containsAttributes(Constants.SCENARIO)) {
-      respond(testId, Response.invalidArugment("Exepcted attribute \"{SCENARIO}\" is missing"));
+      respond(testId, Response.invalidArugment(String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
       consumer.ack();
       return;
     }
