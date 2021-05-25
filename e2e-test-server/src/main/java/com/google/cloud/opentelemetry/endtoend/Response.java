@@ -49,7 +49,7 @@ public interface Response {
     return make(Code.INTERNAL, ByteString.copyFromUtf8(t.toString()));
   }
 
-  public static Response invalidArugment(String message) {
+  public static Response invalidArgument(String message) {
     return make(Code.INVALID_ARGUMENT, ByteString.copyFromUtf8(message));
   }
 
