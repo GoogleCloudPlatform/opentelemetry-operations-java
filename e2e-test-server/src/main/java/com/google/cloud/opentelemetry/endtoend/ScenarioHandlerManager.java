@@ -98,7 +98,7 @@ public class ScenarioHandlerManager {
     }
   }
 
-  /** Set up an OpenTelmetrySDk w/ export to google cloud. */
+  /** Set up an OpenTelemetrySDK w/ export to google cloud. */
   private static OpenTelemetrySdk setupTraceExporter() throws IOException {
     // Using default project ID and Credentials
     TraceConfiguration configuration =
