@@ -70,6 +70,7 @@ public class Server implements AutoCloseable {
   public void close() {
     if (subscriber != null) {
       subscriber.stopAsync();
+      subscriber.awaitTerminated();
     }
     if (publisher != null) {
       publisher.shutdown();
@@ -106,7 +107,10 @@ public class Server implements AutoCloseable {
     }
     String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
     if (!message.containsAttributes(Constants.SCENARIO)) {
-      respond(testId, Response.invalidArugment(String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
+      respond(
+          testId,
+          Response.invalidArugment(
+              String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
       consumer.ack();
       return;
     }
