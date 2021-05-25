@@ -43,9 +43,10 @@ public class ScenarioHandlerManager {
 
   /** Health check test. */
   private Response health(Request request) {
-    return Response.ok("");
+    return Response.ok();
   }
 
+  /** Basic trace test. */
   private Response basicTrace(Request request) {
     return withTemporaryTracer(
         (tracer) -> {
@@ -55,7 +56,7 @@ public class ScenarioHandlerManager {
                   .setAttribute(Constants.TEST_ID, request.testId())
                   .startSpan();
           try {
-            return Response.ok("");
+            return Response.ok();
           } finally {
             span.end();
           }
@@ -64,13 +65,15 @@ public class ScenarioHandlerManager {
 
   /** Default test scenario runner for unknown test cases. */
   private Response unimplemented(Request request) {
-    return Response.invalidArugment("Unimplemented.");
+    return Response.unimplemented("UNhandled request: " + request.testId());
   }
 
+  /** Registers test scenario "urls" with handlers for the requests. */
   private void register(String scenario, ScenarioHandler handler) {
     scenarios.putIfAbsent(scenario, handler);
   }
 
+  /** Handles a tesst scenario, or use `unimplemented`. */
   public Response handleScenario(String scenario, Request request) {
     ScenarioHandler handler = scenarios.getOrDefault(scenario, this::unimplemented);
     return handler.handle(request);
@@ -95,6 +98,7 @@ public class ScenarioHandlerManager {
     }
   }
 
+  /** Set up an OpenTelmetrySDk w/ export to google cloud. */
   private static OpenTelemetrySdk setupTraceExporter() throws IOException {
     // Using default project ID and Credentials
     TraceConfiguration configuration =

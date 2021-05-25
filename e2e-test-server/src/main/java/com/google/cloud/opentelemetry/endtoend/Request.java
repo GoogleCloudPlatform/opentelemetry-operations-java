@@ -18,11 +18,15 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.protobuf.ByteString;
 import java.util.Map;
 
+/** Abstraction of an "RPC Request" in our e2e integration test. */
 public interface Request {
+  /** The test scenario requested. */
   String testId();
 
+  /** Text map headers (for eventual trace propagation). */
   Map<String, String> headers();
 
+  /** Incoming message data. */
   ByteString data();
 
   static Request make(

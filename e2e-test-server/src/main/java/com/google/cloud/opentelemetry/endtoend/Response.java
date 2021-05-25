@@ -18,10 +18,19 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.protobuf.ByteString;
 
-/** A pubsub response. */
+/**
+ * An "RPC Response", generified.
+ *
+ * <p>This class exposes the minimum API to write rpc-like integration tests.
+ */
 public interface Response {
+  /**
+   * Status code associate with response.
+   *
+   * <p>If this is `OK`, then data will be empty.
+   */
   Code statusCode();
-
+  /** string explanation of error codes. */
   ByteString data();
 
   static Response make(final Code code, final ByteString data) {
@@ -36,16 +45,20 @@ public interface Response {
     };
   }
 
-  static Response internalError(Throwable t) {
+  public static Response internalError(Throwable t) {
     return make(Code.INTERNAL, ByteString.copyFromUtf8(t.toString()));
   }
 
-  static Response invalidArugment(String message) {
+  public static Response invalidArugment(String message) {
     return make(Code.INVALID_ARGUMENT, ByteString.copyFromUtf8(message));
   }
 
-  static Response ok(String response) {
-    return make(Code.OK, ByteString.copyFromUtf8(response));
+  public static Response unimplemented(String message) {
+    return make(Code.UNIMPLEMENTED, ByteString.copyFromUtf8(message));
+  }
+
+  public static Response ok() {
+    return make(Code.OK, ByteString.EMPTY);
   }
 
   public static Response EMPTY = make(Code.UNKNOWN, ByteString.EMPTY);

@@ -24,6 +24,22 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
 
+/**
+ * Server implements the "integretation test driver" for this language.
+ *
+ * <p>It is responsible for the following:
+ *
+ * <ul>
+ *   <li>Setting up a subscriber queue for inbound "RPC Request" messages
+ *   <li>Converting incoming pub sub messages to {@link Request}
+ *   <li>Setting up a publisher queue for outbound "RPC Response" messages
+ *   <li>Converting from outbound {@link Response} to pubsub messages.
+ *   <li>Handling any/all failures escaping the test scenario.
+ * </ul>
+ *
+ * <p>This class includes a main method which runs the integration test driver using locally
+ * available credentials to acccess pubsub channels.
+ */
 public class Server implements AutoCloseable {
   private final ScenarioHandlerManager scenarioHandlers = new ScenarioHandlerManager();
   private final Publisher publisher;
@@ -60,6 +76,7 @@ public class Server implements AutoCloseable {
     }
   }
 
+  /** This method converts from {@link Response} to pubsub and sends out the publisher channel. */
   public void respond(final String testId, final Response response) {
     final PubsubMessage message =
         PubsubMessage.newBuilder()
