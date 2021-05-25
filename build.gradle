@@ -111,6 +111,7 @@ subprojects {
 		openTelemetryInstrumentationVersion = '1.0.1'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
+		pubSubVersion = '1.111.2'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.27.2'
 
@@ -124,6 +125,7 @@ subprojects {
 			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
 			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
 			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
+			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
 			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
