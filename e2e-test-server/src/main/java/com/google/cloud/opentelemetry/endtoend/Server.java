@@ -106,7 +106,7 @@ public class Server implements AutoCloseable {
     }
     String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
     if (!message.containsAttributes(Constants.SCENARIO)) {
-      respond(testId, Response.invalidArugment("Exepcted attribute \"{SCENARIO}\" is missing"));
+      respond(testId, Response.invalidArugment(String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
       consumer.ack();
       return;
     }
