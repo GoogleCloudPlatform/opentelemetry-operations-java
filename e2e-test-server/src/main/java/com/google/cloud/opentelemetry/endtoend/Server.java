@@ -46,7 +46,7 @@ public class Server implements AutoCloseable {
   private final Subscriber subscriber;
 
   public Server() throws Exception {
-    this.publisher = Publisher.newBuilder(Constants.getResponseChannel()).build();
+    this.publisher = Publisher.newBuilder(Constants.getResponseTopic()).build();
     this.subscriber =
         Subscriber.newBuilder(Constants.getRequestSubscription(), this::handleMessage).build();
     subscriber.addListener(

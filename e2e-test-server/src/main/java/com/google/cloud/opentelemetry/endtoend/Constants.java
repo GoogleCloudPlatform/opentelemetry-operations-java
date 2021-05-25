@@ -39,7 +39,7 @@ public class Constants {
   }
 
   /** @return The pubsub channel we get test requests from. */
-  public static ProjectTopicName getResponseChannel() {
+  public static ProjectTopicName getResponseTopic() {
     return ProjectTopicName.of(PROJECT_ID, RESPONSE_TOPIC_NAME);
   }
 }
