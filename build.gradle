@@ -70,6 +70,8 @@ subprojects {
 		mavenLocal()
 		maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
 		maven { url 'https://dl.bintray.com/open-telemetry/maven' }
+		maven { url "https://maven.springframework.org/milestone" }
+		maven { url "https://maven.springframework.org/snapshot" }
 	}
 
 	// Set up java codestyle checking and correction.
@@ -114,26 +116,32 @@ subprojects {
 		pubSubVersion = '1.111.2'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.27.2'
+		springWebVersion = '2.4.5'
+		springOpenFeignVersion = '3.0.0'
+		springOtelVersion = '1.0.0-M7'
 
 		libraries = [
-			auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
-			auto_service                 : "com.google.auto.service:auto-service:${autoServiceVersion}",
-			auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-			auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
-			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
-			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
-			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
-			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
-			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
-			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
-			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
-			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
-			opentelemetry_sdk            : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
-			opentelemetry_autoconfigure  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
-			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
-			opentelemetry_api_metrics    : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
-			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
-			opentelemetry_auto           : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}-alpha",
+			auto_service_annotations         : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+			auto_service                     : "com.google.auto.service:auto-service:${autoServiceVersion}",
+			auto_value_annotations           : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+			auto_value                       : "com.google.auto.value:auto-value:${autoValueVersion}",
+			google_cloud_core                : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
+			google_cloud_trace               : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
+			google_cloud_trace_grpc          : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
+			google_cloud_monitoring          : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
+			google_cloud_monitoring_grpc     : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
+			google_cloud_pubsub              : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
+			slf4j                            : "org.slf4j:slf4j-api:${slf4jVersion}",
+			opentelemetry_api                : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
+			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
+			opentelemetry_autoconfigure      : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
+			opentelemetry_semconv            : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
+			opentelemetry_api_metrics        : "io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha",
+			opentelemetry_sdk_metrics        : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
+			opentelemetry_auto               : "io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${openTelemetryInstrumentationVersion}-alpha",
+			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
+			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
+			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}"
 		]
 		testLibraries = [
 			junit       : "junit:junit:${junitVersion}",
