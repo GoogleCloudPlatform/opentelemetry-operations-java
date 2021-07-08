@@ -1,0 +1,54 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'org.springframework.boot' version '2.4.5'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+jar {
+	manifest {
+		attributes(
+				'Main-Class': 'com.google.cloud.opentelemetry.example.spring.Main'
+				)
+	}
+}
+
+task fatJar(type: Jar) {
+	manifest.from jar.manifest
+	archiveClassifier = 'all'
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	} {
+		exclude "META-INF/*.SF"
+		exclude "META-INF/*.DSA"
+		exclude "META-INF/*.RSA"
+	}
+	with jar
+}
+
+description = 'Example of using Spring to integrate OTel and Cloud Trace'
+
+dependencies {
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.google_cloud_trace)
+	implementation(libraries.spring_boot_starter_web)
+	implementation(libraries.spring_cloud_starter_openfeign)
+	implementation(libraries.spring_cloud_sleuth_otel_autoconf)
+	implementation project(':exporter-trace')
+	runtimeOnly project(':detector-resources')
+}
