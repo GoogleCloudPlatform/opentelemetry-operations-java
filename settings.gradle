@@ -30,6 +30,7 @@ include ":examples-metrics"
 include ":exporter-auto"
 include ":detector-resources"
 include ":e2e-test-server"
+include ":examples-spring"
 
 project(':exporter-trace').projectDir =
 		"$rootDir/exporters/trace" as File

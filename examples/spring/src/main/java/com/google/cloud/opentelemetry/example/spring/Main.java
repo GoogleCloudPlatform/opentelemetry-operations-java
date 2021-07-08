@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.google.cloud.opentelemetry.example.spring;
 
 import com.google.cloud.opentelemetry.trace.TraceExporter;
@@ -31,8 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @SpringBootApplication
 public class Main {
-  @Autowired
-  private GreetingClient greetingClient;
+  @Autowired private GreetingClient greetingClient;
 
   public static void main(String[] args) throws IOException {
     SpringApplication.run(Main.class, args);
