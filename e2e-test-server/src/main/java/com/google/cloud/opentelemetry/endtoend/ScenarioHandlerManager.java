@@ -56,7 +56,7 @@ public class ScenarioHandlerManager {
                   .setAttribute(Constants.TEST_ID, request.testId())
                   .startSpan();
           try {
-            return Response.ok();
+            return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
           } finally {
             span.end();
           }
@@ -65,7 +65,7 @@ public class ScenarioHandlerManager {
 
   /** Default test scenario runner for unknown test cases. */
   private Response unimplemented(Request request) {
-    return Response.unimplemented("UNhandled request: " + request.testId());
+    return Response.unimplemented("Unhandled request: " + request.testId());
   }
 
   /** Registers test scenario "urls" with handlers for the requests. */
@@ -92,7 +92,8 @@ public class ScenarioHandlerManager {
         sdk.getSdkTracerProvider().shutdown();
       }
     } catch (IOException e) {
-      // Lift checked exception into runtime to feed through lambda impls and make it out to
+      // Lift checked exception into runtime to feed through lambda impls and make it
+      // out to
       // test status.
       throw new RuntimeException(e);
     }
@@ -102,7 +103,10 @@ public class ScenarioHandlerManager {
   private static OpenTelemetrySdk setupTraceExporter() throws IOException {
     // Using default project ID and Credentials
     TraceConfiguration configuration =
-        TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
+        TraceConfiguration.builder()
+            .setDeadline(Duration.ofMillis(30000))
+            .setProjectId(Constants.PROJECT_ID != "" ? Constants.PROJECT_ID : null)
+            .build();
 
     TraceExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
     // Register the TraceExporter with OpenTelemetry

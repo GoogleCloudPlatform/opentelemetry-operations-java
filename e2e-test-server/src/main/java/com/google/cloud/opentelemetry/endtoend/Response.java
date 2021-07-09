@@ -17,6 +17,8 @@ package com.google.cloud.opentelemetry.endtoend;
 
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.protobuf.ByteString;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An "RPC Response", generified.
@@ -30,10 +32,17 @@ public interface Response {
    * <p>If this is `OK`, then data will be empty.
    */
   Code statusCode();
+
   /** string explanation of error codes. */
   ByteString data();
 
+  Map<String, String> headers();
+
   static Response make(final Code code, final ByteString data) {
+    return make(code, data, new HashMap<>());
+  }
+
+  static Response make(final Code code, final ByteString data, final Map<String, String> headers) {
     return new Response() {
       public Code statusCode() {
         return code;
@@ -41,6 +50,10 @@ public interface Response {
 
       public ByteString data() {
         return data;
+      }
+
+      public Map<String, String> headers() {
+        return headers;
       }
     };
   }
@@ -59,6 +72,10 @@ public interface Response {
 
   public static Response ok() {
     return make(Code.OK, ByteString.EMPTY);
+  }
+
+  public static Response ok(Map<String, String> headers) {
+    return make(Code.OK, ByteString.EMPTY, headers);
   }
 
   public static Response EMPTY = make(Code.UNKNOWN, ByteString.EMPTY);

@@ -81,6 +81,7 @@ public class Server implements AutoCloseable {
   public void respond(final String testId, final Response response) {
     final PubsubMessage message =
         PubsubMessage.newBuilder()
+            .putAllAttributes(response.headers())
             .putAttributes(Constants.TEST_ID, testId)
             .putAttributes(Constants.STATUS_CODE, Integer.toString(response.statusCode().ordinal()))
             .setData(response.data())
@@ -122,6 +123,7 @@ public class Server implements AutoCloseable {
     try {
       response = scenarioHandlers.handleScenario(scenario, request);
     } catch (Throwable e) {
+      e.printStackTrace(System.err);
       response = Response.internalError(e);
     } finally {
       respond(testId, response);
