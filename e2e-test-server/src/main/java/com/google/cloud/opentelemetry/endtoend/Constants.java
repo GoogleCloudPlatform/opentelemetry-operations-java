@@ -25,6 +25,7 @@ public class Constants {
   public static String SCENARIO = "scenario";
   public static String STATUS_CODE = "status_code";
   public static String TEST_ID = "test_id";
+  public static String TRACE_ID = "trace_id";
 
   // TODO: Add good error messages below.
   public static String SUBCRIPTION_MODE = System.getenv().getOrDefault("SUBSCRIPTION_MODE", "");
