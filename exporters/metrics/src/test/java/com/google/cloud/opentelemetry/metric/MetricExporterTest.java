@@ -134,7 +134,7 @@ public class MetricExporterTest {
                 Metric.newBuilder()
                     .setType(expectedDescriptor.getType())
                     .putLabels("label1", "value1")
-                    .putLabels("label2", "False")
+                    .putLabels("label2", "false")
                     .build())
             .addPoints(expectedPoint)
             .setMetricKind(expectedDescriptor.getMetricKind())

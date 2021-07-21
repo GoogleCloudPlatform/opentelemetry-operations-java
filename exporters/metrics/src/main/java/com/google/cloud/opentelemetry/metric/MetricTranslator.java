@@ -87,9 +87,9 @@ public class MetricTranslator {
           .collect(
               Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
 
-  static Metric mapMetric(Labels labels, String type) {
+  static Metric mapMetric(Attributes attributes, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
-    labels.forEach(metricBuilder::putLabels);
+    attributes.forEach((key, value) -> metricBuilder.putLabels(key.getKey(), value.toString()));
     return metricBuilder.build();
   }
 
@@ -101,7 +101,7 @@ public class MetricTranslator {
             .setDescription(metric.getDescription())
             .setType(mapMetricType(metric.getName()))
             .setUnit(metric.getUnit());
-    metricPoint.getLabels().forEach((key, value) -> builder.addLabels(mapLabel(key, value)));
+    metricPoint.getAttributes().forEach((key, value) -> builder.addLabels(mapAttribute(key, value)));
 
     MetricDataType metricType = metric.getType();
     if (GAUGE_TYPES.contains(metricType)) {
@@ -135,14 +135,19 @@ public class MetricTranslator {
     return DESCRIPTOR_TYPE_URL + instrumentName;
   }
 
-  static LabelDescriptor mapLabel(String key, String value) {
-    LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key);
-    if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-      builder.setValueType(LabelDescriptor.ValueType.BOOL);
-    } else if (Longs.tryParse(value) != null) {
-      builder.setValueType(LabelDescriptor.ValueType.INT64);
-    } else {
-      builder.setValueType(LabelDescriptor.ValueType.STRING);
+  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
+    LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key.getKey());
+    switch(key.getType()) {
+      case BOOLEAN:
+        builder.setValueType(LabelDescriptor.ValueType.BOOL);
+        break;
+      case LONG:
+        builder.setValueType(LabelDescriptor.ValueType.INT64);
+        break;
+      default:
+        // All other attribute types will be toString'd
+        builder.setValueType(LabelDescriptor.ValueType.STRING);
+        break;
     }
     return builder.build();
   }
