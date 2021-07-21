@@ -29,7 +29,6 @@ import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -241,7 +240,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         return false;
       }
       MetricWithLabels that = (MetricWithLabels) o;
-      return Objects.equals(metricType, that.metricType) && Objects.equals(attributes, that.attributes);
+      return Objects.equals(metricType, that.metricType)
+          && Objects.equals(attributes, that.attributes);
     }
 
     @Override

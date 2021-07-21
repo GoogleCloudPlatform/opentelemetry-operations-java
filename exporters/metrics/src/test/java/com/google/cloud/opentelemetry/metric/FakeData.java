@@ -15,6 +15,9 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -32,8 +35,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import java.util.Date;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;;
+;
 
 public class FakeData {
 
@@ -47,7 +49,7 @@ public class FakeData {
       GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
   static final Attributes someLabels =
-  Attributes.builder().put("label1", "value1").put("label2", "False").build();
+      Attributes.builder().put("label1", "value1").put("label2", "False").build();
 
   static final Attributes someGceAttributes =
       Attributes.builder()

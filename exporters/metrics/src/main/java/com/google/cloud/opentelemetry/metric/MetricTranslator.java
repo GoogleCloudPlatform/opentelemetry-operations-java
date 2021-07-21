@@ -25,12 +25,10 @@ import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Longs;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
@@ -101,7 +99,9 @@ public class MetricTranslator {
             .setDescription(metric.getDescription())
             .setType(mapMetricType(metric.getName()))
             .setUnit(metric.getUnit());
-    metricPoint.getAttributes().forEach((key, value) -> builder.addLabels(mapAttribute(key, value)));
+    metricPoint
+        .getAttributes()
+        .forEach((key, value) -> builder.addLabels(mapAttribute(key, value)));
 
     MetricDataType metricType = metric.getType();
     if (GAUGE_TYPES.contains(metricType)) {
@@ -137,7 +137,7 @@ public class MetricTranslator {
 
   static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
     LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key.getKey());
-    switch(key.getType()) {
+    switch (key.getType()) {
       case BOOLEAN:
         builder.setValueType(LabelDescriptor.ValueType.BOOL);
         break;

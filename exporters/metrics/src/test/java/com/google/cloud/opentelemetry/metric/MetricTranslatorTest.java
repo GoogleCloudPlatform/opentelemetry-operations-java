@@ -22,11 +22,11 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
@@ -58,7 +58,9 @@ public class MetricTranslatorTest {
     String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
-    aLongPoint.getAttributes().forEach((k,v) -> expectedMetricBuilder.putLabels(k.getKey(), v.toString()));
+    aLongPoint
+        .getAttributes()
+        .forEach((k, v) -> expectedMetricBuilder.putLabels(k.getKey(), v.toString()));
 
     Metric actualMetric = MetricTranslator.mapMetric(aLongPoint.getAttributes(), type);
     assertEquals(expectedMetricBuilder.build(), actualMetric);
@@ -122,7 +124,8 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapConstantLabelWithLongValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label1"), 123928374982123L);
+    LabelDescriptor actualLabel =
+        MetricTranslator.mapAttribute(longKey("label1"), 123928374982123L);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
