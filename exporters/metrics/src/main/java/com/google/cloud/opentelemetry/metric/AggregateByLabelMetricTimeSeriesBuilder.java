@@ -24,7 +24,7 @@ import com.google.api.MetricDescriptor;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -52,10 +52,10 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
     }
     // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
     descriptors.putIfAbsent(descriptor.getName(), descriptor);
-    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getLabels());
+    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
-        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getLabels(), descriptor))
+        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getAttributes(), descriptor))
         .addPoints(
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(TypedValue.newBuilder().setInt64Value(point.getValue()))
@@ -71,10 +71,10 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
     }
     // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
     descriptors.putIfAbsent(descriptor.getName(), descriptor);
-    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getLabels());
+    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
-        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getLabels(), descriptor))
+        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getAttributes(), descriptor))
         .addPoints(
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(TypedValue.newBuilder().setDoubleValue(point.getValue()))
@@ -82,9 +82,9 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   }
 
   private TimeSeries.Builder makeTimeSeriesHeader(
-      MetricData metric, Labels labels, MetricDescriptor descriptor) {
+      MetricData metric, Attributes attributes, MetricDescriptor descriptor) {
     return TimeSeries.newBuilder()
-        .setMetric(mapMetric(labels, descriptor.getType()))
+        .setMetric(mapMetric(attributes, descriptor.getType()))
         .setMetricKind(descriptor.getMetricKind())
         .setResource(mapResource(metric.getResource(), projectId));
   }

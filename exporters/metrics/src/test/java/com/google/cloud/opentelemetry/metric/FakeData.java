@@ -15,12 +15,14 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -33,6 +35,8 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import java.util.Date;
 
+;
+
 public class FakeData {
 
   private static final long NANO_PER_SECOND = (long) 1e9;
@@ -44,8 +48,8 @@ public class FakeData {
   static final Credentials aFakeCredential =
       GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
 
-  static final Labels someLabels =
-      Labels.builder().put("label1", "value1").put("label2", "False").build();
+  static final Attributes someLabels =
+      Attributes.builder().put("label1", "value1").put("label2", "False").build();
 
   static final Attributes someGceAttributes =
       Attributes.builder()
@@ -66,21 +70,21 @@ public class FakeData {
       LongPointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
-          Labels.of("label1", "value1", "label2", "False"),
+          Attributes.of(stringKey("label1"), "value1", booleanKey("label2"), false),
           32L);
 
   static final DoublePointData aDoublePoint =
       DoublePointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
-          Labels.of("label1", "value1", "label2", "False"),
+          Attributes.of(stringKey("label1"), "value1", booleanKey("label2"), false),
           32d);
 
   static final DoubleSummaryPointData aDoubleSummaryPoint =
       DoubleSummaryPointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
-          Labels.of("label1", "value1", "label2", "False"),
+          Attributes.of(stringKey("label1"), "value1", booleanKey("label2"), false),
           1,
           32d,
           Collections.emptyList());

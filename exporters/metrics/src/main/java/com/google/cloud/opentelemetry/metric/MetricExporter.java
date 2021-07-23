@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -224,11 +224,11 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   static class MetricWithLabels {
 
     private final String metricType;
-    private final Labels labels;
+    private final Attributes attributes;
 
-    MetricWithLabels(String metricType, Labels labels) {
+    MetricWithLabels(String metricType, Attributes attributes) {
       this.metricType = metricType;
-      this.labels = labels;
+      this.attributes = attributes;
     }
 
     @Override
@@ -240,12 +240,13 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         return false;
       }
       MetricWithLabels that = (MetricWithLabels) o;
-      return Objects.equals(metricType, that.metricType) && Objects.equals(labels, that.labels);
+      return Objects.equals(metricType, that.metricType)
+          && Objects.equals(attributes, that.attributes);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(metricType, labels);
+      return Objects.hash(metricType, attributes);
     }
   }
 }
