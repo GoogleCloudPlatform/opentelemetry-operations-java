@@ -53,7 +53,5 @@ project(':detector-resources').projectDir =
 project(':e2e-test-server').projectDir =
 		"$rootDir/e2e-test-server" as File
 
-// Unable to resolve milestone artifact currently.
-// TODO: re-enable.
-// project(':examples-spring').projectDir =
-// 		"$rootDir/examples/spring" as File
+project(':examples-spring').projectDir =
+		"$rootDir/examples/spring" as File
