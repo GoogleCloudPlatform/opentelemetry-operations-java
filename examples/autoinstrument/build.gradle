@@ -1,0 +1,90 @@
+/*
+ * Copyright 2021 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'java'
+	id 'com.github.johnrengelman.shadow'
+	id 'com.google.cloud.tools.jib'
+}
+
+
+description = 'Examples for using java auto instrumentation and Google Cloud Operations'
+
+configurations {
+	agent
+}
+
+dependencies {
+	agent agentLibraries.agent_all
+	agent project(path: ':exporter-auto', configuration: 'shadow')
+
+	implementation platform("io.grpc:grpc-bom:1.33.1")
+	implementation platform("io.opentelemetry:opentelemetry-bom:1.0.0")
+	implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.0.0-alpha")
+	implementation platform("org.apache.logging.log4j:log4j-bom:2.13.2")
+
+	implementation "io.grpc:grpc-netty-shaded"
+	implementation "io.grpc:grpc-protobuf"
+	implementation "io.grpc:grpc-stub"
+	implementation "io.opentelemetry:opentelemetry-proto"
+	implementation "io.opentelemetry:opentelemetry-extension-annotations"
+	implementation "org.apache.logging.log4j:log4j-core"
+
+	runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
+}
+
+task copyAgent(type: Copy) {
+	into layout.buildDirectory.dir("otelagent")
+	from configurations.agent {
+		rename "opentelemetry-javaagent(.*).jar", "otel_agent.jar"
+		rename "exporter-auto(.*).jar", "gcp_ext.jar"
+	}
+}
+
+jib {
+	from.image = 'gcr.io/distroless/java-debian10:11'
+	containerizingMode = 'packaged'
+	container.ports = ["8080"]
+	extraDirectories {
+		paths {
+			path {
+				from = layout.buildDirectory.dir("otelagent")
+				into = '/otelagent'
+			}
+		}
+	}
+	// TODO: Figure out how to pull versions from build.
+	container.jvmFlags = [
+		// Use the downloaded java agent.
+		'-javaagent:/otelagent/otel_agent.jar',
+		// Use the GCP exporter extensions.
+		'-Dotel.javaagent.experimental.extensions=/otelagent/gcp_ext.jar',
+		// Configure auto instrumentation.
+		'-Dotel.traces.exporter=google_cloud_trace',
+		'-Dotel.metrics.exporter=google_cloud_monitoring',
+	]
+}
+
+tasks.named('jib').configure {
+	dependsOn copyAgent
+}
+
+tasks.named('jibDockerBuild').configure {
+	dependsOn copyAgent
+}
+
+tasks.named('jibBuildTar').configure {
+	dependsOn copyAgent
+}

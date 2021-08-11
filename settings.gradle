@@ -18,6 +18,7 @@ pluginManagement {
 		id "com.diffplug.spotless" version "5.9.0"
 		id 'nebula.release' version '15.2.0'
 		id "com.github.johnrengelman.shadow" version "6.0.0"
+		id 'com.google.cloud.tools.jib' version '3.1.2'
 	}
 }
 
@@ -28,6 +29,7 @@ include ":examples-trace"
 include ":exporter-metrics"
 include ":examples-metrics"
 include ":exporter-auto"
+include ":examples-auto"
 include ":detector-resources"
 include ":e2e-test-server"
 include ":examples-spring"
@@ -57,3 +59,6 @@ project(':e2e-test-server').projectDir =
 // TODO: re-enable.
 // project(':examples-spring').projectDir =
 // 		"$rootDir/examples/spring" as File
+
+project(':examples-auto').projectDir =
+		"$rootDir/examples/autoinstrument" as File

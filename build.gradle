@@ -142,6 +142,9 @@ subprojects {
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
 		]
+		agentLibraries = [
+			agent_all: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}:all",
+		]
 		testLibraries = [
 			junit       : "junit:junit:${junitVersion}",
 			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
