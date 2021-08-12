@@ -17,6 +17,7 @@ package com.google.example;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.protobuf.services.ProtoReflectionService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +29,12 @@ public class TestMain {
   public static void main(String[] args) throws Exception {
     TestService service = new TestService();
     Server server =
-        ServerBuilder.forPort(8080).addService(service).directExecutor().build().start();
+        ServerBuilder.forPort(8080)
+            .addService(ProtoReflectionService.newInstance())
+            .addService(service)
+            .directExecutor()
+            .build()
+            .start();
     Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
     logger.info("Server started at port 8080.");
     server.awaitTermination();

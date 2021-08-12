@@ -37,6 +37,7 @@ dependencies {
 
 	implementation "io.grpc:grpc-netty-shaded"
 	implementation "io.grpc:grpc-protobuf"
+	implementation "io.grpc:grpc-services"
 	implementation "io.grpc:grpc-stub"
 	implementation "io.opentelemetry:opentelemetry-proto"
 	implementation "io.opentelemetry:opentelemetry-extension-annotations"
