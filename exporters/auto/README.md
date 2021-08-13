@@ -4,11 +4,28 @@
 
 ## SDK AutoConfiguration
 
-TODO:
+OpenTelemetry Java SDK provides an `autoconf` module where all configuration can be done entirely through Java system properties or environment variables.
 
-- Define how to depend on OTEL sdk-autoconfigure *and* this package.
-- Just use global OTEL without any other setup
-- Link to configurable JVM/ENV parameters
+To leverage the GCP extensions to this, simply add the following dependency:
+
+```
+<dependency>
+  <groupId>com.google.cloud.opentelemetry</groupId>
+  <artifactId>exporter-auto</artifactId>
+  <version>0.15.0</version>
+</dependency>
+```
+
+*Note: Make sure to use the latest release [![LatestRelease][maven-image]][maven-url].*
+
+Then you can configure your sdk using the following system properties/environmnet variables:
+
+| Property | Environment Variable | Value | Description |
+| -------- | -------------------- | ----- | ----------- |
+| otel.traces.exporter | N/A | google_could_trace | The exporter for traces. |
+| otel.metrics.exporter | N/A | google_could_trace | The exporter for metrics. |
+| GOOGLE_CLOUD_PROJECT | GOOGLE_CLOUD_PROJECT | autodiscovered | The project_id to report metrics/traces againt. |
+| GOOGLE_APPLICATION_CREDENTIALS | GOOGLE_APPLICATION_CREDENTIALS | autodiscovered | Credentials to use when talking to GCP APIs. |
 
 *See the [autoconfigure][autooconf] SDK module for general environmental setup configuration.*
 
