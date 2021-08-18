@@ -29,7 +29,8 @@ include ":examples-trace"
 include ":exporter-metrics"
 include ":examples-metrics"
 include ":exporter-auto"
-include ":examples-auto"
+include ":examples-autoconf"
+include ":examples-autoinstrument"
 include ":detector-resources"
 include ":e2e-test-server"
 include ":examples-spring"
@@ -60,5 +61,8 @@ project(':e2e-test-server').projectDir =
 // project(':examples-spring').projectDir =
 // 		"$rootDir/examples/spring" as File
 
-project(':examples-auto').projectDir =
+project(':examples-autoinstrument').projectDir =
 		"$rootDir/examples/autoinstrument" as File
+
+project(':examples-autoconf').projectDir =
+		"$rootDir/examples/autoconf" as File
