@@ -30,10 +30,10 @@ import java.util.Random;
 
 public class AutoconfExample {
   private static final Random random = new Random();
+  private static final AttributeKey<String> DESCRIPTION_KEY = AttributeKey.stringKey("description");
 
   private final Tracer tracer = GlobalOpenTelemetry.get().tracerBuilder("example-auto").build();
   private final Meter meter = GlobalMeterProvider.get().meterBuilder("example-auto").build();
-  private final AttributeKey<String> DESCRIPTION_KEY = AttributeKey.stringKey("description");
   private final LongCounter useCaseCount = meter.counterBuilder("use_case").build();
 
   private void myUseCase(String description) {

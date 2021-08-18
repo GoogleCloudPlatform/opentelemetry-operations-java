@@ -32,23 +32,22 @@ dependencies {
 	runtimeOnly project(':detector-resources')
 }
 
+// Autoconfiguraation settings.
+// See: https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
+def autoconf_config = [
+	'-Dotel.traces.exporter=google_cloud_trace',
+	'-Dotel.metrics.exporter=google_cloud_monitoring',
+]
+
 mainClassName = 'com.google.cloud.opentelemetry.example.autoconf.AutoconfExample'
 
 application {
-	applicationDefaultJvmArgs = [
-		'-Dotel.traces.exporter=google_cloud_trace',
-		'-Dotel.metrics.exporter=google_cloud_monitoring',
-	]
+	applicationDefaultJvmArgs = autoconf_config
 }
 
 
 jib {
 	from.image = 'gcr.io/distroless/java-debian10:11'
 	containerizingMode = 'packaged'
-	// TODO: Figure out how to pull versions from build.
-	container.jvmFlags = [
-		// Configure auto instrumentation.
-		'-Dotel.traces.exporter=google_cloud_trace',
-		'-Dotel.metrics.exporter=google_cloud_monitoring',
-	]
+	container.jvmFlags = autoconf_config
 }
