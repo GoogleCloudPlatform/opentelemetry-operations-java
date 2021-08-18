@@ -105,9 +105,10 @@ subprojects {
 		autoServiceVersion = '1.0-rc7'
 		autoValueVersion = '1.7.4'
 		slf4jVersion = '1.7.30'
-		googleCloudVersion = '1.3.0'
-		cloudMonitoringVersion = '2.1.0'
-		openTelemetryVersion = '1.4.1'
+		googleCloudVersion = '2.0.5'
+		googleTraceVersion = '2.0.0'
+		cloudMonitoringVersion = '3.0.0'
+		openTelemetryVersion = '1.5.0'
 		openTelemetryInstrumentationVersion = '1.4.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
@@ -124,8 +125,8 @@ subprojects {
 			auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
 			auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
 			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
-			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleCloudVersion}",
-			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleCloudVersion}",
+			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleTraceVersion}",
+			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:2.0.1",
 			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
 			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
 			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
@@ -141,6 +142,9 @@ subprojects {
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
+		]
+		agentLibraries = [
+			agent_all: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}:all",
 		]
 		testLibraries = [
 			junit       : "junit:junit:${junitVersion}",

@@ -29,7 +29,10 @@ public class MetricsExporterExample {
   private static SdkMeterProvider METER_PROVIDER =
       SdkMeterProvider.builder().buildAndRegisterGlobal();
   private static final Meter METER =
-      METER_PROVIDER.get("instrumentation-library-name", "semver:1.0.0");
+      METER_PROVIDER
+          .meterBuilder("instrumentation-library-name")
+          .setInstrumentationVersion("semver:1.0.0")
+          .build();
   private static final Random RANDOM = new Random();
   private static io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter;
   private static IntervalMetricReader intervalMetricReader;
@@ -54,7 +57,7 @@ public class MetricsExporterExample {
   private static void myUseCase() {
     LongCounter counter =
         METER
-            .longCounterBuilder("example_counter")
+            .counterBuilder("example_counter")
             .setDescription("Processed jobs")
             .setUnit("1")
             .build();
