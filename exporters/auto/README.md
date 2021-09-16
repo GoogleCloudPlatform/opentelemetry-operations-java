@@ -1,4 +1,4 @@
-# Auto-Coonfiguration for OpenTelemetry in Google Cloud
+# Auto-Configuration for OpenTelemetry in Google Cloud
 
 [![Maven Central][maven-image]][maven-url]
 
