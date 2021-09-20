@@ -31,6 +31,7 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -152,6 +153,11 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           break;
         case DOUBLE_SUM:
           for (DoublePointData point : metricData.getDoubleSumData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
+        case HISTOGRAM:
+          for (DoubleHistogramPointData point : metricData.getDoubleHistogramData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;

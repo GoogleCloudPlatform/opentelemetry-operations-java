@@ -20,17 +20,27 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
+import com.google.api.Distribution;
+import com.google.api.Distribution.BucketOptions;
+import com.google.api.Distribution.BucketOptions.Explicit;
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableSet;
+import com.google.monitoring.v3.DroppedLabels;
+import com.google.monitoring.v3.SpanContext;
 import com.google.monitoring.v3.TimeInterval;
+import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
@@ -54,7 +64,7 @@ public class MetricTranslator {
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
 
   static final Set<MetricDataType> GAUGE_TYPES = ImmutableSet.of(LONG_GAUGE, DOUBLE_GAUGE);
-  static final Set<MetricDataType> CUMULATIVE_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
+  static final Set<MetricDataType> SUM_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
   static final Set<MetricDataType> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
   static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
@@ -104,26 +114,67 @@ public class MetricTranslator {
         .forEach((key, value) -> builder.addLabels(mapAttribute(key, value)));
 
     MetricDataType metricType = metric.getType();
-    if (GAUGE_TYPES.contains(metricType)) {
-      builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
-    } else if (CUMULATIVE_TYPES.contains(metricType)) {
-      builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
-    } else {
-      logger.error(
-          "Metric type {} not supported. Only gauge and cumulative types are supported.",
-          metricType);
-      return null;
-    }
-    if (LONG_TYPES.contains(metricType)) {
-      builder.setValueType(MetricDescriptor.ValueType.INT64);
-    } else if (DOUBLE_TYPES.contains(metricType)) {
-      builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
-    } else {
-      logger.error(
-          "Metric type {} not supported. Only long and double types are supported.", metricType);
-      return null;
+    switch (metricType) {
+      case LONG_GAUGE:
+        builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
+        builder.setValueType(MetricDescriptor.ValueType.INT64);
+        break;
+      case DOUBLE_GAUGE:
+        builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
+        builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
+        break;
+      case LONG_SUM:
+        builder.setValueType(MetricDescriptor.ValueType.INT64);
+        fillSumType(metric.getLongSumData(), builder);
+        break;
+      case DOUBLE_SUM:
+        builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
+        fillSumType(metric.getDoubleSumData(), builder);
+        break;
+      case HISTOGRAM:
+        fillHistogramType(metric.getDoubleHistogramData(), builder);
+        break;
+      default:
+        logger.error(
+            "Metric type {} not supported. Only gauge and cumulative types are supported.",
+            metricType);
+        return null;
     }
     return builder.build();
+  }
+
+  private static void fillHistogramType(
+      DoubleHistogramData histogram, MetricDescriptor.Builder builder) {
+    builder.setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
+    switch (histogram.getAggregationTemporality()) {
+      case DELTA:
+        builder.setMetricKind(MetricDescriptor.MetricKind.DELTA);
+        return;
+      case CUMULATIVE:
+        builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
+        return;
+      default:
+        logger.error(
+            "Histogram type {} not supported. Only delta and cumulative types are supported.",
+            histogram);
+        return;
+    }
+  }
+
+  private static void fillSumType(SumData<?> sum, MetricDescriptor.Builder builder) {
+    // TODO: Treat non-monotonic sums as gauges?
+    switch (sum.getAggregationTemporality()) {
+      case DELTA:
+        builder.setMetricKind(MetricDescriptor.MetricKind.DELTA);
+        return;
+      case CUMULATIVE:
+        builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
+        return;
+      default:
+        logger.error(
+            "Sum type {} not supported. Only delta and cumulative types are supported.", sum);
+        return;
+    }
   }
 
   private static String mapMetricType(String instrumentName) {
@@ -156,6 +207,7 @@ public class MetricTranslator {
       io.opentelemetry.sdk.metrics.data.PointData point, MetricDataType metricType) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
+    // TODO: Map non-monotonic sum as gauge?
     if (GAUGE_TYPES.contains(metricType)) {
       // The start time must be equal to the end time for the gauge metric
       startTime = endTime;
@@ -214,5 +266,48 @@ public class MetricTranslator {
         .setSeconds(epochNanos / NANO_PER_SECOND)
         .setNanos((int) (epochNanos % NANO_PER_SECOND))
         .build();
+  }
+
+  static Distribution.Builder mapDistribution(DoubleHistogramPointData point, String projectId) {
+    return Distribution.newBuilder()
+        .setCount(point.getCount())
+        .setMean(point.getSum() / point.getCount())
+        .setBucketOptions(
+            BucketOptions.newBuilder()
+                .setExplicitBuckets(Explicit.newBuilder().addAllBounds(point.getBoundaries())))
+        .addAllBucketCounts(point.getCounts())
+        .addAllExemplars(
+            point.getExemplars().stream()
+                .map(e -> mapExemplar(e, projectId))
+                .collect(Collectors.toList()));
+  }
+
+  private static Distribution.Exemplar mapExemplar(Exemplar exemplar, String projectId) {
+    Distribution.Exemplar.Builder exemplarBuilder =
+        Distribution.Exemplar.newBuilder()
+            .setValue(exemplar.getValueAsDouble())
+            .setTimestamp(mapTimestamp(exemplar.getEpochNanos()));
+    if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
+      exemplarBuilder.addAttachments(
+          Any.pack(
+              SpanContext.newBuilder()
+                  .setSpanName(makeSpanName(projectId, exemplar.getTraceId(), exemplar.getSpanId()))
+                  .build()));
+    }
+    if (!exemplar.getFilteredAttributes().isEmpty()) {
+      exemplarBuilder.addAttachments(
+          Any.pack(mapFilteredAttributes(exemplar.getFilteredAttributes())));
+    }
+    return exemplarBuilder.build();
+  }
+
+  private static String makeSpanName(String projectId, String traceId, String spanId) {
+    return String.format("projects/%s/traces/%s/spans/%s", projectId, traceId, spanId);
+  }
+
+  private static DroppedLabels mapFilteredAttributes(Attributes attributes) {
+    DroppedLabels.Builder labels = DroppedLabels.newBuilder();
+    attributes.forEach((k, v) -> labels.putLabel(k.getKey(), v.toString()));
+    return labels.build();
   }
 }

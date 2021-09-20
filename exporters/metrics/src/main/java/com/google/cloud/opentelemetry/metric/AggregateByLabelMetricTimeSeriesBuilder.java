@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
@@ -25,6 +26,7 @@ import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -78,6 +80,24 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
         .addPoints(
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(TypedValue.newBuilder().setDoubleValue(point.getValue()))
+                .setInterval(mapInterval(point, metric.getType())));
+  }
+
+  @Override
+  public void recordPoint(MetricData metric, DoubleHistogramPointData point) {
+    MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
+    if (descriptor == null) {
+      return;
+    }
+    // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
+    descriptors.putIfAbsent(descriptor.getName(), descriptor);
+    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
+    pendingTimeSeries
+        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getAttributes(), descriptor))
+        .addPoints(
+            com.google.monitoring.v3.Point.newBuilder()
+                .setValue(
+                    TypedValue.newBuilder().setDistributionValue(mapDistribution(point, projectId)))
                 .setInterval(mapInterval(point, metric.getType())));
   }
 
