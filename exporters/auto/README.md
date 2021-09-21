@@ -1,4 +1,4 @@
-# Auto-Coonfiguration for OpenTelemetry in Google Cloud
+# Auto-Configuration for OpenTelemetry in Google Cloud
 
 [![Maven Central][maven-image]][maven-url]
 
@@ -22,8 +22,8 @@ Then you can configure your sdk using the following system properties/environmne
 
 | Property | Environment Variable | Value | Description |
 | -------- | -------------------- | ----- | ----------- |
-| otel.traces.exporter | N/A | google_could_trace | The exporter for traces. |
-| otel.metrics.exporter | N/A | google_could_trace | The exporter for metrics. |
+| otel.traces.exporter | N/A | google_cloud_trace | The exporter for traces. |
+| otel.metrics.exporter | N/A | google_cloud_monitoring | The exporter for metrics. |
 | GOOGLE_CLOUD_PROJECT | GOOGLE_CLOUD_PROJECT | autodiscovered | The project_id to report metrics/traces againt. |
 | GOOGLE_APPLICATION_CREDENTIALS | GOOGLE_APPLICATION_CREDENTIALS | autodiscovered | Credentials to use when talking to GCP APIs. |
 
