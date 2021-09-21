@@ -61,9 +61,9 @@ public interface MetricDescriptorStrategy {
         public synchronized void exportDescriptors(
             Iterable<MetricDescriptor> batchDescriptors, Consumer<MetricDescriptor> export) {
           for (MetricDescriptor descriptor : batchDescriptors) {
-            if (!alreadySent.contains(descriptor.getName())) {
+            if (!alreadySent.contains(descriptor.getType())) {
               export.accept(descriptor);
-              alreadySent.add(descriptor.getName());
+              alreadySent.add(descriptor.getType());
             }
           }
         }

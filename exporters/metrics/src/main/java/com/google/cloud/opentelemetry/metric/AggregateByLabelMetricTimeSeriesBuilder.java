@@ -49,11 +49,9 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   @Override
   public void recordPoint(MetricData metric, LongPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor == null) {
-      return;
+    if (descriptor != null) {
+      descriptors.putIfAbsent(descriptor.getType(), descriptor);
     }
-    // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
-    descriptors.putIfAbsent(descriptor.getName(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
@@ -68,11 +66,9 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   @Override
   public void recordPoint(MetricData metric, DoublePointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor == null) {
-      return;
+    if (descriptor != null) {
+      descriptors.putIfAbsent(descriptor.getType(), descriptor);
     }
-    // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
-    descriptors.putIfAbsent(descriptor.getName(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
@@ -86,11 +82,9 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   @Override
   public void recordPoint(MetricData metric, DoubleHistogramPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor == null) {
-      return;
+    if (descriptor != null) {
+      descriptors.putIfAbsent(descriptor.getType(), descriptor);
     }
-    // TODO: Use actual unique key for descriptors, and deal with conflicts (or log)
-    descriptors.putIfAbsent(descriptor.getName(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     pendingTimeSeries
         .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getAttributes(), descriptor))
