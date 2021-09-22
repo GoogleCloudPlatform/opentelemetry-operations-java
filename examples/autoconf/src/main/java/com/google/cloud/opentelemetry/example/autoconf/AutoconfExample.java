@@ -18,6 +18,7 @@ package com.google.cloud.opentelemetry.example.autoconf;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -35,11 +36,13 @@ public class AutoconfExample {
   private final Tracer tracer = GlobalOpenTelemetry.get().tracerBuilder("example-auto").build();
   private final Meter meter = GlobalMeterProvider.get().meterBuilder("example-auto").build();
   private final LongCounter useCaseCount = meter.counterBuilder("use_case").build();
+  private final DoubleHistogram fakeLatency = meter.histogramBuilder("fakeLatency").build();
 
   private void myUseCase(String description) {
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       useCaseCount.add(1, Attributes.of(DESCRIPTION_KEY, description));
+      fakeLatency.record(1, Attributes.of(DESCRIPTION_KEY, description));
       span.addEvent("Event A");
       // Do some work for the use case
       for (int i = 0; i < 3; i++) {
@@ -58,7 +61,9 @@ public class AutoconfExample {
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       // Simulate work: this could be simulating a network request or an expensive disk operation
-      Thread.sleep(100 + random.nextInt(5) * 100);
+      long millis = 100 + random.nextInt(5) * 100;
+      fakeLatency.record(millis, Attributes.of(DESCRIPTION_KEY, description.substring(0, 3)));
+      Thread.sleep(millis);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } finally {

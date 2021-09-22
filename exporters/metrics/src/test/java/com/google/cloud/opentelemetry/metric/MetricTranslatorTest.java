@@ -15,8 +15,10 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -28,6 +30,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import com.google.api.Distribution;
 import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.Metric;
@@ -36,10 +39,17 @@ import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
 import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
+import com.google.monitoring.v3.DroppedLabels;
+import com.google.monitoring.v3.SpanContext;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -85,6 +95,65 @@ public class MetricTranslatorTest {
   }
 
   @Test
+  public void testMapMetricDescriptorNonMonotonicSumIsGauage() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createLongSum(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            LongSumData.create(
+                false, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(metricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(metricData.getDescription())
+            .setMetricKind(MetricKind.GAUGE)
+            .setValueType(MetricDescriptor.ValueType.INT64);
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+    assertEquals(expectedDescriptor.build(), actualDescriptor);
+  }
+
+  @Test
+  public void testMapMetricDescriptorHistogramIsDistribution() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createDoubleHistogram(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            DoubleHistogramData.create(
+                AggregationTemporality.CUMULATIVE, ImmutableList.of(aHistogramPoint)));
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(metricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("test").setValueType(ValueType.STRING))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(metricData.getDescription())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aHistogramPoint);
+    assertEquals(expectedDescriptor.build(), actualDescriptor);
+  }
+
+  @Test
   public void testMapMetricDescriptorWithInvalidMetricKindReturnsNull() {
     String name = "Metric Name";
     String description = "Metric Description";
@@ -97,6 +166,26 @@ public class MetricTranslatorTest {
             description,
             unit,
             DoubleSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+    assertNull(actualDescriptor);
+  }
+
+  @Test
+  public void testMapMetricDescriptorWithDeltaSumReturnsNull() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createDoubleSum(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            DoubleSumData.create(
+                true, AggregationTemporality.DELTA, ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
         MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
@@ -221,5 +310,44 @@ public class MetricTranslatorTest {
         (key, value) -> {
           assertEquals(value, monitoredResourceMap.get(key));
         });
+  }
+
+  @Test
+  public void testMapDistribution() {
+    Distribution result =
+        MetricTranslator.mapDistribution(FakeData.aHistogramPoint, "projectId").build();
+    assertEquals("Distirbution.count", 3, result.getCount());
+    assertEquals("Distribution.bucketCounts[0]", 1, result.getBucketCounts(0));
+    assertEquals("Distribution.bucketCounts[1]", 2, result.getBucketCounts(1));
+    assertEquals("Distribution.mean", 1d, result.getMean(), 0.001);
+    assertEquals(
+        "Distribution.bucketOptions.explicitBucketBounds[0]",
+        1.0d,
+        result.getBucketOptions().getExplicitBuckets().getBounds(0),
+        0.001);
+    assertEquals("Distribution.exemplars.length", 1, result.getExemplarsCount());
+    assertEquals("Distribution.exemplars[0].value", 3, result.getExemplars(0).getValue(), 0.01);
+    assertEquals(
+        "Distribution.exemplars[0].attachments.length",
+        2,
+        result.getExemplars(0).getAttachmentsCount());
+    result
+        .getExemplars(0)
+        .getAttachmentsList()
+        .forEach(
+            any -> {
+              try {
+                if (any.is(SpanContext.class)) {
+                  assertEquals(
+                      "projects/projectId/traces/traceId/spans/spanId",
+                      any.unpack(SpanContext.class).getSpanName());
+                } else if (any.is(DroppedLabels.class)) {
+                  DroppedLabels labels = any.unpack(DroppedLabels.class);
+                  assertEquals("two", labels.getLabelMap().get("test2"));
+                }
+              } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+              }
+            });
   }
 }

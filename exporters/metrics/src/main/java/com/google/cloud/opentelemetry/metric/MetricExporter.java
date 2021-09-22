@@ -31,6 +31,7 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -118,6 +119,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
+    logger.trace("Creating metric descriptor: %s", descriptor);
     metricServiceClient.createMetricDescriptor(
         CreateMetricDescriptorRequest.newBuilder()
             .setName(PROJECT_NAME_PREFIX + projectId)
@@ -155,20 +157,15 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
             builder.recordPoint(metricData, point);
           }
           break;
+        case HISTOGRAM:
+          for (DoubleHistogramPointData point : metricData.getDoubleHistogramData().getPoints()) {
+            builder.recordPoint(metricData, point);
+          }
+          break;
         default:
-          logger.error(
-              "Metric type {} not supported. Only gauge and cumulative types are supported.",
-              metricData.getType());
+          logger.error("OpenTelemetry Metric type {} not supported.", metricData.getType());
           continue;
       }
-      // Update metric descriptors based on configured strategy.
-      try {
-        metricDescriptorStrategy.exportDescriptors(
-            builder.getDescriptors(), this::exportDescriptor);
-      } catch (Exception e) {
-        logger.warn("Failed to create metric descriptors", e);
-      }
-
       // TODO: Filter metrics by last updated time....
       // MetricWithLabels updateKey =
       // new MetricWithLabels(descriptor.getType(), metricPoint.getLabels());
@@ -183,6 +180,16 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       // continue;
       // }
     }
+    // Update metric descriptors based on configured strategy.
+    try {
+      Collection<MetricDescriptor> descriptors = builder.getDescriptors();
+      if (!descriptors.isEmpty()) {
+        metricDescriptorStrategy.exportDescriptors(descriptors, this::exportDescriptor);
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to create metric descriptors", e);
+    }
+
     List<TimeSeries> series = builder.getTimeSeries();
     createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), series);
     // TODO: better error reporting.

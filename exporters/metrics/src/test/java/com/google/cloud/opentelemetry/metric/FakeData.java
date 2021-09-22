@@ -25,6 +25,9 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -32,6 +35,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
@@ -102,4 +106,26 @@ public class FakeData {
           "ns",
           LongSumData.create(
               true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+
+  static final DoubleHistogramPointData aHistogramPoint =
+      DoubleHistogramPointData.create(
+          0,
+          1,
+          Attributes.builder().put("test", "one").build(),
+          3d,
+          Arrays.asList(1.0),
+          Arrays.asList(1L, 2L),
+          Arrays.asList(
+              DoubleExemplar.create(
+                  Attributes.builder().put("test2", "two").build(), 2, "spanId", "traceId", 3.0)));
+
+  static final MetricData aHistogram =
+      MetricData.createDoubleHistogram(
+          aGceResource,
+          anInstrumentationLibraryInfo,
+          "histogram",
+          "description",
+          "ms",
+          DoubleHistogramData.create(
+              AggregationTemporality.CUMULATIVE, ImmutableList.of(aHistogramPoint)));
 }

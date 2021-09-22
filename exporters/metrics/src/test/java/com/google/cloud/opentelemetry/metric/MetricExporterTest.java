@@ -19,6 +19,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aCloudZone;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogram;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
@@ -36,6 +38,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.Distribution;
+import com.google.api.Distribution.BucketOptions;
+import com.google.api.Distribution.BucketOptions.Explicit;
+import com.google.api.Distribution.Exemplar;
 import com.google.api.LabelDescriptor;
 import com.google.api.LabelDescriptor.ValueType;
 import com.google.api.Metric;
@@ -44,17 +50,22 @@ import com.google.api.MetricDescriptor.MetricKind;
 import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
+import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.ProjectName;
+import com.google.monitoring.v3.SpanContext;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
+import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,6 +101,29 @@ public class MetricExporterTest {
             .build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
+  }
+
+  @Test
+  public void testExportSendsAllDescriptorsOnce() {
+    MetricExporter exporter =
+        MetricExporter.createWithClient(aProjectId, mockClient, MetricDescriptorStrategy.SEND_ONCE);
+    CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result.isSuccess());
+    CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result2.isSuccess());
+    CompletableResultCode result3 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result3.isSuccess());
+    verify(mockClient, times(2)).createMetricDescriptor(metricDescriptorCaptor.capture());
+    verify(mockClient, times(3))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+
+    // We know two metrics were created, let's verify we got both we sent.
+    Set<String> metricDescriptorTypes =
+        metricDescriptorCaptor.getAllValues().stream()
+            .map(d -> d.getMetricDescriptor().getType())
+            .collect(Collectors.toSet());
+    assertTrue(metricDescriptorTypes.contains(DESCRIPTOR_TYPE_URL + aMetricData.getName()));
+    assertTrue(metricDescriptorTypes.contains(DESCRIPTOR_TYPE_URL + aHistogram.getName()));
   }
 
   @Test
@@ -164,6 +198,99 @@ public class MetricExporterTest {
 
     assertTrue(result.isSuccess());
     assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
+    assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
+    assertEquals(1, timeSeriesArgCaptor.getValue().size());
+    assertEquals(expectedTimeSeries, timeSeriesArgCaptor.getValue().get(0));
+  }
+
+  @Test
+  public void testExportWithHistogram_Succeeds() {
+    MetricDescriptor expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aHistogram.getName())
+            .setType(DESCRIPTOR_TYPE_URL + aHistogram.getName())
+            .addLabels(
+                LabelDescriptor.newBuilder().setKey("test").setValueType(ValueType.STRING).build())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.DISTRIBUTION)
+            .setUnit(aHistogram.getUnit())
+            .setDescription(aHistogram.getDescription())
+            .build();
+    ProjectName expectedProjectName = ProjectName.of(aProjectId);
+    TimeInterval expectedTimeInterval =
+        TimeInterval.newBuilder()
+            .setStartTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aHistogramPoint.getStartEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .setEndTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aHistogramPoint.getEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(1)
+                    .build())
+            .build();
+    Point expectedPoint =
+        Point.newBuilder()
+            .setValue(
+                TypedValue.newBuilder()
+                    .setDistributionValue(
+                        Distribution.newBuilder()
+                            .setCount(3)
+                            .setMean(1)
+                            .addAllBucketCounts(ImmutableList.of(1L, 2L))
+                            .setBucketOptions(
+                                BucketOptions.newBuilder()
+                                    .setExplicitBuckets(Explicit.newBuilder().addBounds(1).build())
+                                    .build())
+                            .addExemplars(
+                                Exemplar.newBuilder()
+                                    .setValue(3)
+                                    .setTimestamp(
+                                        Timestamp.newBuilder().setSeconds(0).setNanos(2).build())
+                                    .addAttachments(
+                                        Any.pack(
+                                            SpanContext.newBuilder()
+                                                .setSpanName(
+                                                    "projects/"
+                                                        + aProjectId
+                                                        + "/traces/traceId/spans/spanId")
+                                                .build()))
+                                    .addAttachments(
+                                        Any.pack(
+                                            DroppedLabels.newBuilder()
+                                                .putLabel("test2", "two")
+                                                .build()))
+                                    .build())
+                            .build()))
+            .setInterval(expectedTimeInterval)
+            .build();
+    TimeSeries expectedTimeSeries =
+        TimeSeries.newBuilder()
+            .setMetric(
+                Metric.newBuilder()
+                    .setType(expectedDescriptor.getType())
+                    .putLabels("test", "one")
+                    .build())
+            .addPoints(expectedPoint)
+            .setMetricKind(expectedDescriptor.getMetricKind())
+            .setResource(
+                MonitoredResource.newBuilder()
+                    .setType("gce_instance")
+                    .putLabels("project_id", aProjectId)
+                    .putLabels("instance_id", aHostId)
+                    .putLabels("zone", aCloudZone)
+                    .build())
+            .build();
+    MetricExporter exporter =
+        MetricExporter.createWithClient(
+            aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+    CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
+    verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
+    verify(mockClient, times(1))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+    assertTrue(result.isSuccess());
+    assertEquals(expectedDescriptor, metricDescriptorCaptor.getValue().getMetricDescriptor());
     assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
     assertEquals(1, timeSeriesArgCaptor.getValue().size());
     assertEquals(expectedTimeSeries, timeSeriesArgCaptor.getValue().get(0));

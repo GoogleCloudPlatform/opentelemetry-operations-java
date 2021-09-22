@@ -17,8 +17,8 @@ package com.google.cloud.opentelemetry.auto;
 
 import com.google.auto.service.AutoService;
 import com.google.cloud.opentelemetry.metric.MetricExporter;
-import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import java.io.IOException;
 
 @AutoService(ConfigurableMetricExporterProvider.class)

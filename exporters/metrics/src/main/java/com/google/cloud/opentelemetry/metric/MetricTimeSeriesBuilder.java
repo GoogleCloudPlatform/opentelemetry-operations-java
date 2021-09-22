@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
 import com.google.monitoring.v3.TimeSeries;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -29,6 +30,8 @@ public interface MetricTimeSeriesBuilder {
   void recordPoint(MetricData metric, LongPointData point);
   /** Records a DoublePoint of the given metric. */
   void recordPoint(MetricData metric, DoublePointData point);
+  /** Records a DoubleHistogramPointData for the given metric. */
+  void recordPoint(MetricData metric, DoubleHistogramPointData point);
 
   /** The set of descriptors assocaited with the current time series. */
   Collection<MetricDescriptor> getDescriptors();

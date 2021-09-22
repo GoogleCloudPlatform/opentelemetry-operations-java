@@ -17,8 +17,8 @@ package com.google.cloud.opentelemetry.auto;
 
 import com.google.auto.service.AutoService;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSpanExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 
