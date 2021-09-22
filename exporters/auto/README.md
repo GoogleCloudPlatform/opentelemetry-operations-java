@@ -4,7 +4,7 @@
 
 ## SDK AutoConfiguration
 
-OpenTelemetry Java SDK provides an `autoconf` module where all configuration can be done entirely through Java system properties or environment variables.
+OpenTelemetry Java SDK provides an `autoconfigure` module where all configuration can be done entirely through Java system properties or environment variables.
 
 To leverage the GCP extensions to this, simply add the following dependency:
 
@@ -12,7 +12,7 @@ To leverage the GCP extensions to this, simply add the following dependency:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-auto</artifactId>
-  <version>0.15.0</version>
+  <version>0.17.0-alpha</version>
 </dependency>
 ```
 

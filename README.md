@@ -18,7 +18,7 @@ docker to be runnable locally by the current users.  Please verify `docker run h
 
 ## Contributing
 
-TODO(jsuereth): Add full contributing section.
+See [contributing guide](docs/contributing.md).
 
 
 ### Enforcing Style
@@ -40,6 +40,11 @@ See [Tracing Readme](exporters/trace/README.md) for installation and usage instr
 
 See [Metrics Readme](exporters/metrics/README.md) for installation and usage instructions.
 
+## Google Cloud Autoconfigure module
+
+*Note: This is an alpha-release.*
+
+See [Autoconfigure Readme](exporters/auto/README.md) for installation and usage instructions.
 
 
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace/badge.svg
