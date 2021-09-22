@@ -15,8 +15,10 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoublePoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
@@ -43,7 +45,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -89,6 +95,65 @@ public class MetricTranslatorTest {
   }
 
   @Test
+  public void testMapMetricDescriptorNonMonotonicSumIsGauage() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createLongSum(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            LongSumData.create(
+                false, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(metricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(metricData.getDescription())
+            .setMetricKind(MetricKind.GAUGE)
+            .setValueType(MetricDescriptor.ValueType.INT64);
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+    assertEquals(expectedDescriptor.build(), actualDescriptor);
+  }
+
+  @Test
+  public void testMapMetricDescriptorHistogramIsDistribution() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createDoubleHistogram(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            DoubleHistogramData.create(
+                AggregationTemporality.CUMULATIVE, ImmutableList.of(aHistogramPoint)));
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(metricData.getName())
+            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("test").setValueType(ValueType.STRING))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(metricData.getDescription())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aHistogramPoint);
+    assertEquals(expectedDescriptor.build(), actualDescriptor);
+  }
+
+  @Test
   public void testMapMetricDescriptorWithInvalidMetricKindReturnsNull() {
     String name = "Metric Name";
     String description = "Metric Description";
@@ -101,6 +166,26 @@ public class MetricTranslatorTest {
             description,
             unit,
             DoubleSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+    assertNull(actualDescriptor);
+  }
+
+  @Test
+  public void testMapMetricDescriptorWithDeltaSumReturnsNull() {
+    String name = "Metric Name";
+    String description = "Metric Description";
+    String unit = "ns";
+    MetricData metricData =
+        MetricData.createDoubleSum(
+            aGceResource,
+            anInstrumentationLibraryInfo,
+            name,
+            description,
+            unit,
+            DoubleSumData.create(
+                true, AggregationTemporality.DELTA, ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
         MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);

@@ -64,6 +64,8 @@ import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,6 +101,29 @@ public class MetricExporterTest {
             .build();
     MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
+  }
+
+  @Test
+  public void testExportSendsAllDescriptorsOnce() {
+    MetricExporter exporter =
+        MetricExporter.createWithClient(aProjectId, mockClient, MetricDescriptorStrategy.SEND_ONCE);
+    CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result.isSuccess());
+    CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result2.isSuccess());
+    CompletableResultCode result3 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+    assertTrue(result3.isSuccess());
+    verify(mockClient, times(2)).createMetricDescriptor(metricDescriptorCaptor.capture());
+    verify(mockClient, times(3))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+
+    // We know two metrics were created, let's verify we got both we sent.
+    Set<String> metricDescriptorTypes =
+        metricDescriptorCaptor.getAllValues().stream()
+            .map(d -> d.getMetricDescriptor().getType())
+            .collect(Collectors.toSet());
+    assertTrue(metricDescriptorTypes.contains(DESCRIPTOR_TYPE_URL + aMetricData.getName()));
+    assertTrue(metricDescriptorTypes.contains(DESCRIPTOR_TYPE_URL + aHistogram.getName()));
   }
 
   @Test

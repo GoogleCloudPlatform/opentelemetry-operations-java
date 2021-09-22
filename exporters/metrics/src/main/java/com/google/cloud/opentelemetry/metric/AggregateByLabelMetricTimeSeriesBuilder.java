@@ -49,9 +49,11 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   @Override
   public void recordPoint(MetricData metric, LongPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor != null) {
-      descriptors.putIfAbsent(descriptor.getType(), descriptor);
+    if (descriptor == null) {
+      // Unsupported type.
+      return;
     }
+    descriptors.putIfAbsent(descriptor.getType(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
@@ -59,16 +61,18 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
         .addPoints(
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(TypedValue.newBuilder().setInt64Value(point.getValue()))
-                .setInterval(mapInterval(point, metric.getType()))
+                .setInterval(mapInterval(point, metric))
                 .build());
   }
 
   @Override
   public void recordPoint(MetricData metric, DoublePointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor != null) {
-      descriptors.putIfAbsent(descriptor.getType(), descriptor);
+    if (descriptor == null) {
+      // Unsupported type.
+      return;
     }
+    descriptors.putIfAbsent(descriptor.getType(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     // TODO: Check lastExportTime and ensure we don't send too often...
     pendingTimeSeries
@@ -76,15 +80,17 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
         .addPoints(
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(TypedValue.newBuilder().setDoubleValue(point.getValue()))
-                .setInterval(mapInterval(point, metric.getType())));
+                .setInterval(mapInterval(point, metric)));
   }
 
   @Override
   public void recordPoint(MetricData metric, DoubleHistogramPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
-    if (descriptor != null) {
-      descriptors.putIfAbsent(descriptor.getType(), descriptor);
+    if (descriptor == null) {
+      // Unsupported type.
+      return;
     }
+    descriptors.putIfAbsent(descriptor.getType(), descriptor);
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), point.getAttributes());
     pendingTimeSeries
         .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, point.getAttributes(), descriptor))
@@ -92,7 +98,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
             com.google.monitoring.v3.Point.newBuilder()
                 .setValue(
                     TypedValue.newBuilder().setDistributionValue(mapDistribution(point, projectId)))
-                .setInterval(mapInterval(point, metric.getType())));
+                .setInterval(mapInterval(point, metric)));
   }
 
   private TimeSeries.Builder makeTimeSeriesHeader(

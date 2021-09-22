@@ -15,11 +15,6 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
-import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
-
 import com.google.api.Distribution;
 import com.google.api.Distribution.BucketOptions;
 import com.google.api.Distribution.BucketOptions.Explicit;
@@ -62,11 +57,6 @@ public class MetricTranslator {
   private static final String RESOURCE_PROJECT_ID_LABEL = "project_id";
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
-
-  static final Set<MetricDataType> GAUGE_TYPES = ImmutableSet.of(LONG_GAUGE, DOUBLE_GAUGE);
-  static final Set<MetricDataType> SUM_TYPES = ImmutableSet.of(LONG_SUM, DOUBLE_SUM);
-  static final Set<MetricDataType> LONG_TYPES = ImmutableSet.of(LONG_GAUGE, LONG_SUM);
-  static final Set<MetricDataType> DOUBLE_TYPES = ImmutableSet.of(DOUBLE_GAUGE, DOUBLE_SUM);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gce_instance
@@ -118,62 +108,54 @@ public class MetricTranslator {
       case LONG_GAUGE:
         builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
         builder.setValueType(MetricDescriptor.ValueType.INT64);
-        break;
+        return builder.build();
       case DOUBLE_GAUGE:
         builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
         builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
-        break;
+        return builder.build();
       case LONG_SUM:
         builder.setValueType(MetricDescriptor.ValueType.INT64);
-        fillSumType(metric.getLongSumData(), builder);
-        break;
+        return fillSumType(metric.getLongSumData(), builder);
       case DOUBLE_SUM:
         builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
-        fillSumType(metric.getDoubleSumData(), builder);
-        break;
+        return fillSumType(metric.getDoubleSumData(), builder);
       case HISTOGRAM:
-        fillHistogramType(metric.getDoubleHistogramData(), builder);
-        break;
+        return fillHistogramType(metric.getDoubleHistogramData(), builder);
       default:
         logger.error(
             "Metric type {} not supported. Only gauge and cumulative types are supported.",
             metricType);
-        return null;
     }
-    return builder.build();
+    return null;
   }
 
-  private static void fillHistogramType(
+  private static MetricDescriptor fillHistogramType(
       DoubleHistogramData histogram, MetricDescriptor.Builder builder) {
     builder.setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
     switch (histogram.getAggregationTemporality()) {
-      case DELTA:
-        builder.setMetricKind(MetricDescriptor.MetricKind.DELTA);
-        return;
       case CUMULATIVE:
         builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
-        return;
+        return builder.build();
       default:
         logger.error(
-            "Histogram type {} not supported. Only delta and cumulative types are supported.",
-            histogram);
-        return;
+            "Histogram type {} not supported. Only cumulative types are supported.", histogram);
+        return null;
     }
   }
 
-  private static void fillSumType(SumData<?> sum, MetricDescriptor.Builder builder) {
-    // TODO: Treat non-monotonic sums as gauges?
+  private static MetricDescriptor fillSumType(SumData<?> sum, MetricDescriptor.Builder builder) {
+    // Treat non-monotonic sums as gauges.
+    if (!sum.isMonotonic()) {
+      builder.setMetricKind(MetricDescriptor.MetricKind.GAUGE);
+      return builder.build();
+    }
     switch (sum.getAggregationTemporality()) {
-      case DELTA:
-        builder.setMetricKind(MetricDescriptor.MetricKind.DELTA);
-        return;
       case CUMULATIVE:
         builder.setMetricKind(MetricDescriptor.MetricKind.CUMULATIVE);
-        return;
+        return builder.build();
       default:
-        logger.error(
-            "Sum type {} not supported. Only delta and cumulative types are supported.", sum);
-        return;
+        logger.error("Sum type {} not supported. Only cumulative types are supported.", sum);
+        return null;
     }
   }
 
@@ -203,12 +185,26 @@ public class MetricTranslator {
     return builder.build();
   }
 
+  /** Returns true if the metric should be treated as a Gauge by cloud monitoring. */
+  static boolean isGauge(MetricData metric) {
+    switch (metric.getType()) {
+      case LONG_GAUGE:
+      case DOUBLE_GAUGE:
+        return true;
+      case LONG_SUM:
+        return !metric.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return !metric.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
+  }
+
   static TimeInterval mapInterval(
-      io.opentelemetry.sdk.metrics.data.PointData point, MetricDataType metricType) {
+      io.opentelemetry.sdk.metrics.data.PointData point, MetricData metric) {
     Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
     Timestamp endTime = mapTimestamp(point.getEpochNanos());
-    // TODO: Map non-monotonic sum as gauge?
-    if (GAUGE_TYPES.contains(metricType)) {
+    if (isGauge(metric)) {
       // The start time must be equal to the end time for the gauge metric
       startTime = endTime;
     } else if (TimeUnit.SECONDS.toNanos(startTime.getSeconds()) + startTime.getNanos()
