@@ -15,33 +15,18 @@
  */
 plugins {
 	id 'java'
-	id 'com.google.cloud.tools.jib' version '2.7.1'
+	id 'application'
+	id 'com.google.cloud.tools.jib'
 }
 
 // Set Docker image path here, e.g. using Google Container Registry or Docker Hub
 // https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin#configuration
-jib.to.image = 'gcr.io/my-gcp-project/my-app'
-
-jar {
-	manifest {
-		attributes(
-				'Main-Class': 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
-				)
-	}
+jib {
+	from.image = 'gcr.io/distroless/java-debian10:11'
+	containerizingMode = 'packaged'
 }
 
-task fatJar(type: Jar) {
-	manifest.from jar.manifest
-	archiveClassifier = 'all'
-	from {
-		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	} {
-		exclude "META-INF/*.SF"
-		exclude "META-INF/*.DSA"
-		exclude "META-INF/*.RSA"
-	}
-	with jar
-}
+mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
 
 description = 'Examples for Cloud Monitoring Exporter'
 

@@ -15,39 +15,34 @@
  */
 package com.google.cloud.opentelemetry.example.metrics;
 
-import static java.util.Collections.singleton;
-
 import com.google.cloud.opentelemetry.metric.MetricExporter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import java.io.IOException;
 import java.util.Random;
 
 public class MetricsExporterExample {
-  private static SdkMeterProvider METER_PROVIDER =
-      SdkMeterProvider.builder().buildAndRegisterGlobal();
-  private static final Meter METER =
-      METER_PROVIDER
-          .meterBuilder("instrumentation-library-name")
-          .setInstrumentationVersion("semver:1.0.0")
-          .build();
+  private static SdkMeterProvider METER_PROVIDER;
+
+  private static Meter METER;
   private static final Random RANDOM = new Random();
-  private static io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter;
-  private static IntervalMetricReader intervalMetricReader;
 
   private static void setupMetricExporter() {
     try {
-      metricExporter = MetricExporter.createWithDefaultConfiguration();
-      intervalMetricReader =
-          IntervalMetricReader.builder()
-              // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
-              // Rate at which data can be written to a single time series: one point each 10
-              // seconds.
-              .setExportIntervalMillis(20000)
-              .setMetricExporter(metricExporter)
-              .setMetricProducers(singleton(METER_PROVIDER))
+      io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
+          MetricExporter.createWithDefaultConfiguration();
+      METER_PROVIDER =
+          SdkMeterProvider.builder()
+              .registerMetricReader(
+                  io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.create(
+                      metricExporter, java.time.Duration.ofSeconds(30)))
+              .buildAndRegisterGlobal();
+
+      METER =
+          METER_PROVIDER
+              .meterBuilder("instrumentation-library-name")
+              .setInstrumentationVersion("semver:1.0.0")
               .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -77,9 +72,7 @@ public class MetricsExporterExample {
 
   public static void main(String[] args) throws InterruptedException {
     System.out.println("Starting the metrics-example application");
-
     setupMetricExporter();
-
     try {
       int i = 0;
       while (true) {
@@ -87,14 +80,11 @@ public class MetricsExporterExample {
         myUseCase();
         Thread.sleep(10000);
         i++;
-
-        metricExporter.flush();
       }
     } finally {
       System.out.println("Shutting down the metrics-example application");
 
-      intervalMetricReader.shutdown();
-      metricExporter.shutdown();
+      METER_PROVIDER.shutdown();
 
       System.out.println("Shutdown complete");
     }

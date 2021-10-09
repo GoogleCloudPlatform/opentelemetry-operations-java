@@ -15,28 +15,11 @@
  */
 plugins {
 	id 'java'
+	id 'application'
+	id 'com.google.cloud.tools.jib'
 }
 
-jar {
-	manifest {
-		attributes(
-				'Main-Class': 'com.google.cloud.opentelemetry.example.trace.TraceExporterExample'
-				)
-	}
-}
-
-task fatJar(type: Jar) {
-	manifest.from jar.manifest
-	archiveClassifier = 'all'
-	from {
-		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	} {
-		exclude "META-INF/*.SF"
-		exclude "META-INF/*.DSA"
-		exclude "META-INF/*.RSA"
-	}
-	with jar
-}
+mainClassName = 'com.google.cloud.opentelemetry.example.trace.TraceExporterExample'
 
 description = 'Examples for Cloud Trace Exporter'
 
@@ -46,4 +29,11 @@ dependencies {
 	compile(libraries.google_cloud_trace)
 	compile project(':exporter-trace')
 	runtimeOnly project(':detector-resources')
+}
+
+// Set Docker image path here, e.g. using Google Container Registry or Docker Hub
+// https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin#configuration
+jib {
+	from.image = 'gcr.io/distroless/java-debian10:11'
+	containerizingMode = 'packaged'
 }
