@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -116,7 +116,7 @@ public class FakeData {
           Arrays.asList(1.0),
           Arrays.asList(1L, 2L),
           Arrays.asList(
-              DoubleExemplar.create(
+              DoubleExemplarData.create(
                   Attributes.builder().put("test2", "two").build(), 2, "spanId", "traceId", 3.0)));
 
   static final MetricData aHistogram =

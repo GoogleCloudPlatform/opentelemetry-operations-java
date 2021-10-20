@@ -25,7 +25,6 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import java.util.Objects;
 import java.util.Random;
 
@@ -81,9 +80,5 @@ public class AutoconfExample {
     // Application-specific logic
     example.myUseCase("One");
     example.myUseCase("Two");
-
-    // Autoconf module registers shutdown hooks to flush telemetry, but metrics should be forced
-    // for short-lived processes.
-    IntervalMetricReader.forceFlushGlobal();
   }
 }

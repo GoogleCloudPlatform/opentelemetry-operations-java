@@ -32,7 +32,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
@@ -278,7 +278,7 @@ public class MetricTranslator {
                 .collect(Collectors.toList()));
   }
 
-  private static Distribution.Exemplar mapExemplar(Exemplar exemplar, String projectId) {
+  private static Distribution.Exemplar mapExemplar(ExemplarData exemplar, String projectId) {
     Distribution.Exemplar.Builder exemplarBuilder =
         Distribution.Exemplar.newBuilder()
             .setValue(exemplar.getValueAsDouble())
