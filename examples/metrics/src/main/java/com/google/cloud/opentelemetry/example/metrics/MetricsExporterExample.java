@@ -20,7 +20,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-
 import java.io.IOException;
 import java.util.Random;
 
@@ -32,13 +31,11 @@ public class MetricsExporterExample {
 
   private static void setupMetricExporter() {
     try {
-      MetricExporter metricExporter =
-          MetricExporter.createWithDefaultConfiguration();
+      MetricExporter metricExporter = MetricExporter.createWithDefaultConfiguration();
       METER_PROVIDER =
           SdkMeterProvider.builder()
               .registerMetricReader(
-                  PeriodicMetricReader.create(
-                      metricExporter, java.time.Duration.ofSeconds(30)))
+                  PeriodicMetricReader.create(metricExporter, java.time.Duration.ofSeconds(30)))
               .buildAndRegisterGlobal();
 
       METER =
