@@ -19,6 +19,8 @@ import com.google.cloud.opentelemetry.metric.MetricExporter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+
 import java.io.IOException;
 import java.util.Random;
 
@@ -30,12 +32,12 @@ public class MetricsExporterExample {
 
   private static void setupMetricExporter() {
     try {
-      io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
+      MetricExporter metricExporter =
           MetricExporter.createWithDefaultConfiguration();
       METER_PROVIDER =
           SdkMeterProvider.builder()
               .registerMetricReader(
-                  io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.create(
+                  PeriodicMetricReader.create(
                       metricExporter, java.time.Duration.ofSeconds(30)))
               .buildAndRegisterGlobal();
 
