@@ -25,8 +25,10 @@ import static org.junit.Assert.assertTrue;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Rule;
@@ -46,6 +48,15 @@ public class GCEResourceTest {
         get(urlEqualTo(endpointPath))
             .willReturn(
                 aResponse().withHeader("Metadata-Flavor", "Google").withBody(responseBody)));
+  }
+
+  @Test
+  public void findsWithServiceLoader() {
+    ServiceLoader<ResourceProvider> services =
+        ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
+    assertTrue(
+        "Could not load GCE Resource detector using serviceloader, found: " + services,
+        services.stream().anyMatch(provider -> provider.type().equals(GCEResource.class)));
   }
 
   @Test

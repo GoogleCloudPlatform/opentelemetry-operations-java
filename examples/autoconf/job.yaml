@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Unique key of the Job instance
+  name: hello-autoconfigure-java
+spec:
+  template:
+    metadata:
+      name: hello-autoconfigure-java
+    spec:
+      containers:
+        - name: hello-autoconfigure-java
+          image: gcr.io/%GOOGLE_CLOUD_PROJECT%/hello-autoconfigure-java:latest
+      # Do not restart containers after they exit
+      restartPolicy: Never
+  # of retries before marking as failed.
+  backoffLimit: 4
