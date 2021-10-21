@@ -93,6 +93,7 @@ public class MetricTranslator {
   }
 
   static String cleanAttributeKey(String key) {
+    // . is commonly used in OTel but disallowed in GCM label names, https://cloud.google.com/monitoring/api/ref_v3/rest/v3/LabelDescriptor#:~:text=Matches%20the%20following%20regular%20expression%3A
     return key.replace('.', '_');
   }
 

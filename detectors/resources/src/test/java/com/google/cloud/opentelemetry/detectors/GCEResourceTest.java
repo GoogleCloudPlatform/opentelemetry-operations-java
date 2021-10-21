@@ -55,7 +55,7 @@ public class GCEResourceTest {
     ServiceLoader<ResourceProvider> services =
         ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
     assertTrue(
-        "Could not load GKE Resource detector using serviceloader, found: " + services,
+        "Could not load GCE Resource detector using serviceloader, found: " + services,
         services.stream().anyMatch(provider -> provider.type().equals(GCEResource.class)));
   }
 

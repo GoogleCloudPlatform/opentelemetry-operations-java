@@ -18,7 +18,7 @@ kubectl expose deployment  hello-autoinstrument-java --type LoadBalancer --port 
 This will expose the simple http server at port 80.   You can try out the tracing instrumentation via:
 
 ```bash
-curl ${cluester_ip}
+curl ${cluster_ip}
 ```
 
 Or, if you'd like to synthesize a parent trace:
