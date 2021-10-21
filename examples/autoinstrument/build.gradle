@@ -20,7 +20,6 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 }
 
-
 description = 'Examples for using java auto instrumentation and Google Cloud Operations'
 
 configurations {
@@ -30,23 +29,14 @@ configurations {
 mainClassName = 'com.google.example.TestMain'
 
 dependencies {
-	agent agentLibraries.agent_all
+	agent agentLibraries.agent
 	agent project(path: ':exporter-auto', configuration: 'shadow')
 
-	implementation platform("io.grpc:grpc-bom:1.33.1")
-	implementation platform("io.opentelemetry:opentelemetry-bom:1.0.0")
-	implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.0.0-alpha")
-	implementation platform("org.apache.logging.log4j:log4j-bom:2.13.2")
-
-	implementation "io.grpc:grpc-netty-shaded"
-	implementation "io.grpc:grpc-protobuf"
-	implementation "io.grpc:grpc-services"
-	implementation "io.grpc:grpc-stub"
-	implementation "io.opentelemetry:opentelemetry-proto"
-	implementation "io.opentelemetry:opentelemetry-extension-annotations"
-	implementation "org.apache.logging.log4j:log4j-core"
-
-	runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
+	implementation(libraries.spring_boot_starter_web)
+	implementation(libraries.spring_cloud_starter_openfeign)
+	// Temporary, for log-trace correlation
+	implementation(libraries.opentelemetry_api)
+	implementation('com.google.cloud:google-cloud-core:2.0.5')
 }
 
 task copyAgent(type: Copy) {

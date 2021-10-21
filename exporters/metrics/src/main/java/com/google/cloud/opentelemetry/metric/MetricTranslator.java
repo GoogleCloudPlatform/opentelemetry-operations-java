@@ -87,8 +87,13 @@ public class MetricTranslator {
 
   static Metric mapMetric(Attributes attributes, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
-    attributes.forEach((key, value) -> metricBuilder.putLabels(key.getKey(), value.toString()));
+    attributes.forEach(
+        (key, value) -> metricBuilder.putLabels(cleanAttributeKey(key.getKey()), value.toString()));
     return metricBuilder.build();
+  }
+
+  static String cleanAttributeKey(String key) {
+    return key.replace('.', '_');
   }
 
   static MetricDescriptor mapMetricDescriptor(
@@ -169,7 +174,8 @@ public class MetricTranslator {
   }
 
   static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
-    LabelDescriptor.Builder builder = LabelDescriptor.newBuilder().setKey(key.getKey());
+    LabelDescriptor.Builder builder =
+        LabelDescriptor.newBuilder().setKey(cleanAttributeKey(key.getKey()));
     switch (key.getType()) {
       case BOOLEAN:
         builder.setValueType(LabelDescriptor.ValueType.BOOL);
@@ -303,7 +309,7 @@ public class MetricTranslator {
 
   private static DroppedLabels mapFilteredAttributes(Attributes attributes) {
     DroppedLabels.Builder labels = DroppedLabels.newBuilder();
-    attributes.forEach((k, v) -> labels.putLabel(k.getKey(), v.toString()));
+    attributes.forEach((k, v) -> labels.putLabel(cleanAttributeKey(k.getKey()), v.toString()));
     return labels.build();
   }
 }

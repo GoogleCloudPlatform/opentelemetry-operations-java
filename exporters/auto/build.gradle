@@ -28,6 +28,7 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk)
 	implementation(project(':exporter-metrics'))
 	implementation(project(':exporter-trace'))
+	implementation(project(':detector-resources'))
 }
 
 jar.enabled = false

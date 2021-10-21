@@ -77,6 +77,17 @@ public class MetricTranslatorTest {
   }
 
   @Test
+  public void testMapMetricWithWierdAttributeNameSucceeds() {
+    String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
+    Attributes attributes =
+        io.opentelemetry.api.common.Attributes.of(stringKey("test.bad"), "value");
+    Metric expectedMetric =
+        Metric.newBuilder().setType(type).putLabels("test_bad", "value").build();
+    Metric actualMetric = MetricTranslator.mapMetric(attributes, type);
+    assertEquals(expectedMetric, actualMetric);
+  }
+
+  @Test
   public void testMapMetricDescriptorSucceeds() {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
@@ -217,6 +228,15 @@ public class MetricTranslatorTest {
         MetricTranslator.mapAttribute(longKey("label1"), 123928374982123L);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
+    assertEquals(expectedLabel, actualLabel);
+  }
+
+  @Test
+  public void testMapLabelWithPeriodInNameSucceeds() {
+    LabelDescriptor actualLabel =
+        MetricTranslator.mapAttribute(longKey("label.test"), 123928374982123L);
+    LabelDescriptor expectedLabel =
+        LabelDescriptor.newBuilder().setKey("label_test").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
   }
 

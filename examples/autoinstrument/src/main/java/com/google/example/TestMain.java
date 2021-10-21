@@ -15,28 +15,31 @@
  */
 package com.google.example;
 
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import io.grpc.protobuf.services.ProtoReflectionService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.IOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/** Creates a gRPC service on port 8080 that will be in our container. */
+@EnableFeignClients
+@RestController
+@SpringBootApplication
 public class TestMain {
+  @Autowired private GreetingClient greetingClient;
 
-  private static final Logger logger = LogManager.getLogger();
+  public static void main(String[] args) throws IOException {
+    SpringApplication.run(TestMain.class, args);
+  }
 
-  public static void main(String[] args) throws Exception {
-    TestService service = new TestService();
-    Server server =
-        ServerBuilder.forPort(8080)
-            .addService(ProtoReflectionService.newInstance())
-            .addService(service)
-            .directExecutor()
-            .build()
-            .start();
-    Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
-    logger.info("Server started at port 8080.");
-    server.awaitTermination();
+  @GetMapping("/greeting")
+  public String greeting() {
+    return "Hello";
+  }
+
+  @GetMapping("/")
+  public String home() {
+    return greetingClient.greeting() + " World";
   }
 }
