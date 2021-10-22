@@ -28,8 +28,8 @@ TODO(jsuereth): Write this section.
 You can configure the Cloud Monitoring Metrics Exporter via the following setup:
 
 ```java
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 
 import com.google.cloud.opentelemetry.metric.MetricConfiguration;
@@ -51,21 +51,15 @@ MetricExporter cloudMonitoringExporter =
       .setMetricDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
       .build()
   );
-// Now set up IntervalMetricReader to use this Exporter
-IntervalMetricReader reader =
-   IntervalMetricReader.builder()
-     // Set collection interval to 20 seconds.
-     // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
-     // Rate at which data can be written to a single time series: one point each 10
-     // seconds.
-     .setExportIntervalMillis(20000)
-     .setMetricExporter(cloudMonitoringExporter)
-     // Wire our exporter into the "global" metrics from OpenTelemetry.
-     // Note: You can also wire against your own MeterProvider instance to isolate
-     // metrics being sent to Cloud Monitoring.
-     .setMetricProducers(Collections.singleton(
-       SdkMeterProvider.builder().buildAndRegisterGlobal()
-     )).build()    
+// Now set up PeriodicMetricReader to use this Exporter
+SdkMeterProvider.builder()
+  .registerMetricReader(
+    // Set collection interval to 20 seconds.
+    // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
+    // Rate at which data can be written to a single time series: one point each 10
+    // seconds.
+    PeriodicMetricReader.create(metricExporter, java.time.Duration.ofSeconds(20)))
+  .buildAndRegisterGlobal();
 ```
 
 | Configuration | Environment Variable | JVM Property | Description | Default |

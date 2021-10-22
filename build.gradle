@@ -198,7 +198,9 @@ subprojects {
 		publishing {
 			publications {
 				maven(MavenPublication) {
-					from components.java
+					if (findProperty("shadowed") != "true") {
+						from components.java
+					}
 					groupId = 'com.google.cloud.opentelemetry'
 					afterEvaluate {
 						artifactId = archivesBaseName

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 plugins {
+	id "maven-publish"
 	id "com.github.johnrengelman.shadow"
 }
 
@@ -24,17 +25,26 @@ dependencies {
 	api(libraries.auto_value_annotations)
 	annotationProcessor(libraries.auto_service)
 	annotationProcessor(libraries.auto_value)
-	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.opentelemetry_sdk)
-	implementation(project(':exporter-metrics'))
-	implementation(project(':exporter-trace'))
-	implementation(project(':detector-resources'))
+	compileOnly(libraries.opentelemetry_sdk_autoconf)
+	compileOnly(libraries.opentelemetry_sdk)
+	shadow(project(':exporter-metrics'))
+	shadow(project(':exporter-trace'))
+	shadow(project(':detector-resources'))
 }
 
-jar.enabled = false
-
-tasks.build.dependsOn tasks.shadowJar
 
 shadowJar{
 	classifier = null
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) { publication ->
+			from project.shadow.component(publication)
+			// artifact sourceJar
+			components.java.withVariantsFromConfiguration(configurations.runtimeElements) {
+				skip()
+			}
+		}
+	}
 }
