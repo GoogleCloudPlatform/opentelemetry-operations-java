@@ -48,6 +48,7 @@ publishing {
 		maven(MavenPublication) { publication ->
 			from project.shadow.component(publication)
 			artifact sourcesJar
+			artifact javadocJar
 			components.java.withVariantsFromConfiguration(configurations.runtimeElements) {
 				skip()
 			}
