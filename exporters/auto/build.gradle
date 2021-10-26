@@ -27,9 +27,9 @@ dependencies {
 	annotationProcessor(libraries.auto_value)
 	compileOnly(libraries.opentelemetry_sdk_autoconf)
 	compileOnly(libraries.opentelemetry_sdk)
-	shadow(project(':exporter-metrics'))
-	shadow(project(':exporter-trace'))
-	shadow(project(':detector-resources'))
+	implementation(project(':exporter-metrics'))
+	implementation(project(':exporter-trace'))
+	implementation(project(':detector-resources'))
 }
 
 
