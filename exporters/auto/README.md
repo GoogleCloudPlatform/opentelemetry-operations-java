@@ -12,7 +12,7 @@ To leverage the GCP extensions to this, simply add the following dependency:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-auto</artifactId>
-  <version>0.17.0-alpha</version>
+  <version>0.18.0-alpha</version>
 </dependency>
 ```
 
