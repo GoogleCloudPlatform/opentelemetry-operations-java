@@ -27,9 +27,15 @@ dependencies {
 	annotationProcessor(libraries.auto_value)
 	compileOnly(libraries.opentelemetry_sdk_autoconf)
 	compileOnly(libraries.opentelemetry_sdk)
-	implementation(project(':exporter-metrics'))
-	implementation(project(':exporter-trace'))
-	implementation(project(':detector-resources'))
+	implementation(project(':exporter-metrics')) {
+		exclude group: 'io.opentelemetry'
+	}
+	implementation(project(':exporter-trace')) {
+		exclude group: 'io.opentelemetry'
+	}
+	implementation(project(':detector-resources')) {
+		exclude group: 'io.opentelemetry'
+	}
 }
 
 
