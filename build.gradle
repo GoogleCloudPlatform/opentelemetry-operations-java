@@ -102,6 +102,7 @@ subprojects {
 	}
 
 	ext {
+		assertjVersion = '3.22.0'
 		autoServiceVersion = '1.0-rc7'
 		autoValueVersion = '1.7.4'
 		slf4jVersion = '1.7.30'
@@ -146,6 +147,7 @@ subprojects {
 			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
 		]
 		testLibraries = [
+				assertj : "org.assertj:assertj-core:${assertjVersion}",
 			junit       : "junit:junit:${junitVersion}",
 			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
 			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",

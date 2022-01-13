@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.api.common.AttributeKey;
@@ -67,9 +68,7 @@ public class GKEResourceTest {
     GCP environment, hence returning empty attributes */
     // Note: Currently this does not support GKE outside of Google Cloud (e.g. GKE on AWS, GKE on
     // premise)
-    Attributes attr = test.getAttributes();
-
-    assertTrue(attr.isEmpty());
+    assertThat(test.getAttributes()).isEmpty();
   }
 
   @Test
@@ -88,30 +87,20 @@ public class GKEResourceTest {
     map.put("CONTAINER_NAME", "GKE-testContainerName");
 
     GKEResource testResource = new GKEResource(metadataConfig, new EnvVarMock(map));
-    Attributes attr = testResource.getAttributes();
-
-    Map<AttributeKey<String>, String> expectedAttributes =
-        Stream.of(
-                new Object[][] {
-                  {ResourceAttributes.CLOUD_PROVIDER, "gcp"},
-                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                  {ResourceAttributes.CLOUD_REGION, "country-region"},
-                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
-                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
-                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"},
-                  {ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"},
-                  {ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"},
-                  {ResourceAttributes.K8S_POD_NAME, "GKE-testHostName"},
-                  {ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName"}
-                })
-            .collect(
-                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
-
-    assertEquals(11, attr.size());
-    attr.forEach(
-        (key, value) -> {
-          assertEquals(expectedAttributes.get(key), value);
-        });
+    assertThat(testResource.getAttributes())
+            .hasSize(12)
+            .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
+            .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
+            .containsEntry(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid")
+            .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
+            .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
+            .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
+            .containsEntry(ResourceAttributes.HOST_NAME, "GCE-instance-name")
+            .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type")
+            .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
+            .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
+            .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName")
+            .containsEntry(ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName")
+    ;
   }
 }

@@ -19,18 +19,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,9 +60,7 @@ public class GCEResourceTest {
 
     /* The default meta data url is unreachable through testing so getAttributes should not detect a
     GCP environment, hence returning empty attributes */
-    Attributes attr = test.getAttributes();
-
-    assertTrue(attr.isEmpty());
+    assertThat(test.getAttributes()).isEmpty();
   }
 
   @Test
@@ -78,27 +71,16 @@ public class GCEResourceTest {
     stubEndpoint("/instance/name", "GCE-instance-name");
     stubEndpoint("/instance/machine-type", "GCE-instance-type");
 
-    Attributes attr = testResource.getAttributes();
-
-    Map<AttributeKey<String>, String> expectedAttributes =
-        Stream.of(
-                new Object[][] {
-                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                  {ResourceAttributes.CLOUD_REGION, "country-region"},
-                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
-                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
-                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"}
-                })
-            .collect(
-                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
-
-    assertEquals(7, attr.size());
-    attr.forEach(
-        (key, value) -> {
-          assertEquals(expectedAttributes.get(key), value);
-        });
+    assertThat(testResource.getAttributes())
+            .hasSize(8)
+            .containsEntry(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
+            .containsEntry(ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE)
+            .containsEntry(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid")
+            .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
+            .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
+            .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
+            .containsEntry(ResourceAttributes.HOST_NAME, "GCE-instance-name")
+            .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type");
   }
 
   @Test
@@ -106,7 +88,6 @@ public class GCEResourceTest {
     stubFor(
         get(urlEqualTo("/project/project-id"))
             .willReturn(aResponse().withBody("nonGCPendpointTest")));
-
-    assertEquals(0, testResource.getAttributes().size());
+    assertThat(testResource.getAttributes()).isEmpty();
   }
 }
