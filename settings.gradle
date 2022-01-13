@@ -31,6 +31,7 @@ include ":examples-metrics"
 include ":exporter-auto"
 include ":examples-autoconf"
 include ":examples-autoinstrument"
+include ":examples-resource"
 include ":detector-resources"
 include ":e2e-test-server"
 include ":examples-spring"
@@ -52,6 +53,9 @@ project(':exporter-auto').projectDir =
 
 project(':detector-resources').projectDir =
 		"$rootDir/detectors/resources" as File
+
+project(':examples-resource').projectDir =
+		"$rootDir/examples/resource" as File
 
 project(':e2e-test-server').projectDir =
 		"$rootDir/e2e-test-server" as File
