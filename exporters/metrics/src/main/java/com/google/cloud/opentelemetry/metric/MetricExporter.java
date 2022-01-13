@@ -31,6 +31,7 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -225,6 +226,11 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
     metricServiceClient.shutdown();
 
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public AggregationTemporality getPreferredTemporality() {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   // TODO: Move this to its own class.

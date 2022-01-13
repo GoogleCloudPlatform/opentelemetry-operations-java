@@ -19,7 +19,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
@@ -33,7 +32,7 @@ public class AutoconfExample {
   private static final AttributeKey<String> DESCRIPTION_KEY = AttributeKey.stringKey("description");
 
   private final Tracer tracer = GlobalOpenTelemetry.get().tracerBuilder("example-auto").build();
-  private final Meter meter = GlobalMeterProvider.get().meterBuilder("example-auto").build();
+  private final Meter meter = GlobalOpenTelemetry.get().meterBuilder("example-auto").build();
   private final LongCounter useCaseCount = meter.counterBuilder("use_case").build();
   private final DoubleHistogram fakeLatency = meter.histogramBuilder("fakeLatency").build();
 
@@ -73,8 +72,6 @@ public class AutoconfExample {
   public static void main(String[] args) {
     // First, make sure we've configured opentelemetry with autoconfigure module.
     Objects.requireNonNull(GlobalOpenTelemetry.get(), "Failed to autoconfigure opentelemetry");
-    Objects.requireNonNull(
-        GlobalMeterProvider.get(), "Failed to autoconfigure opentelmetry metrics");
 
     AutoconfExample example = new AutoconfExample();
     // Application-specific logic

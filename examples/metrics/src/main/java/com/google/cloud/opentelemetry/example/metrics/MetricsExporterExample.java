@@ -38,7 +38,7 @@ public class MetricsExporterExample {
                   PeriodicMetricReader.builder(metricExporter)
                       .setInterval(java.time.Duration.ofSeconds(30))
                       .newMetricReaderFactory())
-              .buildAndRegisterGlobal();
+                  .build();
 
       METER =
           METER_PROVIDER

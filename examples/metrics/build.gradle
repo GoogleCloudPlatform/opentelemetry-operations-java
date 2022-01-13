@@ -31,7 +31,7 @@ mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterE
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
-	compile(libraries.opentelemetry_api_metrics)
+	compile(libraries.opentelemetry_api)
 	compile(libraries.opentelemetry_sdk_metrics)
 	compile(libraries.google_cloud_monitoring)
 	compile project(':exporter-metrics')

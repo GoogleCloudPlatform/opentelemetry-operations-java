@@ -24,7 +24,6 @@ description = 'Examples for using java autoconfiguration and Google Cloud Operat
 
 dependencies {
 	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_api_metrics)
 	compile(libraries.opentelemetry_sdk_metrics)
 	runtimeOnly(libraries.opentelemetry_sdk_autoconf)
 	runtimeOnly(libraries.opentelemetry_sdk)
