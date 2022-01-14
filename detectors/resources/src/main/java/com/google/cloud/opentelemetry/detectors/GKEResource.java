@@ -49,7 +49,9 @@ public final class GKEResource implements ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.putAll(gceAttributes);
 
-    attrBuilders.put(ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
     attrBuilders.put(ResourceAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
 
     String namespace = envVars.get("NAMESPACE");

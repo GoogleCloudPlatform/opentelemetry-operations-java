@@ -147,7 +147,7 @@ subprojects {
 			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
 		]
 		testLibraries = [
-				assertj : "org.assertj:assertj-core:${assertjVersion}",
+			assertj : "org.assertj:assertj-core:${assertjVersion}",
 			junit       : "junit:junit:${junitVersion}",
 			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
 			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",

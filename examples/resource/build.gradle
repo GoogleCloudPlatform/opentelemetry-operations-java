@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 plugins {
-    id 'java'
-    id 'application'
-    id 'com.google.cloud.tools.jib'
+	id 'java'
+	id 'application'
+	id 'com.google.cloud.tools.jib'
 }
 
 
 description = 'Examples for showing resource detection in various GCP environments.'
 
 dependencies {
-    compile project(':detector-resources')
-    compile(libraries.opentelemetry_sdk_autoconf)
+	compile project(':detector-resources')
+	compile(libraries.opentelemetry_sdk_autoconf)
 }
 
 mainClassName = 'com.google.cloud.opentelemetry.example.resource.ResourceExample'
 
 jib {
-    from.image = 'gcr.io/distroless/java-debian10:11'
-    containerizingMode = 'packaged'
+	from.image = 'gcr.io/distroless/java-debian10:11'
+	containerizingMode = 'packaged'
 }

@@ -41,7 +41,9 @@ public final class GCEResource implements ResourceProvider {
 
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
-    attrBuilders.put(ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
 
     String projectId = metadata.getProjectId();
     if (projectId != null) {
