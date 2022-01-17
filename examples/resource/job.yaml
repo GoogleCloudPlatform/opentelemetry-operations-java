@@ -7,6 +7,8 @@ spec:
   template:
     metadata:
       name: hello-resource-java
+      labels:
+        service: hello-resource-java
     spec:
       containers:
         - name: hello-resource-java
@@ -16,6 +18,10 @@ spec:
               value: none
             - name: OTEL_METRICS_EXPOERTER
               value: none
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['service']
             - name: POD_NAME
               valueFrom:
                 fieldRef:

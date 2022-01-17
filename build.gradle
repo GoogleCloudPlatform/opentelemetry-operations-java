@@ -138,6 +138,7 @@ subprojects {
 			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_autoconf   : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
+			opentelemetry_sdk_resources  : "io.opentelemetry:opentelemetry-sdk-extension-resources:${openTelemetryVersion}",
 			opentelemetry_agent_extension: "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
