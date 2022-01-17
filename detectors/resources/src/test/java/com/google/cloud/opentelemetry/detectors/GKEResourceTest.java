@@ -67,6 +67,32 @@ public class GKEResourceTest {
   }
 
   @Test
+  public void testGKEResourceWithOutDownwardAPI() {
+    stubEndpoint("/project/project-id", "GCE-pid");
+    stubEndpoint("/instance/zone", "country-region-zone");
+    stubEndpoint("/instance/id", "GCE-instance-id");
+    stubEndpoint("/instance/name", "GCE-instance-name");
+    stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    Map<String, String> map = new HashMap<>();
+    map.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
+    map.put("HOSTNAME", "GKE-testHostName");
+    GKEResource testResource = new GKEResource(metadataConfig, new EnvVarMock(map));
+    assertThat(testResource.getAttributes())
+        .hasSize(10)
+        .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
+        .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
+        .containsEntry(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid")
+        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
+        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
+        .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
+        .containsEntry(ResourceAttributes.HOST_NAME, "GCE-instance-name")
+        .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type")
+        .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
+        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName");
+  }
+
+  @Test
   public void testGKEResourceWithGKEAttributesSucceeds() {
     stubEndpoint("/project/project-id", "GCE-pid");
     stubEndpoint("/instance/zone", "country-region-zone");
@@ -78,7 +104,9 @@ public class GKEResourceTest {
     Map<String, String> map = new HashMap<>();
     map.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
     map.put("NAMESPACE", "GKE-testNameSpace");
+    // Hostname can truncate pod name, so we test downward API override.
     map.put("HOSTNAME", "GKE-testHostName");
+    map.put("POD_NAME", "GKE-testHostName-full-1234");
     map.put("CONTAINER_NAME", "GKE-testContainerName");
 
     GKEResource testResource = new GKEResource(metadataConfig, new EnvVarMock(map));
@@ -94,7 +122,7 @@ public class GKEResourceTest {
         .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type")
         .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
         .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
-        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName")
+        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName-full-1234")
         .containsEntry(ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName");
   }
 }

@@ -16,6 +16,10 @@ spec:
               value: none
             - name: OTEL_METRICS_EXPOERTER
               value: none
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
