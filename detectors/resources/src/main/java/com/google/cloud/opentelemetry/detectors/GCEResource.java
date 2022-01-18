@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,9 @@ public final class GCEResource implements ResourceProvider {
 
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
 
     String projectId = metadata.getProjectId();
     if (projectId != null) {

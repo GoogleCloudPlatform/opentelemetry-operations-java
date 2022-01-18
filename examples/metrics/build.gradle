@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterE
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
-	compile(libraries.opentelemetry_api_metrics)
+	compile(libraries.opentelemetry_api)
 	compile(libraries.opentelemetry_sdk_metrics)
 	compile(libraries.google_cloud_monitoring)
 	compile project(':exporter-metrics')

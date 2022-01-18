@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,21 @@ public final class GKEResource implements ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.putAll(gceAttributes);
 
-    attrBuilders.put(ResourceAttributes.K8S_NAMESPACE_NAME, envVars.get("NAMESPACE"));
-    attrBuilders.put(ResourceAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
+    attrBuilders.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
+    String podName = envVars.get("POD_NAME");
+    if (podName != null && !podName.isEmpty()) {
+      attrBuilders.put(ResourceAttributes.K8S_POD_NAME, podName);
+    } else {
+      // If nothing else is set, at least use hostname for pod name.
+      attrBuilders.put(ResourceAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
+    }
+
+    String namespace = envVars.get("NAMESPACE");
+    if (namespace != null && !namespace.isEmpty()) {
+      attrBuilders.put(ResourceAttributes.K8S_NAMESPACE_NAME, namespace);
+    }
 
     String containerName = envVars.get("CONTAINER_NAME");
     if (containerName != null && !containerName.isEmpty()) {

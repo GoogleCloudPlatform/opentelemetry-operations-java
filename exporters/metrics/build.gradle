@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ dependencies {
 	api(libraries.auto_value_annotations)
 	api(libraries.slf4j)
 	annotationProcessor(libraries.auto_value)
-	api(libraries.opentelemetry_api_metrics)
+	api(libraries.opentelemetry_api)
 	api(libraries.opentelemetry_sdk_metrics)
 	api(libraries.google_cloud_core)
 	api(libraries.google_cloud_monitoring)

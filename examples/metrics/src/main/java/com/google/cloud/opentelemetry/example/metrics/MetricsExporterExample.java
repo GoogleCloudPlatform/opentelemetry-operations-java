@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class MetricsExporterExample {
                   PeriodicMetricReader.builder(metricExporter)
                       .setInterval(java.time.Duration.ofSeconds(30))
                       .newMetricReaderFactory())
-              .buildAndRegisterGlobal();
+              .build();
 
       METER =
           METER_PROVIDER
