@@ -10,6 +10,7 @@ spec:
       labels:
         service: hello-resource-java
     spec:
+      serviceAccountName: telemetry-agent
       containers:
         - name: hello-resource-java
           image: gcr.io/%GOOGLE_CLOUD_PROJECT%/hello-resource-java:latest

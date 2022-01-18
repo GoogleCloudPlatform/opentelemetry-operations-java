@@ -7,10 +7,26 @@ spec:
   template:
     metadata:
       name: hello-autoconfigure-java
+      labels:
+        service: hello-autoconfigure-java
     spec:
+      serviceAccountName: telemetry-agent
       containers:
         - name: hello-autoconfigure-java
           image: gcr.io/%GOOGLE_CLOUD_PROJECT%/hello-autoconfigure-java:latest
+          env:
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['service']
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
       # Do not restart containers after they exit
       restartPolicy: Never
   # of retries before marking as failed.

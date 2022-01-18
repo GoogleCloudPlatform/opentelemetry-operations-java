@@ -25,10 +25,14 @@ description = 'Examples for using java autoconfiguration and Google Cloud Operat
 dependencies {
 	compile(libraries.opentelemetry_api)
 	compile(libraries.opentelemetry_sdk_metrics)
-	runtimeOnly(libraries.opentelemetry_sdk_autoconf)
-	runtimeOnly(libraries.opentelemetry_sdk)
-	runtimeOnly project(':exporter-auto')
-	runtimeOnly project(':detector-resources')
+	// All of the below should be runtimeOnly
+	compile(libraries.opentelemetry_sdk_autoconf)
+	compile(libraries.opentelemetry_sdk)
+	compile(libraries.opentelemetry_sdk_resources)
+	compile project(':exporter-auto')
+	compile project(':detector-resources')
+	compile('org.slf4j:jul-to-slf4j:1.7.33')
+	compile("ch.qos.logback:logback-classic:1.2.2")
 }
 
 // Autoconfiguraation settings.

@@ -24,6 +24,8 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+
 import java.util.Objects;
 import java.util.Random;
 
@@ -37,6 +39,7 @@ public class AutoconfExample {
   private final DoubleHistogram fakeLatency = meter.histogramBuilder("fakeLatency").build();
 
   private void myUseCase(String description) {
+    System.out.println("My Use Case: " + description);
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       useCaseCount.add(1, Attributes.of(DESCRIPTION_KEY, description));
@@ -55,6 +58,7 @@ public class AutoconfExample {
   }
 
   private void doWork(String description) {
+    System.out.println("Description: " + description);
     // Child span
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
@@ -70,12 +74,22 @@ public class AutoconfExample {
   }
 
   public static void main(String[] args) {
+    // Make sure java util logging goes out stdout.
+    org.slf4j.bridge.SLF4JBridgeHandler.removeHandlersForRootLogger();
+    org.slf4j.bridge.SLF4JBridgeHandler.install();
     // First, make sure we've configured opentelemetry with autoconfigure module.
-    Objects.requireNonNull(GlobalOpenTelemetry.get(), "Failed to autoconfigure opentelemetry");
+    AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder()
+        .setResultAsGlobal(true)
+        .setServiceClassLoader(AutoconfExample.class.getClassLoader())
+            .build();
+    System.out.println("Discovered resource: " + sdk.getResource().getAttributes());
 
+    // TODO - pass SDK into example?
     AutoconfExample example = new AutoconfExample();
+    System.out.println("Test log");
     // Application-specific logic
     example.myUseCase("One");
     example.myUseCase("Two");
+    System.out.println("Done!");
   }
 }
