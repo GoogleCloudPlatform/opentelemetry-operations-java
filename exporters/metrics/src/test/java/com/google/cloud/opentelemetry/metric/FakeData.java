@@ -57,6 +57,9 @@ public class FakeData {
 
   static final Attributes someGceAttributes =
       Attributes.builder()
+          .put(
+              ResourceAttributes.CLOUD_PLATFORM,
+              ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE)
           .put(ResourceAttributes.CLOUD_ACCOUNT_ID, aProjectId)
           .put(ResourceAttributes.HOST_ID, aHostId)
           .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, aCloudZone)

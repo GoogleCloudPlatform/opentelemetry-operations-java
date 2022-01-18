@@ -19,7 +19,7 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribu
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapResource;
+import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
 
 import com.google.api.MetricDescriptor;
 import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
@@ -106,7 +106,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
     return TimeSeries.newBuilder()
         .setMetric(mapMetric(attributes, descriptor.getType()))
         .setMetricKind(descriptor.getMetricKind())
-        .setResource(mapResource(metric.getResource(), projectId));
+        .setResource(mapResource(metric.getResource()));
   }
 
   @Override

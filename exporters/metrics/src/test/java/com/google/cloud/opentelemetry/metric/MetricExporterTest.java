@@ -175,7 +175,6 @@ public class MetricExporterTest {
             .setResource(
                 MonitoredResource.newBuilder()
                     .setType("gce_instance")
-                    .putLabels("project_id", aProjectId)
                     .putLabels("instance_id", aHostId)
                     .putLabels("zone", aCloudZone)
                     .build())
@@ -277,7 +276,6 @@ public class MetricExporterTest {
             .setResource(
                 MonitoredResource.newBuilder()
                     .setType("gce_instance")
-                    .putLabels("project_id", aProjectId)
                     .putLabels("instance_id", aHostId)
                     .putLabels("zone", aCloudZone)
                     .build())
