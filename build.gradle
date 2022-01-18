@@ -110,7 +110,7 @@ subprojects {
 		googleTraceVersion = '2.0.0'
 		cloudMonitoringVersion = '3.0.0'
 		openTelemetryVersion = '1.10.0'
-		openTelemetryInstrumentationVersion = '1.9.2'
+		openTelemetryInstrumentationVersion = '1.10.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
 		pubSubVersion = '1.111.2'
