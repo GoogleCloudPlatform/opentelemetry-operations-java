@@ -37,25 +37,17 @@ import com.google.api.Metric;
 import com.google.api.Metric.Builder;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
-import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.SpanContext;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -238,98 +230,6 @@ public class MetricTranslatorTest {
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label_test").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
-  }
-
-  @Test
-  public void testMapResourcesWithGCEResource() {
-    Map<AttributeKey<String>, String> testAttributes =
-        Stream.of(
-                new Object[][] {
-                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                  {ResourceAttributes.CLOUD_REGION, "country-region"},
-                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
-                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
-                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"}
-                })
-            .collect(
-                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
-    AttributesBuilder attrBuilder = Attributes.builder();
-    testAttributes.forEach(
-        (key, value) -> {
-          attrBuilder.put(key, value);
-        });
-    Attributes attributes = attrBuilder.build();
-
-    MonitoredResource monitoredResource =
-        MetricTranslator.mapResource(Resource.create(attributes), "GCE_pid");
-
-    assertEquals("gce_instance", monitoredResource.getType());
-
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
-    assertEquals(3, monitoredResourceMap.size());
-
-    Map<String, String> expectedMappings =
-        Stream.of(
-                new Object[][] {
-                  {"instance_id", "GCE-instance-id"},
-                  {"zone", "country-region-zone"},
-                  {"project_id", "GCE-pid"}
-                })
-            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
-    expectedMappings.forEach(
-        (key, value) -> {
-          assertEquals(value, monitoredResourceMap.get(key));
-        });
-  }
-
-  @Test
-  public void testMapResourcesWithGKEResource() {
-    Map<AttributeKey<String>, String> testAttributes =
-        Stream.of(
-                new Object[][] {
-                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                  {ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"},
-                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                  {ResourceAttributes.CLOUD_REGION, "country-region"},
-                  {ResourceAttributes.HOST_ID, "GCE-instance-id"},
-                  {ResourceAttributes.HOST_NAME, "GCE-instance-name"},
-                  {ResourceAttributes.HOST_TYPE, "GCE-instance-type"},
-                  {ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"},
-                  {ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"},
-                  {ResourceAttributes.K8S_POD_NAME, "GKE-testHostName"},
-                  {ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName"}
-                })
-            .collect(
-                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
-    AttributesBuilder attrBuilder = Attributes.builder();
-    testAttributes.forEach(attrBuilder::put);
-    Attributes attributes = attrBuilder.build();
-
-    MonitoredResource monitoredResource =
-        MetricTranslator.mapResource(Resource.create(attributes), "GCE_pid");
-
-    assertEquals("gke_container", monitoredResource.getType());
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
-    assertEquals(7, monitoredResourceMap.size());
-
-    Map<String, String> expectedMappings =
-        Stream.of(
-                new Object[][] {
-                  {"instance_id", "GCE-instance-id"},
-                  {"zone", "country-region-zone"},
-                  {"project_id", "GCE-pid"},
-                  {"cluster_name", "GKE-cluster-name"},
-                  {"pod_id", "GKE-testHostName"},
-                  {"container_name", "GKE-testContainerName"},
-                  {"namespace_id", "GKE-testNameSpace"}
-                })
-            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
-    expectedMappings.forEach(
-        (key, value) -> {
-          assertEquals(value, monitoredResourceMap.get(key));
-        });
   }
 
   @Test

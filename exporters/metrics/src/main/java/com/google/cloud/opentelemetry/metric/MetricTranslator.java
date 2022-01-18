@@ -21,7 +21,6 @@ import com.google.api.Distribution.BucketOptions.Explicit;
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
-import com.google.api.MonitoredResource;
 import com.google.common.collect.ImmutableSet;
 import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.SpanContext;
@@ -36,7 +35,6 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.Set;
@@ -227,42 +225,6 @@ public class MetricTranslator {
               .build();
     }
     return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
-  }
-
-  static MonitoredResource mapResource(Resource resource, String projectId) {
-    // First, we try to map to known GCP resources
-    Attributes attributes = resource.getAttributes();
-
-    // GCE: https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-    String provider = attributes.get(ResourceAttributes.CLOUD_PROVIDER);
-    if (ResourceAttributes.CloudProviderValues.GCP.equals(provider)) {
-      String namespace = attributes.get(ResourceAttributes.K8S_NAMESPACE_NAME);
-      if (namespace != null) {
-        return MonitoredResource.newBuilder()
-            .setType("gke_container")
-            .putAllLabels(
-                gkeMap.entrySet().stream()
-                    .collect(
-                        Collectors.toMap(
-                            e -> (String) e.getKey(), e -> attributes.get(e.getValue()))))
-            .build();
-      }
-      return MonitoredResource.newBuilder()
-          .setType("gce_instance")
-          .putAllLabels(
-              gceMap.entrySet().stream()
-                  .collect(
-                      Collectors.toMap(
-                          e -> (String) e.getKey(), e -> attributes.get(e.getValue()))))
-          .build();
-    }
-
-    // If none of the standard resource types apply, use the "global" resource:
-    // https://cloud.google.com/monitoring/api/resources#tag_global
-    return MonitoredResource.newBuilder()
-        .setType(DEFAULT_RESOURCE_TYPE)
-        .putLabels(RESOURCE_PROJECT_ID_LABEL, projectId)
-        .build();
   }
 
   private static Timestamp mapTimestamp(long epochNanos) {
