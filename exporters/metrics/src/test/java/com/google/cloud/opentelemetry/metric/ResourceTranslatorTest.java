@@ -109,9 +109,9 @@ public class ResourceTranslatorTest {
     MonitoredResource monitoredResource =
         ResourceTranslator.mapResource(Resource.create(attributes));
 
-    assertEquals("k8s_pod", monitoredResource.getType());
+    assertEquals("k8s_container", monitoredResource.getType());
     Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
-    assertEquals(4, monitoredResourceMap.size());
+    assertEquals(5, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
@@ -119,7 +119,8 @@ public class ResourceTranslatorTest {
                   {"location", "country-region-zone"},
                   {"cluster_name", "GKE-cluster-name"},
                   {"namespace_name", "GKE-testNameSpace"},
-                  {"pod_name", "GKE-testHostName"}
+                  {"pod_name", "GKE-testHostName"},
+                  {"container_name", "GKE-testContainerName"}
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(

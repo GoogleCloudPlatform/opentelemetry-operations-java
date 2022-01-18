@@ -69,11 +69,12 @@ public class ResourceTranslator {
       java.util.Arrays.asList(
           AttributeMapping.create("zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID));
-  private static List<AttributeMapping> K8S_POD_LABELS =
+  private static List<AttributeMapping> K8S_CONTAINER_LABELS =
       java.util.Arrays.asList(
           AttributeMapping.create("location", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
+          AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
   private static List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
       java.util.Arrays.asList(
@@ -101,7 +102,7 @@ public class ResourceTranslator {
       case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
         return mapBase(resource, "gce_instance", GCE_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE:
-        return mapBase(resource, "k8s_pod", K8S_POD_LABELS);
+        return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
       case ResourceAttributes.CloudPlatformValues.AWS_EC2:
         return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
       default:
