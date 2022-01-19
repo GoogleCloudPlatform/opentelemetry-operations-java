@@ -29,16 +29,16 @@ For GKE applications, some values most be passed via the environment variable us
 spec:
   containers:
     - name: my-application
-    - image: gcr.io/my-project/my-image:latest
-    env:
+      image: gcr.io/my-project/my-image:latest
+      env:
       - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
       - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: CONTAINER_NAME
         value: my-application
 ```
