@@ -29,7 +29,7 @@ config:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-trace</artifactId>
-  <version>0.18.0</version>
+  <version>0.20.0</version>
 </dependency>
 ```
 
