@@ -2,7 +2,7 @@
 
 [![Maven Central][maven-image]][maven-url]
 
-*NOTE: Metrics are still Alpha in OpenTelemetry, and the API is not guaranteed to be stable across versions.*
+*NOTE: While Opentelemetry Metrics API is stable, the SDK is still Alpha in OpenTelemetry, and this exporter is not guaranteed to work across versions.*
 
 Opentelemetry Google Monitoring Metrics Exporter allows users to send collected metrics
 to Google Cloud.
@@ -28,6 +28,7 @@ TODO(jsuereth): Write this section.
 You can configure the Cloud Monitoring Metrics Exporter via the following setup:
 
 ```java
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -52,14 +53,14 @@ MetricExporter cloudMonitoringExporter =
       .build()
   );
 // Now set up PeriodicMetricReader to use this Exporter
-SdkMeterProvider.builder()
+MeterProvider provider = SdkMeterProvider.builder()
   .registerMetricReader(
     // Set collection interval to 20 seconds.
     // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
     // Rate at which data can be written to a single time series: one point each 10
     // seconds.
     PeriodicMetricReader.create(metricExporter, java.time.Duration.ofSeconds(20)))
-  .buildAndRegisterGlobal();
+  .build();
 ```
 
 | Configuration | Environment Variable | JVM Property | Description | Default |

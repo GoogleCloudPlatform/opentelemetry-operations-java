@@ -12,7 +12,7 @@ To leverage the GCP extensions to this, simply add the following dependency:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-auto</artifactId>
-  <version>0.18.0-alpha</version>
+  <version>0.20.0-alpha</version>
 </dependency>
 ```
 
@@ -38,7 +38,7 @@ To instrument metrics and traces using the `opentelemetry-javaagent`, `opentelem
 
 ```
 java -javaagent:path/to/opentelemetry-javaagent-<version>-all.jar \
-     -Dotel.javaagent.experimental.extensions=path/to/opentelemetry-operations-java-auto-<version>.jar \
+     -Dotel.javaagent.extensions=path/to/opentelemetry-operations-java-auto-<version>.jar \
      -Dotel.traces.exporter=google_cloud_trace \
      -Dotel.metrics.exporter=google_cloud_monitoring \
      -jar myapp.jar
