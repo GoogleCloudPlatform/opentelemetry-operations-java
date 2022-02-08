@@ -53,6 +53,12 @@ public class ResourceTranslator {
     }
 
     public static AttributeMapping create(
+        String labelName, AttributeKey<?> otelKey, String fallbackLiteral) {
+      return new AutoValue_ResourceTranslator_AttributeMapping(
+          labelName, java.util.Collections.singletonList(otelKey), Optional.of(fallbackLiteral));
+    }
+
+    public static AttributeMapping create(
         String labelName, java.util.List<AttributeKey<?>> otelKeys) {
       return new AutoValue_ResourceTranslator_AttributeMapping(
           labelName, otelKeys, Optional.empty());
@@ -88,9 +94,9 @@ public class ResourceTranslator {
               java.util.Arrays.asList(
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION),
               "global"),
-          AttributeMapping.create("namespace", ResourceAttributes.SERVICE_NAMESPACE),
-          AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME),
-          AttributeMapping.create("task_id", ResourceAttributes.SERVICE_INSTANCE_ID));
+          AttributeMapping.create("namespace", ResourceAttributes.SERVICE_NAMESPACE, ""),
+          AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME, ""),
+          AttributeMapping.create("task_id", ResourceAttributes.SERVICE_INSTANCE_ID, ""));
 
   /** Converts a Java OpenTelemetyr SDK resoruce into a MonitoredResource from GCP. */
   public static MonitoredResource mapResource(Resource resource) {

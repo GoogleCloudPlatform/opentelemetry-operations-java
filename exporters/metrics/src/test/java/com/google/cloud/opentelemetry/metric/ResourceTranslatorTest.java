@@ -211,4 +211,31 @@ public class ResourceTranslatorTest {
           assertEquals(value, monitoredResourceMap.get(key));
         });
   }
+
+  @Test
+  public void testMapResourcesFallback() {
+    Attributes attributes = Attributes.builder().build();
+
+    MonitoredResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_task", monitoredResource.getType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    assertEquals(4, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"job", ""},
+                  {"namespace", ""},
+                  {"task_id", ""},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
 }
