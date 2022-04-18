@@ -25,6 +25,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
@@ -60,8 +62,8 @@ import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -253,7 +255,10 @@ public class MetricExporterTest {
                                                 .setSpanName(
                                                     "projects/"
                                                         + aProjectId
-                                                        + "/traces/traceId/spans/spanId")
+                                                        + "/traces/"
+                                                        + aTraceId
+                                                        + "/spans/"
+                                                        + aSpanId)
                                                 .build()))
                                     .addAttachments(
                                         Any.pack(
@@ -307,7 +312,7 @@ public class MetricExporterTest {
             "Metric Name",
             "description",
             "ns",
-            DoubleSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
+            ImmutableSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
 
     CompletableResultCode result = exporter.export(ImmutableList.of(metricData));
     verify(mockClient, times(0)).createMetricDescriptor(any());

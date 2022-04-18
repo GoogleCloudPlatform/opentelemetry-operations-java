@@ -32,8 +32,8 @@ import com.google.monitoring.v3.TimeSeries;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
@@ -159,7 +159,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
           }
           break;
         case HISTOGRAM:
-          for (DoubleHistogramPointData point : metricData.getDoubleHistogramData().getPoints()) {
+          for (HistogramPointData point : metricData.getHistogramData().getPoints()) {
             builder.recordPoint(metricData, point);
           }
           break;

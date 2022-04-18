@@ -26,8 +26,8 @@ import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
@@ -84,7 +84,7 @@ public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeries
   }
 
   @Override
-  public void recordPoint(MetricData metric, DoubleHistogramPointData point) {
+  public void recordPoint(MetricData metric, HistogramPointData point) {
     MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
     if (descriptor == null) {
       // Unsupported type.

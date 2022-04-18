@@ -29,9 +29,9 @@ import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
@@ -125,7 +125,7 @@ public class MetricTranslator {
         builder.setValueType(MetricDescriptor.ValueType.DOUBLE);
         return fillSumType(metric.getDoubleSumData(), builder);
       case HISTOGRAM:
-        return fillHistogramType(metric.getDoubleHistogramData(), builder);
+        return fillHistogramType(metric.getHistogramData(), builder);
       default:
         logger.error(
             "Metric type {} not supported. Only gauge and cumulative types are supported.",
@@ -135,7 +135,7 @@ public class MetricTranslator {
   }
 
   private static MetricDescriptor fillHistogramType(
-      DoubleHistogramData histogram, MetricDescriptor.Builder builder) {
+      HistogramData histogram, MetricDescriptor.Builder builder) {
     builder.setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
     switch (histogram.getAggregationTemporality()) {
       case CUMULATIVE:
@@ -234,7 +234,7 @@ public class MetricTranslator {
         .build();
   }
 
-  static Distribution.Builder mapDistribution(DoubleHistogramPointData point, String projectId) {
+  static Distribution.Builder mapDistribution(HistogramPointData point, String projectId) {
     return Distribution.newBuilder()
         .setCount(point.getCount())
         .setMean(point.getSum() / point.getCount())
