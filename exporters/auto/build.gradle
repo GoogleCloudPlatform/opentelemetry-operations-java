@@ -36,6 +36,9 @@ dependencies {
 	implementation(project(':detector-resources')) {
 		exclude group: 'io.opentelemetry'
 	}
+	implementation(project(':propagators-gcp')) {
+		exclude group: 'io.opentelemetry'
+	}
 }
 
 
