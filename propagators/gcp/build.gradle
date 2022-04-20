@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-	id 'java'
-	id 'application'
-	id 'com.github.johnrengelman.shadow'
-}
-
-application {
-	mainClassName = 'com.google.cloud.opentelemetry.endtoend.Server'
-}
-
-description = 'End-To-End integration testing server'
+description = 'Google Cloud Trace Context propogators'
 
 dependencies {
-	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_sdk)
-	compile(libraries.google_cloud_trace)
-	compile(libraries.google_cloud_pubsub)
-	compile project(':exporter-trace')
-	compile project(':propagators-gcp')
-	runtimeOnly project(':detector-resources')
+	api(libraries.auto_service_annotations)
+	annotationProcessor(libraries.auto_service)
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_autoconfigure_spi)
+	testImplementation(testLibraries.assertj)
+	testImplementation(testLibraries.junit)
+	testImplementation(testLibraries.opentelemetry_sdk_testing)
+	testImplementation(libraries.opentelemetry_autoconfigure)
 }
-
-tasks.build.dependsOn tasks.shadowJar

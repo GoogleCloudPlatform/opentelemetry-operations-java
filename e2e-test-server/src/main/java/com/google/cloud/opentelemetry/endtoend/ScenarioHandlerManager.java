@@ -15,18 +15,29 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+import com.google.cloud.opentelemetry.propagators.XCloudTraceContextPropagator;
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * A container for all scenarios we handle.
@@ -35,10 +46,12 @@ import java.util.function.Function;
  */
 public class ScenarioHandlerManager {
   private Map<String, ScenarioHandler> scenarios = new HashMap<>();
+  private static Logger LOGGER = Logger.getLogger(ScenarioHandlerManager.class.getCanonicalName());
 
   public ScenarioHandlerManager() {
     register("/health", this::health);
     register("/basicTrace", this::basicTrace);
+    register("/basicPropagator", this::basicPropagator);
   }
 
   /** Health check test. */
@@ -48,6 +61,7 @@ public class ScenarioHandlerManager {
 
   /** Basic trace test. */
   private Response basicTrace(Request request) {
+    LOGGER.info("Running basicTrace test, request: " + request);
     return withTemporaryTracer(
         (tracer) -> {
           Span span =
@@ -59,6 +73,38 @@ public class ScenarioHandlerManager {
             return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
           } finally {
             span.end();
+          }
+        });
+  }
+
+  /** Basic trace test. */
+  private Response basicPropagator(Request request) {
+    LOGGER.info(
+        "Running basicPropagator test, request headers: "
+            + Arrays.toString(request.headers().entrySet().toArray()));
+    // TODO - extract headers from request using text-map-propagators.
+    return withTemporaryOtel(
+        (ctx) -> {
+          Context remoteCtx =
+              ctx.getPropagators()
+                  .getTextMapPropagator()
+                  .extract(Context.current(), request.headers(), MAP_GETTER);
+
+          LOGGER.info("- Found parent span: " + Span.fromContextOrNull(remoteCtx));
+          // Run basic scenario in wrapped context.
+          try (Scope ignored = remoteCtx.makeCurrent()) {
+            Span span =
+                ctx.getTestTracer()
+                    .spanBuilder("basicPropagator")
+                    .setAttribute(Constants.TEST_ID, request.testId())
+                    // TODO - This shouldn't be needed.
+                    .setParent(remoteCtx)
+                    .startSpan();
+            try {
+              return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
+            } finally {
+              span.end();
+            }
           }
         });
   }
@@ -83,11 +129,29 @@ public class ScenarioHandlerManager {
    * Helper to configure an OTel SDK exporting to cloud trace within the context of a function call.
    */
   private static <R> R withTemporaryTracer(Function<Tracer, R> handler) {
+    return withTemporaryOtel(ctx -> handler.apply(ctx.getTestTracer()));
+  }
+
+  /**
+   * Helper to configure an OTel SDK exporting to cloud trace within the context of a function call.
+   */
+  private static <R> R withTemporaryOtel(Function<OtelContext, R> handler) {
     try {
       OpenTelemetrySdk sdk = setupTraceExporter();
       try {
-        Tracer tracer = sdk.getTracer(Constants.INSTRUMENTING_MODULE_NAME);
-        return handler.apply(tracer);
+        OtelContext context =
+            new OtelContext() {
+              @Override
+              public Tracer getTestTracer() {
+                return sdk.getTracer(Constants.INSTRUMENTING_MODULE_NAME);
+              }
+
+              @Override
+              public ContextPropagators getPropagators() {
+                return sdk.getPropagators();
+              }
+            };
+        return handler.apply(context);
       } finally {
         sdk.getSdkTracerProvider().shutdown();
       }
@@ -97,6 +161,13 @@ public class ScenarioHandlerManager {
       // test status.
       throw new RuntimeException(e);
     }
+  }
+
+  interface OtelContext {
+    /** Retruns the tracer for this test scenario */
+    Tracer getTestTracer();
+    /** Returns the context propagators for this test scenario. */
+    ContextPropagators getPropagators();
   }
 
   /** Set up an OpenTelemetrySDK w/ export to google cloud. */
@@ -111,10 +182,37 @@ public class ScenarioHandlerManager {
     TraceExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
     // Register the TraceExporter with OpenTelemetry
     return OpenTelemetrySdk.builder()
+        .setPropagators(
+            ContextPropagators.create(
+                TextMapPropagator.composite(
+                    W3CTraceContextPropagator.getInstance(),
+                    W3CBaggagePropagator.getInstance(),
+                    new XCloudTraceContextPropagator(true))))
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
                 .build())
         .build();
   }
+
+  private static TextMapGetter<Map<String, String>> MAP_GETTER =
+      new TextMapGetter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          LOGGER.info("Looking for header key: " + key);
+          // We need to ignore case on keys.
+          for (String rawKey : carrier.keySet()) {
+            if (rawKey.toLowerCase(Locale.ENGLISH).equals(key)) {
+              LOGGER.info("Found key: " + rawKey + ", value: " + carrier.get(rawKey));
+              return carrier.get(rawKey);
+            }
+          }
+          return null;
+        }
+      };
 }
