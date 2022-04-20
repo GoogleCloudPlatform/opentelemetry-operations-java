@@ -31,6 +31,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,8 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -69,20 +68,28 @@ public class TraceTranslatorTest {
   @Test
   public void testInsertResourceAttributes() {
     Map<String, AttributeValue> resourceAttributes = new HashMap<>();
-    Resource resource = Resource.create(Attributes.builder()
-            .put(ResourceAttributes.SERVICE_NAME, "my-service-name")
-        .put(ResourceAttributes.SERVICE_NAMESPACE, "qa")
-        .put(ResourceAttributes.SERVICE_INSTANCE_ID, "23")
-        .build());
+    Resource resource =
+        Resource.create(
+            Attributes.builder()
+                .put(ResourceAttributes.SERVICE_NAME, "my-service-name")
+                .put(ResourceAttributes.SERVICE_NAMESPACE, "qa")
+                .put(ResourceAttributes.SERVICE_INSTANCE_ID, "23")
+                .build());
     TraceTranslator.insertResourceAttributes(resource, resourceAttributes);
     assertTrue(resourceAttributes.containsKey("g.co/r/generic_task/job"));
-    assertEquals("my-service-name", resourceAttributes.get("g.co/r/generic_task/job").getStringValue().getValue());
+    assertEquals(
+        "my-service-name",
+        resourceAttributes.get("g.co/r/generic_task/job").getStringValue().getValue());
     assertTrue(resourceAttributes.containsKey("g.co/r/generic_task/namespace"));
-    assertEquals("qa", resourceAttributes.get("g.co/r/generic_task/namespace").getStringValue().getValue());
+    assertEquals(
+        "qa", resourceAttributes.get("g.co/r/generic_task/namespace").getStringValue().getValue());
     assertTrue(resourceAttributes.containsKey("g.co/r/generic_task/task_id"));
-    assertEquals("23", resourceAttributes.get("g.co/r/generic_task/task_id").getStringValue().getValue());
+    assertEquals(
+        "23", resourceAttributes.get("g.co/r/generic_task/task_id").getStringValue().getValue());
     assertTrue(resourceAttributes.containsKey("g.co/r/generic_task/location"));
-    assertEquals("global", resourceAttributes.get("g.co/r/generic_task/location").getStringValue().getValue());
+    assertEquals(
+        "global",
+        resourceAttributes.get("g.co/r/generic_task/location").getStringValue().getValue());
   }
 
   @Test

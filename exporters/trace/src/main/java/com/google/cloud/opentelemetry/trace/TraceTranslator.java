@@ -136,9 +136,14 @@ class TraceTranslator {
   @VisibleForTesting
   static void insertResourceAttributes(Resource resource, Map<String, AttributeValue> accumulator) {
     GcpResource gcpResource = ResourceTranslator.mapResource(resource);
-    gcpResource.getResourceLabels().getLabels().forEach((k, v) -> {
-      accumulator.put("g.co/r/" + gcpResource.getResourceType() + "/" + k, toAttributeValueString(v));
-    });
+    gcpResource
+        .getResourceLabels()
+        .getLabels()
+        .forEach(
+            (k, v) -> {
+              accumulator.put(
+                  "g.co/r/" + gcpResource.getResourceType() + "/" + k, toAttributeValueString(v));
+            });
   }
 
   @VisibleForTesting
