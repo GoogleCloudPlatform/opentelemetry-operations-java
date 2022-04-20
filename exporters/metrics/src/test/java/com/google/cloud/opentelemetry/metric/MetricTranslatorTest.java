@@ -43,11 +43,10 @@ import com.google.monitoring.v3.SpanContext;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -109,7 +108,7 @@ public class MetricTranslatorTest {
             name,
             description,
             unit,
-            LongSumData.create(
+            ImmutableSumData.create(
                 false, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
@@ -139,7 +138,7 @@ public class MetricTranslatorTest {
             name,
             description,
             unit,
-            DoubleHistogramData.create(
+            ImmutableHistogramData.create(
                 AggregationTemporality.CUMULATIVE, ImmutableList.of(aHistogramPoint)));
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
@@ -168,7 +167,7 @@ public class MetricTranslatorTest {
             name,
             description,
             unit,
-            DoubleSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
+            ImmutableSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
 
     MetricDescriptor actualDescriptor =
         MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
@@ -187,7 +186,7 @@ public class MetricTranslatorTest {
             name,
             description,
             unit,
-            DoubleSumData.create(
+            ImmutableSumData.create(
                 true, AggregationTemporality.DELTA, ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
@@ -259,7 +258,10 @@ public class MetricTranslatorTest {
               try {
                 if (any.is(SpanContext.class)) {
                   assertEquals(
-                      "projects/projectId/traces/traceId/spans/spanId",
+                      "projects/projectId/traces/"
+                          + FakeData.aTraceId
+                          + "/spans/"
+                          + FakeData.aSpanId,
                       any.unpack(SpanContext.class).getSpanName());
                 } else if (any.is(DroppedLabels.class)) {
                   DroppedLabels labels = any.unpack(DroppedLabels.class);
