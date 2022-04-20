@@ -178,8 +178,28 @@ class TraceTranslator {
       case DOUBLE:
         builder.setStringValue(toTruncatableStringProto(String.valueOf((value))));
         break;
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        builder.setStringValue(toTruncatableStringProto(jsonString((List<?>)value)));
+        break;
     }
     return builder.build();
+  }
+
+  private static String jsonString(List<?> values) {
+    StringBuilder result = new StringBuilder("[");
+    boolean first = true;
+    for (Object value : values) {
+      if (!first) {
+        result.append(',');
+      }
+      result.append(value.toString());
+      first = false;
+    }
+    result.append("]");
+    return result.toString();
   }
 
   private static <T> String mapKey(AttributeKey<T> key) {
