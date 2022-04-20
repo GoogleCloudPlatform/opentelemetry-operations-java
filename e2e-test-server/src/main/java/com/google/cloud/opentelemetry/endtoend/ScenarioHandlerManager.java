@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -78,7 +79,9 @@ public class ScenarioHandlerManager {
 
   /** Basic trace test. */
   private Response basicPropagator(Request request) {
-    LOGGER.info("Running basicPropagator test, request: " + request);
+    LOGGER.info(
+        "Running basicPropagator test, request headers: "
+            + Arrays.toString(request.headers().entrySet().toArray()));
     // TODO - extract headers from request using text-map-propagators.
     return withTemporaryOtel(
         (ctx) -> {
@@ -204,8 +207,8 @@ public class ScenarioHandlerManager {
           LOGGER.info("Looking for header key: " + key);
           // We need to ignore case on keys.
           for (String rawKey : carrier.keySet()) {
-            if (rawKey.toLowerCase(Locale.ROOT) == key) {
-              LOGGER.info("Found: " + carrier.get(rawKey));
+            if (rawKey.toLowerCase(Locale.getDefault()) == key) {
+              LOGGER.info("Found key: " + rawKey + ", value: " + carrier.get(rawKey));
               return carrier.get(rawKey);
             }
           }
