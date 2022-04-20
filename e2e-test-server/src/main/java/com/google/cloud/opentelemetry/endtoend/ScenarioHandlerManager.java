@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * A container for all scenarios we handle.
@@ -44,6 +45,7 @@ import java.util.function.Function;
  */
 public class ScenarioHandlerManager {
   private Map<String, ScenarioHandler> scenarios = new HashMap<>();
+  private static Logger LOGGER = Logger.getLogger(ScenarioHandlerManager.class.getCanonicalName());
 
   public ScenarioHandlerManager() {
     register("/health", this::health);
@@ -58,6 +60,7 @@ public class ScenarioHandlerManager {
 
   /** Basic trace test. */
   private Response basicTrace(Request request) {
+    LOGGER.info("Running basicTrace test, request: " + request);
     return withTemporaryTracer(
         (tracer) -> {
           Span span =
@@ -75,6 +78,7 @@ public class ScenarioHandlerManager {
 
   /** Basic trace test. */
   private Response basicPropagator(Request request) {
+    LOGGER.info("Running basicPropagator test, request: " + request);
     // TODO - extract headers from request using text-map-propagators.
     return withTemporaryOtel(
         (ctx) -> {
@@ -83,6 +87,7 @@ public class ScenarioHandlerManager {
                   .getTextMapPropagator()
                   .extract(Context.current(), request.headers(), MAP_GETTER);
 
+          LOGGER.info("- Found parent span: " + Span.fromContextOrNull(remoteCtx));
           // Run basic scenario in wrapped context.
           try (Scope ignored = remoteCtx.makeCurrent()) {
             Span span =
@@ -196,9 +201,11 @@ public class ScenarioHandlerManager {
 
         @Override
         public String get(Map<String, String> carrier, String key) {
+          LOGGER.info("Looking for header key: " + key);
           // We need to ignore case on keys.
           for (String rawKey : carrier.keySet()) {
             if (rawKey.toLowerCase(Locale.ROOT) == key) {
+              LOGGER.info("Found: " + carrier.get(rawKey));
               return carrier.get(rawKey);
             }
           }
