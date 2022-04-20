@@ -17,6 +17,8 @@ package com.google.cloud.opentelemetry.trace;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceTranslator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
@@ -32,11 +34,13 @@ import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +61,26 @@ class TraceTranslator {
   private static final String SERVER_PREFIX = "Recv.";
   private static final String CLIENT_PREFIX = "Sent.";
 
-  private static final ImmutableMap<String, String> HTTP_ATTRIBUTE_MAPPING =
+  private static final String INSTRUMENTATION_LIBRARY_NAME_KEY =
+      "otel.instrumentation_library.name";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION_KEY =
+      "otel.instrumentation_library.version";
+
+  private static final ImmutableMap<String, String> GCP_ATTRIBUTE_MAPPING =
       ImmutableMap.<String, String>builder()
           .put("http.host", "/http/host")
           .put("http.method", "/http/method")
-          .put("http.path", "/http/path")
+          .put("http.target", "/http/path")
+          .put("http.status_code", "/http/status_code")
+          .put("http.url", "/http/url")
+          .put("http.request_content_length", "/http/request/size")
+          .put("http.response_content_length", "/http/response/size")
+          .put("http.scheme", "/http/client_protocol")
           .put("http.route", "/http/route")
           .put("http.user_agent", "/http/user_agent")
-          .put("http.status_code", "/http/status_code")
+          .put("exception.type", "/error/name")
+          .put("exception.message", "/error/message")
+          .put("thread.id", "/tid")
           .build();
 
   @VisibleForTesting
@@ -72,6 +88,20 @@ class TraceTranslator {
       SpanData spanData, String projectId, Map<String, AttributeValue> constAttributes) {
     final String traceId = spanData.getTraceId();
     final String spanId = spanData.getSpanId();
+    Map<String, AttributeValue> extraAttributes = new HashMap<>(constAttributes);
+    // Add InstrumentationLibrary labels
+    if (spanData.getInstrumentationLibraryInfo().getName() != null) {
+      extraAttributes.put(
+          INSTRUMENTATION_LIBRARY_NAME_KEY,
+          toAttributeValueString(spanData.getInstrumentationLibraryInfo().getName()));
+    }
+    if (spanData.getInstrumentationLibraryInfo().getVersion() != null) {
+      extraAttributes.put(
+          INSTRUMENTATION_LIBRARY_VERSION_KEY,
+          toAttributeValueString(spanData.getInstrumentationLibraryInfo().getVersion()));
+    }
+    // Add resource labels
+    insertResourceAttributes(spanData.getResource(), extraAttributes);
     SpanName spanName =
         SpanName.newBuilder().setProject(projectId).setTrace(traceId).setSpan(spanId).build();
     Span.Builder spanBuilder =
@@ -81,7 +111,7 @@ class TraceTranslator {
             .setDisplayName(
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
-            .setAttributes(toAttributesProto(spanData.getAttributes(), constAttributes))
+            .setAttributes(toAttributesProto(spanData.getAttributes(), extraAttributes))
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     StatusData status = spanData.getStatus();
     if (status != null) {
@@ -101,6 +131,14 @@ class TraceTranslator {
     boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
+  }
+
+  @VisibleForTesting
+  static void insertResourceAttributes(Resource resource, Map<String, AttributeValue> accumulator) {
+    GcpResource gcpResource = ResourceTranslator.mapResource(resource);
+    gcpResource.getResourceLabels().getLabels().forEach((k, v) -> {
+      accumulator.put("g.co/r/" + gcpResource.getResourceType() + "/" + k, toAttributeValueString(v));
+    });
   }
 
   @VisibleForTesting
@@ -136,7 +174,6 @@ class TraceTranslator {
       io.opentelemetry.api.common.Attributes attributes,
       Map<String, AttributeValue> fixedAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
-    // TODO(jsuereth): pull instrumentation library/version from SpanData and add as attribute.
     attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
       attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
@@ -150,9 +187,7 @@ class TraceTranslator {
 
   private static Attributes.Builder toAttributesBuilderProto(
       io.opentelemetry.api.common.Attributes attributes) {
-    Attributes.Builder attributesBuilder =
-        // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
-        Attributes.newBuilder().setDroppedAttributesCount(0);
+    Attributes.Builder attributesBuilder = Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
         new BiConsumer<AttributeKey<?>, Object>() {
           @Override
@@ -182,10 +217,14 @@ class TraceTranslator {
       case BOOLEAN_ARRAY:
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
-        builder.setStringValue(toTruncatableStringProto(jsonString((List<?>)value)));
+        builder.setStringValue(toTruncatableStringProto(jsonString((List<?>) value)));
         break;
     }
     return builder.build();
+  }
+
+  private static AttributeValue toAttributeValueString(String value) {
+    return AttributeValue.newBuilder().setStringValue(toTruncatableStringProto(value)).build();
   }
 
   private static String jsonString(List<?> values) {
@@ -203,8 +242,8 @@ class TraceTranslator {
   }
 
   private static <T> String mapKey(AttributeKey<T> key) {
-    if (HTTP_ATTRIBUTE_MAPPING.containsKey(key.getKey())) {
-      return HTTP_ATTRIBUTE_MAPPING.get(key.getKey());
+    if (GCP_ATTRIBUTE_MAPPING.containsKey(key.getKey())) {
+      return GCP_ATTRIBUTE_MAPPING.get(key.getKey());
     } else {
       return key.getKey();
     }
