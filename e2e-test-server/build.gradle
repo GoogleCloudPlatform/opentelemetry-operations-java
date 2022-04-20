@@ -31,6 +31,7 @@ dependencies {
 	compile(libraries.google_cloud_trace)
 	compile(libraries.google_cloud_pubsub)
 	compile project(':exporter-trace')
+	compile project(':propagators-gcp')
 	runtimeOnly project(':detector-resources')
 }
 
