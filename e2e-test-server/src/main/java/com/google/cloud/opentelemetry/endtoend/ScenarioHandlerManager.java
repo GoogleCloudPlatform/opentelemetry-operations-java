@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -88,6 +89,8 @@ public class ScenarioHandlerManager {
                 ctx.getTestTracer()
                     .spanBuilder("basicPropagator")
                     .setAttribute(Constants.TEST_ID, request.testId())
+                    // TODO - This shouldn't be needed.
+                    .setParent(remoteCtx)
                     .startSpan();
             try {
               return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
@@ -193,7 +196,13 @@ public class ScenarioHandlerManager {
 
         @Override
         public String get(Map<String, String> carrier, String key) {
-          return carrier.get(key);
+          // We need to ignore case on keys.
+          for (String rawKey : carrier.keySet()) {
+              if (rawKey.toLowerCase(Locale.ROOT) == key) {
+                  return carrier.get(rawKey);
+              }
+          }
+          return null;
         }
       };
 }
