@@ -198,9 +198,9 @@ public class ScenarioHandlerManager {
         public String get(Map<String, String> carrier, String key) {
           // We need to ignore case on keys.
           for (String rawKey : carrier.keySet()) {
-              if (rawKey.toLowerCase(Locale.ROOT) == key) {
-                  return carrier.get(rawKey);
-              }
+            if (rawKey.toLowerCase(Locale.ROOT) == key) {
+              return carrier.get(rawKey);
+            }
           }
           return null;
         }
