@@ -207,7 +207,7 @@ public class ScenarioHandlerManager {
           LOGGER.info("Looking for header key: " + key);
           // We need to ignore case on keys.
           for (String rawKey : carrier.keySet()) {
-            if (rawKey.toLowerCase(Locale.getDefault()) == key) {
+            if (rawKey.toLowerCase(Locale.ENGLISH).equals(key)) {
               LOGGER.info("Found key: " + rawKey + ", value: " + carrier.get(rawKey));
               return carrier.get(rawKey);
             }
