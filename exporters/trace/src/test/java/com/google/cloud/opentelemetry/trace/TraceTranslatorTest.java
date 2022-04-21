@@ -47,6 +47,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class TraceTranslatorTest {
 
+  private TraceTranslator translator = new TraceTranslator();
+
   @Test
   public void testToDisplayName() {
     String serverPrefixSpanName = "Recv. mySpanName";
@@ -124,9 +126,7 @@ public class TraceTranslatorTest {
             .put(AttributeKey.longArrayKey("counts"), Arrays.asList(1L, 2L))
             .put(AttributeKey.doubleArrayKey("values"), Arrays.asList(1d, 2.5d))
             .build();
-    Map<String, AttributeValue> fixedAttributes = new LinkedHashMap<>();
-    Span.Attributes translatedAttributes =
-        TraceTranslator.toAttributesProto(attributes, fixedAttributes);
+    Span.Attributes translatedAttributes = translator.toAttributesProto(attributes);
     assertTrue(translatedAttributes.containsAttributeMap("names"));
     assertEquals(
         translatedAttributes.getAttributeMapMap().get("names").getStringValue().getValue(),
@@ -176,8 +176,10 @@ public class TraceTranslatorTest {
                 TruncatableString.newBuilder().setValue("entry").setTruncatedByteCount(0).build())
             .build());
 
-    Span.Attributes translatedAttributes =
-        TraceTranslator.toAttributesProto(attributes, fixedAttributes);
+    TraceTranslator withFixedAttributes =
+        new TraceTranslator(TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING, fixedAttributes);
+
+    Span.Attributes translatedAttributes = withFixedAttributes.toAttributesProto(attributes);
 
     // Because order in a hash map cannot be guaranteed, the test manually checks each entry
 
@@ -243,7 +245,7 @@ public class TraceTranslatorTest {
         };
     events.add(eventOne);
 
-    Span.TimeEvents timeEvents = TraceTranslator.toTimeEventsProto(events);
+    Span.TimeEvents timeEvents = translator.toTimeEventsProto(events);
     assertEquals(1, timeEvents.getTimeEventCount());
 
     Span.TimeEvent timeEvent = timeEvents.getTimeEvent(0);
