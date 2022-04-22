@@ -45,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 
 class TraceTranslator {
   private static final String AGENT_LABEL_KEY = "g.co/agent";
@@ -61,10 +60,8 @@ class TraceTranslator {
   private static final String SERVER_PREFIX = "Recv.";
   private static final String CLIENT_PREFIX = "Sent.";
 
-  private static final String INSTRUMENTATION_LIBRARY_NAME_KEY =
-      "otel.instrumentation_library.name";
-  private static final String INSTRUMENTATION_LIBRARY_VERSION_KEY =
-      "otel.instrumentation_library.version";
+  private static final String INSTRUMENTATION_LIBRARY_NAME_KEY = "otel.scope.name";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION_KEY = "otel.scope.version";
 
   private final ImmutableMap<String, String> attributeMapping;
   private final Map<String, AttributeValue> fixedAttributes;
@@ -98,6 +95,8 @@ class TraceTranslator {
     }
     // Add resource labels
     insertResourceAttributes(spanData.getResource(), extraAttributes);
+    // Add Agent label
+    extraAttributes.put(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     SpanName spanName =
         SpanName.newBuilder().setProject(projectId).setTrace(traceId).setSpan(spanId).build();
     Span.Builder spanBuilder =
@@ -107,7 +106,7 @@ class TraceTranslator {
             .setDisplayName(
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
-            .setAttributes(toAttributesProto(spanData.getAttributes()))
+            .setAttributes(toAttributesProto(spanData.getAttributes(), extraAttributes))
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     StatusData status = spanData.getStatus();
     if (status != null) {
@@ -131,6 +130,7 @@ class TraceTranslator {
 
   @VisibleForTesting
   static void insertResourceAttributes(Resource resource, Map<String, AttributeValue> accumulator) {
+    // First add the GCP resource labels.
     GcpResource gcpResource = ResourceTranslator.mapResource(resource);
     gcpResource
         .getResourceLabels()
@@ -139,6 +139,15 @@ class TraceTranslator {
             (k, v) -> {
               accumulator.put(
                   "g.co/r/" + gcpResource.getResourceType() + "/" + k, toAttributeValueString(v));
+            });
+    // Next add in all the otel resource labels if they don't already exist.
+    resource
+        .getAttributes()
+        .forEach(
+            (key, value) -> {
+              if (!accumulator.containsKey(key.getKey())) {
+                accumulator.put(key.getKey(), toAttributeValueProto(key, value));
+              }
             });
   }
 
@@ -171,12 +180,17 @@ class TraceTranslator {
   // These are the attributes of the Span, where usually we may add more
   // attributes like the agent.
   @VisibleForTesting
-  Attributes toAttributesProto(io.opentelemetry.api.common.Attributes attributes) {
+  Attributes toAttributesProto(
+      io.opentelemetry.api.common.Attributes attributes,
+      Map<String, AttributeValue> extraAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
-    attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
-    for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
-      attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
-    }
+    // Only write extra attributes if they don't exist already.
+    extraAttributes.forEach(
+        (key, value) -> {
+          if (!attributesBuilder.getAttributeMapMap().containsKey(key)) {
+            attributesBuilder.putAttributeMap(key, value);
+          }
+        });
     return attributesBuilder.build();
   }
 
@@ -184,12 +198,8 @@ class TraceTranslator {
       io.opentelemetry.api.common.Attributes attributes) {
     Attributes.Builder attributesBuilder = Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
-        new BiConsumer<AttributeKey<?>, Object>() {
-          @Override
-          public void accept(AttributeKey<?> key, Object value) {
-            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
-          }
-        });
+        (key, value) ->
+            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value)));
     return attributesBuilder;
   }
 
@@ -255,7 +265,8 @@ class TraceTranslator {
               .setAnnotation(
                   Span.TimeEvent.Annotation.newBuilder()
                       .setDescription(toTruncatableStringProto(event.getName()))
-                      .setAttributes(toAttributesProto(event.getAttributes()))));
+                      .setAttributes(
+                          toAttributesProto(event.getAttributes(), Collections.emptyMap()))));
     }
 
     return timeEventsBuilder.build();

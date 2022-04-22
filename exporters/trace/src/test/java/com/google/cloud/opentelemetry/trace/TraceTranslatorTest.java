@@ -26,9 +26,13 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -126,7 +130,8 @@ public class TraceTranslatorTest {
             .put(AttributeKey.longArrayKey("counts"), Arrays.asList(1L, 2L))
             .put(AttributeKey.doubleArrayKey("values"), Arrays.asList(1d, 2.5d))
             .build();
-    Span.Attributes translatedAttributes = translator.toAttributesProto(attributes);
+    Span.Attributes translatedAttributes =
+        translator.toAttributesProto(attributes, Collections.emptyMap());
     assertTrue(translatedAttributes.containsAttributeMap("names"));
     assertEquals(
         translatedAttributes.getAttributeMapMap().get("names").getStringValue().getValue(),
@@ -179,7 +184,8 @@ public class TraceTranslatorTest {
     TraceTranslator withFixedAttributes =
         new TraceTranslator(TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING, fixedAttributes);
 
-    Span.Attributes translatedAttributes = withFixedAttributes.toAttributesProto(attributes);
+    Span.Attributes translatedAttributes =
+        withFixedAttributes.toAttributesProto(attributes, fixedAttributes);
 
     // Because order in a hash map cannot be guaranteed, the test manually checks each entry
 
@@ -208,13 +214,83 @@ public class TraceTranslatorTest {
     assertEquals(
         translatedAttributes.getAttributeMapMap().get("another").getStringValue().getValue(),
         "entry");
+  }
 
+  @Test
+  public void testGenerateSpan() {
+    TraceTranslator withDefaultMapping =
+        new TraceTranslator(TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING, Collections.emptyMap());
+    String traceId = "00000000000000000000000000000001";
+    String spanId = "0000000000000002";
+    String projectId = "test-project";
+    TestSpanData spanData =
+        TestSpanData.builder()
+            .setName("test-span")
+            .setSpanContext(
+                SpanContext.create(
+                    traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault()))
+            .setStartEpochNanos(1L)
+            .setEndEpochNanos(2L)
+            .setHasEnded(true)
+            .setStatus(StatusData.ok())
+            .setKind(SpanKind.SERVER)
+            .setAttributes(Attributes.builder().put("conflict", "kept").build())
+            .setResource(
+                Resource.create(
+                    Attributes.builder()
+                        .put("test-resource-key", "test-resource-value")
+                        .put("conflict", "ignored")
+                        .build()))
+            .build();
+    Span resultSpan = withDefaultMapping.generateSpan(spanData, "test-project");
+
+    // Ensure name is UUID of span
+    assertEquals(
+        "projects/" + projectId + "/traces/" + traceId + "/spans/" + spanId, resultSpan.getName());
+    assertEquals(spanId, resultSpan.getSpanId());
+
+    // Ensure display name is a "server" name.
+    assertEquals("Recv.test-span", resultSpan.getDisplayName().getValue());
+
+    // Ensure status is "ok"
+    assertEquals(Code.OK.getNumber(), resultSpan.getStatus().getCode());
+
+    // Ensure start/stop times
+    assertEquals(1, resultSpan.getStartTime().getNanos());
+    assertEquals(2, resultSpan.getEndTime().getNanos());
+
+    Span.Attributes translatedAttributes = resultSpan.getAttributes();
+    // Make sure agent gets added to attributes.
     assertTrue(translatedAttributes.containsAttributeMap("g.co/agent"));
     assertEquals(
         translatedAttributes.getAttributeMapMap().get("g.co/agent").getStringValue().getValue(),
         String.format(
             "opentelemetry-java %s; google-cloud-trace-exporter %s",
             TraceVersions.SDK_VERSION, TraceVersions.EXPORTER_VERSION));
+    // Make sure instrumentation library is added to attributes.
+    assertTrue(translatedAttributes.containsAttributeMap("otel.scope.name"));
+    assertEquals(
+        "",
+        translatedAttributes
+            .getAttributeMapMap()
+            .get("otel.scope.name")
+            .getStringValue()
+            .getValue());
+
+    // Make sure resource attributes are copied over.
+    assertTrue(translatedAttributes.containsAttributeMap("test-resource-key"));
+    assertEquals(
+        "test-resource-value",
+        translatedAttributes
+            .getAttributeMapMap()
+            .get("test-resource-key")
+            .getStringValue()
+            .getValue());
+
+    // Make sure resource conflicting attributes are NOT overwriting span attribtues.
+    assertEquals(
+        "kept",
+        translatedAttributes.getAttributeMapMap().get("conflict").getStringValue().getValue());
   }
 
   @Test
@@ -253,15 +329,10 @@ public class TraceTranslatorTest {
     assertEquals("eventOne", annotation.getDescription().getValue());
 
     Span.Attributes attributes = annotation.getAttributes();
-    assertEquals(2, attributes.getAttributeMapCount());
+    assertEquals(1, attributes.getAttributeMapCount());
 
     Map<String, AttributeValue> attributeMap = attributes.getAttributeMapMap();
     assertEquals("value", attributeMap.get("key").getStringValue().getValue());
-    assertEquals(
-        String.format(
-            "opentelemetry-java %s; google-cloud-trace-exporter %s",
-            TraceVersions.SDK_VERSION, TraceVersions.EXPORTER_VERSION),
-        attributeMap.get("g.co/agent").getStringValue().getValue());
   }
 
   @Test
