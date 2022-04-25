@@ -28,6 +28,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
@@ -52,6 +54,7 @@ public class ScenarioHandlerManager {
     register("/health", this::health);
     register("/basicTrace", this::basicTrace);
     register("/basicPropagator", this::basicPropagator);
+    register("/detectResource", this::detectResource);
   }
 
   /** Health check test. */
@@ -67,6 +70,34 @@ public class ScenarioHandlerManager {
           Span span =
               tracer
                   .spanBuilder("basicTrace")
+                  .setAttribute(Constants.TEST_ID, request.testId())
+                  .startSpan();
+          try {
+            return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
+          } finally {
+            span.end();
+          }
+        });
+  }
+
+  /** Test where we include resource detection */
+  private Response detectResource(Request request) {
+    LOGGER.info("Running detectResource test, request: " + request);
+    // TODO - this may fail to just pull the resource.
+    Resource resource =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .setResultAsGlobal(false)
+            .addPropertiesSupplier(() -> Map.of("otel.traces.exporter", "none"))
+            .registerShutdownHook(false)
+            .build()
+            .getResource();
+    return withTemporaryOtel(
+        resource,
+        (sdk) -> {
+          Tracer tracer = sdk.getTestTracer();
+          Span span =
+              tracer
+                  .spanBuilder("detectResource")
                   .setAttribute(Constants.TEST_ID, request.testId())
                   .startSpan();
           try {
@@ -132,12 +163,17 @@ public class ScenarioHandlerManager {
     return withTemporaryOtel(ctx -> handler.apply(ctx.getTestTracer()));
   }
 
+  private static <R> R withTemporaryOtel(Function<OtelContext, R> handler) {
+    return withTemporaryOtel(Resource.empty(), handler);
+  }
+
   /**
    * Helper to configure an OTel SDK exporting to cloud trace within the context of a function call.
    */
-  private static <R> R withTemporaryOtel(Function<OtelContext, R> handler) {
+  private static <R> R withTemporaryOtel(Resource resource, Function<OtelContext, R> handler) {
     try {
-      OpenTelemetrySdk sdk = setupTraceExporter();
+      // TODO - Use resource detectors for
+      OpenTelemetrySdk sdk = setupTraceExporter(resource);
       try {
         OtelContext context =
             new OtelContext() {
@@ -171,7 +207,7 @@ public class ScenarioHandlerManager {
   }
 
   /** Set up an OpenTelemetrySDK w/ export to google cloud. */
-  private static OpenTelemetrySdk setupTraceExporter() throws IOException {
+  private static OpenTelemetrySdk setupTraceExporter(Resource resource) throws IOException {
     // Using default project ID and Credentials
     TraceConfiguration configuration =
         TraceConfiguration.builder()
@@ -191,6 +227,7 @@ public class ScenarioHandlerManager {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                .setResource(resource)
                 .build())
         .build();
   }
