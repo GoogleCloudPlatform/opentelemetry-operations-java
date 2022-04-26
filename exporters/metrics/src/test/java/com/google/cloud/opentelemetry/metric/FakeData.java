@@ -26,16 +26,19 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -73,18 +76,18 @@ public class FakeData {
 
   static final Resource aGceResource = Resource.create(someGceAttributes);
 
-  static final InstrumentationLibraryInfo anInstrumentationLibraryInfo =
-      InstrumentationLibraryInfo.create("instrumentName", "0");
+  static final InstrumentationScopeInfo anInstrumentationLibraryInfo =
+      InstrumentationScopeInfo.create("instrumentName", "0", "");
 
   static final LongPointData aLongPoint =
-      LongPointData.create(
+      ImmutableLongPointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Attributes.of(stringKey("label1"), "value1", booleanKey("label2"), false),
           32L);
 
   static final DoublePointData aDoublePoint =
-      DoublePointData.create(
+      ImmutableDoublePointData.create(
           1599030114 * NANO_PER_SECOND,
           1599031814 * NANO_PER_SECOND,
           Attributes.of(stringKey("label1"), "value1", booleanKey("label2"), false),
@@ -104,7 +107,7 @@ public class FakeData {
   // and should be changed when the following issue is resolved:
   // https://github.com/googleinterns/cloud-operations-api-mock/issues/56
   static final MetricData aMetricData =
-      MetricData.createLongSum(
+      ImmutableMetricData.createLongSum(
           aGceResource,
           anInstrumentationLibraryInfo,
           "opentelemetry/name",
@@ -123,14 +126,16 @@ public class FakeData {
           1,
           Attributes.builder().put("test", "one").build(),
           3d,
+          1d, // min
+          2d, // max
           Arrays.asList(1.0),
           Arrays.asList(1L, 2L),
           Arrays.asList(
-              DoubleExemplarData.create(
+              ImmutableDoubleExemplarData.create(
                   Attributes.builder().put("test2", "two").build(), 2, aSpanContext, 3.0)));
 
   static final MetricData aHistogram =
-      MetricData.createDoubleHistogram(
+      ImmutableMetricData.createDoubleHistogram(
           aGceResource,
           anInstrumentationLibraryInfo,
           "histogram",

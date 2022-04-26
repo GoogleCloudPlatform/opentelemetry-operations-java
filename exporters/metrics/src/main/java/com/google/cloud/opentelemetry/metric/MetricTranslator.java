@@ -29,9 +29,11 @@ import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
@@ -249,15 +251,26 @@ public class MetricTranslator {
   }
 
   private static Distribution.Exemplar mapExemplar(ExemplarData exemplar, String projectId) {
+    double value = 0;
+    if (exemplar instanceof DoubleExemplarData) {
+      value = ((DoubleExemplarData) exemplar).getValue();
+    } else if (exemplar instanceof LongExemplarData) {
+      value = ((LongExemplarData) exemplar).getValue();
+    }
+
     Distribution.Exemplar.Builder exemplarBuilder =
         Distribution.Exemplar.newBuilder()
-            .setValue(exemplar.getValueAsDouble())
+            .setValue(value)
             .setTimestamp(mapTimestamp(exemplar.getEpochNanos()));
-    if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
+    if (exemplar.getSpanContext().isValid()) {
       exemplarBuilder.addAttachments(
           Any.pack(
               SpanContext.newBuilder()
-                  .setSpanName(makeSpanName(projectId, exemplar.getTraceId(), exemplar.getSpanId()))
+                  .setSpanName(
+                      makeSpanName(
+                          projectId,
+                          exemplar.getSpanContext().getTraceId(),
+                          exemplar.getSpanContext().getSpanId()))
                   .build()));
     }
     if (!exemplar.getFilteredAttributes().isEmpty()) {

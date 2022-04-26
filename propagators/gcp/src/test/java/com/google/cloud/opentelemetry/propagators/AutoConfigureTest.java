@@ -64,7 +64,14 @@ public class AutoConfigureTest {
             .setResultAsGlobal(false)
             .registerShutdownHook(false)
             .addPropertiesSupplier(
-                () -> Map.of("otel.propagators", propagator, "otel.traces.exporter", "none"))
+                () ->
+                    Map.of(
+                        "otel.propagators",
+                        propagator,
+                        "otel.traces.exporter",
+                        "none",
+                        "otel.metrics.exporter",
+                        "none"))
             .build();
     return sdk.getOpenTelemetrySdk().getPropagators();
   }
