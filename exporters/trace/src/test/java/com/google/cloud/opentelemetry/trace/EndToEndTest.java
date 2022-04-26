@@ -89,7 +89,12 @@ public class EndToEndTest {
 
   @Test
   public void exportMockSpanDataList() {
-    exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
+    exporter =
+        new TraceExporter(
+            PROJECT_ID,
+            mockCloudTraceClient,
+            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
+            FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne =
@@ -118,7 +123,12 @@ public class EndToEndTest {
 
   @Test
   public void exportEmptySpanDataList() {
-    exporter = new TraceExporter(PROJECT_ID, mockCloudTraceClient, FIXED_ATTRIBUTES);
+    exporter =
+        new TraceExporter(
+            PROJECT_ID,
+            mockCloudTraceClient,
+            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
+            FIXED_ATTRIBUTES);
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();

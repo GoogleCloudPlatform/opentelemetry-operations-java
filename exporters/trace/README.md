@@ -20,7 +20,7 @@
 
 ### Installation
 
-This artifact is currently published to [Maven Central](https://search.maven.org/search?q=com.google.cloud.opentelemetry)].
+This artifact is currently published to [Maven Central](https://search.maven.org/search?q=com.google.cloud.opentelemetry).
 
 You can pull this library in via the following maven
 config:
@@ -82,7 +82,47 @@ before passing it into the TraceExporter constructor
 
 #### Java Versions
 Java 8 or above is required for using this exporter.
-  
+
+
+#### Special Attributes
+
+The Trace Exporter will add the following additional attributes onto all exported spans:
+
+- All `Resource` attributes that do not have a key name conflict with underlying `Span` attributes
+- `g.co/r/{resourcee_type}/{label}` attributes that correlate with GCP monitored resource.
+- A `g.co/agent` attribute that denotes the exporter used to write the Span.
+- `otel.scope.name` and `otel.scope.version`, as specified [by OpenTelemetry exporter requirements](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/sdk_exporters/non-otlp.md#instrumentationscope)
+
+#### Span Attribute relabelling
+
+The Trace Exporter attempts to convert from OpenTelemetry semantic conventions into Cloud Trace conventions.
+
+By default, the following span or event attributes will be converted as follows:
+
+| OpenTelemetry Attribute        | Cloud Trace Attribute   |
+|--------------------------------|-------------------------|
+| `http.host`                    | `/http/host`            |
+| `http.method`                  | `/http/method`          |
+| `http.target`                  | `/http/path`            |
+| `http.status_code`             | `/http/status_code`     |
+| `http.url`                     | `/http/url`             |
+| `http.request_content_length`  | `/http/request/size`    |
+| `http_response_content_length` | `/http/response/size`   |
+| `http.scheme`                  | `/http/client_protocol` |
+| `http.route`                   | `/http/route`           |
+| `http.user_agent`              | `/http/user_agent`      |
+| `exception.type`               | `/error/name`           |
+| `exception.message`            | `/error/message`        |
+| `thread.id`                    | `/tid`                  |
+
+This can be disabled by clearing out the mapping configuration:
+
+```java
+TraceConfiguration.builder()
+        .setAttributeMapping(ImmutableMap.of())
+        .build()
+```
+
 
 ## Useful Links
   - For more information on OpenTelemetry, visit: https://opentelemetry.io/  

@@ -23,6 +23,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.TraceServiceSettings;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
+import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import com.google.devtools.cloudtrace.v2.Span;
@@ -41,7 +42,7 @@ public class TraceExporter implements SpanExporter {
   private final CloudTraceClient cloudTraceClient;
   private final ProjectName projectName;
   private final String projectId;
-  private final Map<String, AttributeValue> fixedAttributes;
+  private final TraceTranslator translator;
 
   public static TraceExporter createWithDefaultConfiguration() throws IOException {
     TraceConfiguration configuration = TraceConfiguration.builder().build();
@@ -60,24 +61,31 @@ public class TraceExporter implements SpanExporter {
               : configuration.getCredentials();
 
       return TraceExporter.createWithCredentials(
-          projectId, credentials, configuration.getFixedAttributes(), configuration.getDeadline());
+          projectId,
+          credentials,
+          configuration.getAttributeMapping(),
+          configuration.getFixedAttributes(),
+          configuration.getDeadline());
     }
     return TraceExporter.createWithClient(
         projectId,
         new CloudTraceClientImpl(TraceServiceClient.create(stub)),
+        configuration.getAttributeMapping(),
         configuration.getFixedAttributes());
   }
 
   private static TraceExporter createWithClient(
       String projectId,
       CloudTraceClient cloudTraceClient,
+      ImmutableMap<String, String> attributeMappings,
       Map<String, AttributeValue> fixedAttributes) {
-    return new TraceExporter(projectId, cloudTraceClient, fixedAttributes);
+    return new TraceExporter(projectId, cloudTraceClient, attributeMappings, fixedAttributes);
   }
 
   private static TraceExporter createWithCredentials(
       String projectId,
       Credentials credentials,
+      ImmutableMap<String, String> attributeMappings,
       Map<String, AttributeValue> fixedAttributes,
       Duration deadline)
       throws IOException {
@@ -92,17 +100,19 @@ public class TraceExporter implements SpanExporter {
     return new TraceExporter(
         projectId,
         new CloudTraceClientImpl(TraceServiceClient.create(builder.build())),
+        attributeMappings,
         fixedAttributes);
   }
 
   TraceExporter(
       String projectId,
       CloudTraceClient cloudTraceClient,
+      ImmutableMap<String, String> attributeMappings,
       Map<String, AttributeValue> fixedAttributes) {
     this.projectId = projectId;
     this.cloudTraceClient = cloudTraceClient;
     this.projectName = ProjectName.of(projectId);
-    this.fixedAttributes = fixedAttributes;
+    this.translator = new TraceTranslator(attributeMappings, fixedAttributes);
   }
 
   // TODO @imnoahcook add support for flush
@@ -115,7 +125,7 @@ public class TraceExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spanDataList) {
     List<Span> spans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
-      spans.add(TraceTranslator.generateSpan(spanData, projectId, fixedAttributes));
+      spans.add(translator.generateSpan(spanData, projectId));
     }
 
     cloudTraceClient.batchWriteSpans(projectName, spans);

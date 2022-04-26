@@ -36,6 +36,7 @@ include ":detector-resources"
 include ":e2e-test-server"
 include ":examples-spring"
 include ":propagators-gcp"
+include ":shared-resourcemapping"
 
 project(':exporter-trace').projectDir =
 		"$rootDir/exporters/trace" as File
@@ -72,3 +73,6 @@ project(':examples-autoconf').projectDir =
 
 project(':propagators-gcp').projectDir =
 		"$rootDir/propagators/gcp" as File
+
+project(':shared-resourcemapping').projectDir =
+		"$rootDir/shared/resourcemapping" as File

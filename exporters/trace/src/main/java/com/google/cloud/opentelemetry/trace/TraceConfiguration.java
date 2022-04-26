@@ -22,6 +22,7 @@ import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import java.time.Duration;
 import java.util.Collections;
@@ -39,6 +40,24 @@ public abstract class TraceConfiguration {
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
 
   @VisibleForTesting static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
+
+  @VisibleForTesting
+  static final ImmutableMap<String, String> DEFAULT_ATTRIBUTE_MAPPING =
+      ImmutableMap.<String, String>builder()
+          .put("http.host", "/http/host")
+          .put("http.method", "/http/method")
+          .put("http.target", "/http/path")
+          .put("http.status_code", "/http/status_code")
+          .put("http.url", "/http/url")
+          .put("http.request_content_length", "/http/request/size")
+          .put("http.response_content_length", "/http/response/size")
+          .put("http.scheme", "/http/client_protocol")
+          .put("http.route", "/http/route")
+          .put("http.user_agent", "/http/user_agent")
+          .put("exception.type", "/error/name")
+          .put("exception.message", "/error/message")
+          .put("thread.id", "/tid")
+          .build();
 
   TraceConfiguration() {}
 
@@ -73,6 +92,13 @@ public abstract class TraceConfiguration {
   public abstract Map<String, AttributeValue> getFixedAttributes();
 
   /**
+   * Returns a map of attribute renames that will be applied to all attributes of exported spans.
+   *
+   * @return A map of OTEL name to GCP name for spans.
+   */
+  public abstract ImmutableMap<String, String> getAttributeMapping();
+
+  /**
    * Returns the deadline for exporting to Trace backend.
    *
    * <p>Default value is 10 seconds.
@@ -90,7 +116,8 @@ public abstract class TraceConfiguration {
     return new AutoValue_TraceConfiguration.Builder()
         .setProjectId(DEFAULT_PROJECT_ID)
         .setFixedAttributes(Collections.emptyMap())
-        .setDeadline(DEFAULT_DEADLINE);
+        .setDeadline(DEFAULT_DEADLINE)
+        .setAttributeMapping(DEFAULT_ATTRIBUTE_MAPPING);
   }
 
   /** Builder for {@link TraceConfiguration}. */
@@ -132,6 +159,29 @@ public abstract class TraceConfiguration {
      * @return this.
      */
     public abstract Builder setFixedAttributes(Map<String, AttributeValue> fixedAttributes);
+
+    /**
+     * Sets the map of attribute keys that will be renamed.
+     *
+     * @param attributeMapping the map of attribute OTEL key -> GCP attribute name.
+     * @return this.
+     */
+    public abstract Builder setAttributeMapping(ImmutableMap<String, String> attributeMapping);
+
+    /** Returns the builder for the attribute mapping. */
+    public abstract ImmutableMap.Builder<String, String> attributeMappingBuilder();
+
+    /**
+     * Adds an attribute mapping that replaces a key in OTEL with the given key name for GCP.
+     *
+     * @param otelKey the attribute name from OTEL.
+     * @param gcpKey the attribute name to use in GCP
+     * @return this.
+     */
+    public final Builder addAttributeMapping(String otelKey, String gcpKey) {
+      attributeMappingBuilder().put(otelKey, gcpKey);
+      return this;
+    }
 
     /**
      * Sets the deadline for exporting to Trace backend.

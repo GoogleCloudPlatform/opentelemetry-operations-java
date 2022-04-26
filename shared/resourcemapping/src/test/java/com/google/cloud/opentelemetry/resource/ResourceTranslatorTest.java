@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.metric;
+package com.google.cloud.opentelemetry.resource;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.api.MonitoredResource;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -58,12 +57,12 @@ public class ResourceTranslatorTest {
         });
     Attributes attributes = attrBuilder.build();
 
-    MonitoredResource monitoredResource =
+    GcpResource monitoredResource =
         ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
 
-    assertEquals("gce_instance", monitoredResource.getType());
+    assertEquals("gce_instance", monitoredResource.getResourceType());
 
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
@@ -106,11 +105,10 @@ public class ResourceTranslatorTest {
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
 
-    MonitoredResource monitoredResource =
-        ResourceTranslator.mapResource(Resource.create(attributes));
+    GcpResource monitoredResource = ResourceTranslator.mapResource(Resource.create(attributes));
 
-    assertEquals("k8s_container", monitoredResource.getType());
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    assertEquals("k8s_container", monitoredResource.getResourceType());
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
     assertEquals(5, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
@@ -150,11 +148,10 @@ public class ResourceTranslatorTest {
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
 
-    MonitoredResource monitoredResource =
-        ResourceTranslator.mapResource(Resource.create(attributes));
+    GcpResource monitoredResource = ResourceTranslator.mapResource(Resource.create(attributes));
 
-    assertEquals("aws_ec2_instance", monitoredResource.getType());
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    assertEquals("aws_ec2_instance", monitoredResource.getResourceType());
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
     assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
@@ -189,12 +186,12 @@ public class ResourceTranslatorTest {
         });
     Attributes attributes = attrBuilder.build();
 
-    MonitoredResource monitoredResource =
+    GcpResource monitoredResource =
         ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
 
-    assertEquals("generic_task", monitoredResource.getType());
+    assertEquals("generic_task", monitoredResource.getResourceType());
 
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
     assertEquals(4, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
@@ -216,12 +213,12 @@ public class ResourceTranslatorTest {
   public void testMapResourcesFallback() {
     Attributes attributes = Attributes.builder().build();
 
-    MonitoredResource monitoredResource =
+    GcpResource monitoredResource =
         ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
 
-    assertEquals("generic_task", monitoredResource.getType());
+    assertEquals("generic_task", monitoredResource.getResourceType());
 
-    Map<String, String> monitoredResourceMap = monitoredResource.getLabelsMap();
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
     assertEquals(4, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =

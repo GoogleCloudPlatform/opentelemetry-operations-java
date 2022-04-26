@@ -17,6 +17,8 @@ package com.google.cloud.opentelemetry.trace;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceTranslator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
@@ -32,16 +34,17 @@ import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 
 class TraceTranslator {
   private static final String AGENT_LABEL_KEY = "g.co/agent";
@@ -57,21 +60,43 @@ class TraceTranslator {
   private static final String SERVER_PREFIX = "Recv.";
   private static final String CLIENT_PREFIX = "Sent.";
 
-  private static final ImmutableMap<String, String> HTTP_ATTRIBUTE_MAPPING =
-      ImmutableMap.<String, String>builder()
-          .put("http.host", "/http/host")
-          .put("http.method", "/http/method")
-          .put("http.path", "/http/path")
-          .put("http.route", "/http/route")
-          .put("http.user_agent", "/http/user_agent")
-          .put("http.status_code", "/http/status_code")
-          .build();
+  private static final String INSTRUMENTATION_LIBRARY_NAME_KEY = "otel.scope.name";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION_KEY = "otel.scope.version";
+
+  private final ImmutableMap<String, String> attributeMapping;
+  private final Map<String, AttributeValue> fixedAttributes;
+
+  TraceTranslator(
+      ImmutableMap<String, String> attributeMapping, Map<String, AttributeValue> fixedAttributes) {
+    this.attributeMapping = attributeMapping;
+    this.fixedAttributes = fixedAttributes;
+  }
 
   @VisibleForTesting
-  static Span generateSpan(
-      SpanData spanData, String projectId, Map<String, AttributeValue> constAttributes) {
+  TraceTranslator() {
+    this(ImmutableMap.of(), Collections.emptyMap());
+  }
+
+  @VisibleForTesting
+  Span generateSpan(SpanData spanData, String projectId) {
     final String traceId = spanData.getTraceId();
     final String spanId = spanData.getSpanId();
+    Map<String, AttributeValue> extraAttributes = new HashMap<>(fixedAttributes);
+    // Add InstrumentationLibrary labels
+    if (spanData.getInstrumentationLibraryInfo().getName() != null) {
+      extraAttributes.put(
+          INSTRUMENTATION_LIBRARY_NAME_KEY,
+          toAttributeValueString(spanData.getInstrumentationLibraryInfo().getName()));
+    }
+    if (spanData.getInstrumentationLibraryInfo().getVersion() != null) {
+      extraAttributes.put(
+          INSTRUMENTATION_LIBRARY_VERSION_KEY,
+          toAttributeValueString(spanData.getInstrumentationLibraryInfo().getVersion()));
+    }
+    // Add resource labels
+    insertResourceAttributes(spanData.getResource(), extraAttributes);
+    // Add Agent label
+    extraAttributes.put(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
     SpanName spanName =
         SpanName.newBuilder().setProject(projectId).setTrace(traceId).setSpan(spanId).build();
     Span.Builder spanBuilder =
@@ -81,7 +106,7 @@ class TraceTranslator {
             .setDisplayName(
                 toTruncatableStringProto(toDisplayName(spanData.getName(), spanData.getKind())))
             .setStartTime(toTimestampProto(spanData.getStartEpochNanos()))
-            .setAttributes(toAttributesProto(spanData.getAttributes(), constAttributes))
+            .setAttributes(toAttributesProto(spanData.getAttributes(), extraAttributes))
             .setTimeEvents(toTimeEventsProto(spanData.getEvents()));
     StatusData status = spanData.getStatus();
     if (status != null) {
@@ -101,6 +126,29 @@ class TraceTranslator {
     boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
     spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
     return spanBuilder.build();
+  }
+
+  @VisibleForTesting
+  static void insertResourceAttributes(Resource resource, Map<String, AttributeValue> accumulator) {
+    // First add the GCP resource labels.
+    GcpResource gcpResource = ResourceTranslator.mapResource(resource);
+    gcpResource
+        .getResourceLabels()
+        .getLabels()
+        .forEach(
+            (k, v) -> {
+              accumulator.put(
+                  "g.co/r/" + gcpResource.getResourceType() + "/" + k, toAttributeValueString(v));
+            });
+    // Next add in all the otel resource labels if they don't already exist.
+    resource
+        .getAttributes()
+        .forEach(
+            (key, value) -> {
+              if (!accumulator.containsKey(key.getKey())) {
+                accumulator.put(key.getKey(), toAttributeValueProto(key, value));
+              }
+            });
   }
 
   @VisibleForTesting
@@ -132,34 +180,26 @@ class TraceTranslator {
   // These are the attributes of the Span, where usually we may add more
   // attributes like the agent.
   @VisibleForTesting
-  static Attributes toAttributesProto(
+  Attributes toAttributesProto(
       io.opentelemetry.api.common.Attributes attributes,
-      Map<String, AttributeValue> fixedAttributes) {
+      Map<String, AttributeValue> extraAttributes) {
     Attributes.Builder attributesBuilder = toAttributesBuilderProto(attributes);
-    // TODO(jsuereth): pull instrumentation library/version from SpanData and add as attribute.
-    attributesBuilder.putAttributeMap(AGENT_LABEL_KEY, AGENT_LABEL_VALUE);
-    for (Map.Entry<String, AttributeValue> entry : fixedAttributes.entrySet()) {
-      attributesBuilder.putAttributeMap(entry.getKey(), entry.getValue());
-    }
+    // Only write extra attributes if they don't exist already.
+    extraAttributes.forEach(
+        (key, value) -> {
+          if (!attributesBuilder.getAttributeMapMap().containsKey(key)) {
+            attributesBuilder.putAttributeMap(key, value);
+          }
+        });
     return attributesBuilder.build();
   }
 
-  private static Attributes toAttributesProto(io.opentelemetry.api.common.Attributes attributes) {
-    return toAttributesProto(attributes, ImmutableMap.of());
-  }
-
-  private static Attributes.Builder toAttributesBuilderProto(
+  private Attributes.Builder toAttributesBuilderProto(
       io.opentelemetry.api.common.Attributes attributes) {
-    Attributes.Builder attributesBuilder =
-        // TODO (nilebox): Does OpenTelemetry support droppedAttributesCount?
-        Attributes.newBuilder().setDroppedAttributesCount(0);
+    Attributes.Builder attributesBuilder = Attributes.newBuilder().setDroppedAttributesCount(0);
     attributes.forEach(
-        new BiConsumer<AttributeKey<?>, Object>() {
-          @Override
-          public void accept(AttributeKey<?> key, Object value) {
-            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value));
-          }
-        });
+        (key, value) ->
+            attributesBuilder.putAttributeMap(mapKey(key), toAttributeValueProto(key, value)));
     return attributesBuilder;
   }
 
@@ -178,20 +218,44 @@ class TraceTranslator {
       case DOUBLE:
         builder.setStringValue(toTruncatableStringProto(String.valueOf((value))));
         break;
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        builder.setStringValue(toTruncatableStringProto(jsonString((List<?>) value)));
+        break;
     }
     return builder.build();
   }
 
-  private static <T> String mapKey(AttributeKey<T> key) {
-    if (HTTP_ATTRIBUTE_MAPPING.containsKey(key.getKey())) {
-      return HTTP_ATTRIBUTE_MAPPING.get(key.getKey());
+  private static AttributeValue toAttributeValueString(String value) {
+    return AttributeValue.newBuilder().setStringValue(toTruncatableStringProto(value)).build();
+  }
+
+  private static String jsonString(List<?> values) {
+    StringBuilder result = new StringBuilder("[");
+    boolean first = true;
+    for (Object value : values) {
+      if (!first) {
+        result.append(',');
+      }
+      result.append(value.toString());
+      first = false;
+    }
+    result.append("]");
+    return result.toString();
+  }
+
+  private <T> String mapKey(AttributeKey<T> key) {
+    if (attributeMapping.containsKey(key.getKey())) {
+      return attributeMapping.get(key.getKey());
     } else {
       return key.getKey();
     }
   }
 
   @VisibleForTesting
-  static Span.TimeEvents toTimeEventsProto(List<EventData> events) {
+  Span.TimeEvents toTimeEventsProto(List<EventData> events) {
     Span.TimeEvents.Builder timeEventsBuilder = Span.TimeEvents.newBuilder();
 
     for (EventData event : events) {
@@ -201,7 +265,8 @@ class TraceTranslator {
               .setAnnotation(
                   Span.TimeEvent.Annotation.newBuilder()
                       .setDescription(toTruncatableStringProto(event.getName()))
-                      .setAttributes(toAttributesProto(event.getAttributes()))));
+                      .setAttributes(
+                          toAttributesProto(event.getAttributes(), Collections.emptyMap()))));
     }
 
     return timeEventsBuilder.build();
@@ -236,7 +301,7 @@ class TraceTranslator {
   }
 
   @VisibleForTesting
-  static Links toLinksProto(List<LinkData> links, int totalRecordedLinks) {
+  Links toLinksProto(List<LinkData> links, int totalRecordedLinks) {
     final Links.Builder linksBuilder =
         Links.newBuilder().setDroppedLinksCount(Math.max(0, totalRecordedLinks - links.size()));
     for (LinkData link : links) {
@@ -245,7 +310,7 @@ class TraceTranslator {
     return linksBuilder.build();
   }
 
-  private static Link toLinkProto(LinkData link) {
+  private Link toLinkProto(LinkData link) {
     checkNotNull(link);
     return Link.newBuilder()
         .setTraceId(link.getSpanContext().getTraceId())
@@ -281,6 +346,4 @@ class TraceTranslator {
   static AttributeValue toStringAttributeValueProto(String value) {
     return AttributeValue.newBuilder().setStringValue(toTruncatableStringProto(value)).build();
   }
-
-  private TraceTranslator() {}
 }
