@@ -87,7 +87,8 @@ public class ScenarioHandlerManager {
     Resource resource =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
-            .addPropertiesSupplier(() -> Map.of("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(
+                () -> Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none"))
             .registerShutdownHook(false)
             .build()
             .getResource();

@@ -45,6 +45,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import org.junit.Test;
@@ -102,7 +103,7 @@ public class MetricTranslatorTest {
     String description = "Metric Description";
     String unit = "ns";
     MetricData metricData =
-        MetricData.createLongSum(
+        ImmutableMetricData.createLongSum(
             aGceResource,
             anInstrumentationLibraryInfo,
             name,
@@ -132,7 +133,7 @@ public class MetricTranslatorTest {
     String description = "Metric Description";
     String unit = "ns";
     MetricData metricData =
-        MetricData.createDoubleHistogram(
+        ImmutableMetricData.createDoubleHistogram(
             aGceResource,
             anInstrumentationLibraryInfo,
             name,
@@ -161,7 +162,7 @@ public class MetricTranslatorTest {
     String description = "Metric Description";
     String unit = "ns";
     MetricData metricData =
-        MetricData.createDoubleSummary(
+        ImmutableMetricData.createDoubleSummary(
             aGceResource,
             anInstrumentationLibraryInfo,
             name,
@@ -180,7 +181,7 @@ public class MetricTranslatorTest {
     String description = "Metric Description";
     String unit = "ns";
     MetricData metricData =
-        MetricData.createDoubleSum(
+        ImmutableMetricData.createDoubleSum(
             aGceResource,
             anInstrumentationLibraryInfo,
             name,

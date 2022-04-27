@@ -63,6 +63,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -306,7 +307,7 @@ public class MetricExporterTest {
             aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =
-        MetricData.createDoubleSummary(
+        ImmutableMetricData.createDoubleSummary(
             aGceResource,
             anInstrumentationLibraryInfo,
             "Metric Name",
