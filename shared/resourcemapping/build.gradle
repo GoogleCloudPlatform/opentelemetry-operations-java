@@ -13,13 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+	id "maven-publish"
+	id "com.github.johnrengelman.shadow"
+}
+
+
 description = 'Resource helper utilites for GCP within OpenTelemetry'
 
 dependencies {
 	api(libraries.auto_value_annotations)
 	api(libraries.opentelemetry_api)
-	api(libraries.opentelemetry_sdk)
+	api(libraries.opentelemetry_sdk_common)
 	annotationProcessor(libraries.auto_value)
 	implementation(libraries.opentelemetry_semconv)
 	testImplementation(testLibraries.junit)
+	testImplementation(libraries.opentelemetry_semconv)
+}
+
+shadowJar{
+	classifier = null
+	relocate 'io.opentelemetry.semconv', 'com.google.cloud.opentelemetry.shadow.semconv'
+	dependencies {
+		exclude(dependency(libraries.opentelemetry_api))
+		exclude(dependency(libraries.auto_value_annotations))
+		exclude(dependency(libraries.opentelemetry_sdk_common))
+		exclude(dependency(libraries.opentelemetry_context))
+	}
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) { publication ->
+			from project.shadow.component(publication)
+			artifact sourcesJar
+			artifact javadocJar
+			components.java.withVariantsFromConfiguration(configurations.runtimeElements) {
+				skip()
+			}
+		}
+	}
 }
