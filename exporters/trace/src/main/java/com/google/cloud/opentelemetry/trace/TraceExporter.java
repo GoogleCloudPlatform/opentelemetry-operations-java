@@ -63,16 +63,13 @@ public class TraceExporter implements SpanExporter {
           configuration.getCredentials() == null
               ? GoogleCredentials.getApplicationDefault()
               : configuration.getCredentials();
-      TraceServiceSettings.Builder builder =
-          TraceServiceSettings.newBuilder()
-              .setCredentialsProvider(
-                  FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
+      TraceServiceSettings.Builder builder = TraceServiceSettings.newBuilder();
+
       // We only use the batchWriteSpans API in this exporter.
       builder
           .batchWriteSpansSettings()
           .setSimpleTimeoutNoRetries(
               org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
-      builder.setEndpoint(configuration.getTraceServiceEndpoint());
       // For testing, we need to hack around our gRPC config.
       if (configuration.getInsecureEndpoint()) {
         builder.setCredentialsProvider(NoCredentialsProvider.create());
@@ -82,6 +79,10 @@ public class TraceExporter implements SpanExporter {
                     ManagedChannelBuilder.forTarget(configuration.getTraceServiceEndpoint())
                         .usePlaintext()
                         .build())));
+      } else {
+        builder.setCredentialsProvider(
+            FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
+        builder.setEndpoint(configuration.getTraceServiceEndpoint());
       }
 
       return new TraceExporter(
