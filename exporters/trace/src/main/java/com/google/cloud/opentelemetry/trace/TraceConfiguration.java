@@ -89,7 +89,7 @@ public abstract class TraceConfiguration {
   /**
    * Returns the endpoint where to write traces.
    *
-   * <p> The default is tracing.googleapis.com:443</p>
+   * <p>The default is tracing.googleapis.com:443
    */
   @Nullable
   public abstract String getTraceServiceEndpoint();
@@ -169,7 +169,7 @@ public abstract class TraceConfiguration {
     @Deprecated
     public abstract Builder setTraceServiceStub(TraceServiceStub traceServiceStub);
 
-    /** Sets the endpoint where to write traces.  Defaults to tracing.googleapis.com:443. */
+    /** Sets the endpoint where to write traces. Defaults to tracing.googleapis.com:443. */
     public abstract Builder setTraceServiceEndpoint(String endpoint);
 
     /**

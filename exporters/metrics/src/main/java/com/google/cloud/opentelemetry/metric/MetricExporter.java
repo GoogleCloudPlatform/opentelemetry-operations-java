@@ -86,7 +86,8 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
                     checkNotNull(credentials, "Credentials not provided.")));
     builder
         .createMetricDescriptorSettings()
-        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+        .setSimpleTimeoutNoRetries(
+            org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
     builder.setEndpoint(configuration.getMetricServiceEndpoint());
     // For testing, we need to hack around our gRPC config.
     if (configuration.getInsecureEndpoint()) {
@@ -94,7 +95,9 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       builder.setTransportChannelProvider(
           FixedTransportChannelProvider.create(
               GrpcTransportChannel.create(
-                  ManagedChannelBuilder.forTarget(configuration.getMetricServiceEndpoint()).usePlaintext().build())));
+                  ManagedChannelBuilder.forTarget(configuration.getMetricServiceEndpoint())
+                      .usePlaintext()
+                      .build())));
     }
     return new MetricExporter(
         projectId,

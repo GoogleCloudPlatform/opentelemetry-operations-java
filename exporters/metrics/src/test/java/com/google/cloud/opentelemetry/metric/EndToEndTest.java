@@ -60,13 +60,14 @@ public class EndToEndTest {
 
   @Test
   public void testExportMockMetricsDataList() throws IOException {
-    exporter = MetricExporter.createWithConfiguration(
-    MetricConfiguration.builder()
-        .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
-        .setInsecureEndpoint(true)
-        .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
-        .setProjectId(aProjectId)
-        .build());
+    exporter =
+        MetricExporter.createWithConfiguration(
+            MetricConfiguration.builder()
+                .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
+                .setProjectId(aProjectId)
+                .build());
 
     // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(ImmutableList.of(aMetricData)).isSuccess());
@@ -74,13 +75,14 @@ public class EndToEndTest {
 
   @Test
   public void testExportEmptyMetricsList() throws IOException {
-    exporter = MetricExporter.createWithConfiguration(
-        MetricConfiguration.builder()
-            .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
-            .setInsecureEndpoint(true)
-            .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
-            .setProjectId(aProjectId)
-            .build());
+    exporter =
+        MetricExporter.createWithConfiguration(
+            MetricConfiguration.builder()
+                .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
+                .setProjectId(aProjectId)
+                .build());
     // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }

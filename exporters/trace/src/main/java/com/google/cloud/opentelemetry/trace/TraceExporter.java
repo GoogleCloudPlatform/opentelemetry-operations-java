@@ -70,7 +70,8 @@ public class TraceExporter implements SpanExporter {
       // We only use the batchWriteSpans API in this exporter.
       builder
           .batchWriteSpansSettings()
-          .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+          .setSimpleTimeoutNoRetries(
+              org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
       builder.setEndpoint(configuration.getTraceServiceEndpoint());
       // For testing, we need to hack around our gRPC config.
       if (configuration.getInsecureEndpoint()) {
@@ -78,7 +79,9 @@ public class TraceExporter implements SpanExporter {
         builder.setTransportChannelProvider(
             FixedTransportChannelProvider.create(
                 GrpcTransportChannel.create(
-                    ManagedChannelBuilder.forTarget(configuration.getTraceServiceEndpoint()).usePlaintext().build())));
+                    ManagedChannelBuilder.forTarget(configuration.getTraceServiceEndpoint())
+                        .usePlaintext()
+                        .build())));
       }
 
       return new TraceExporter(

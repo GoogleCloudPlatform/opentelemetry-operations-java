@@ -20,7 +20,6 @@ import static java.time.Duration.ZERO;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
-import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -32,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Configurations for {@link MetricExporter}.
  *
- * <p>See {@link #builder()} for usage.</p>
+ * <p>See {@link #builder()} for usage.
  */
 @AutoValue
 @Immutable
@@ -80,7 +79,7 @@ public abstract class MetricConfiguration {
   /**
    * Returns the endpoint where to write metrics.
    *
-   * <p> The default is monitoring.googleapis.com:443</p>
+   * <p>The default is monitoring.googleapis.com:443
    */
   @Nullable
   public abstract String getMetricServiceEndpoint();
@@ -92,12 +91,12 @@ public abstract class MetricConfiguration {
    * Constructs a {@link MetricConfiguration.Builder} with default values.
    *
    * <p>This will construct a builder with the following default configuration:
+   *
    * <ul>
-   *     <li>Project ID will be discovered/derived from the environment</li>
-   *     <li>Metric export deadline will 10 seconds</li>
-   *     <li>Metric descriptors will only be sent once for the lifetime of the exporter</li>
+   *   <li>Project ID will be discovered/derived from the environment
+   *   <li>Metric export deadline will 10 seconds
+   *   <li>Metric descriptors will only be sent once for the lifetime of the exporter
    * </ul>
-   * </p>
    *
    * @return the configuration builder.
    */
@@ -132,7 +131,7 @@ public abstract class MetricConfiguration {
     /** Set the policy for sending metric descriptors, e.g. always, never or once. */
     public abstract Builder setDescriptorStrategy(MetricDescriptorStrategy strategy);
 
-    /** Sets the endpoint where to write Metrics.  Defaults to monitoring.googleapis.com:443. */
+    /** Sets the endpoint where to write Metrics. Defaults to monitoring.googleapis.com:443. */
     public abstract Builder setMetricServiceEndpoint(String endpoint);
 
     @VisibleForTesting

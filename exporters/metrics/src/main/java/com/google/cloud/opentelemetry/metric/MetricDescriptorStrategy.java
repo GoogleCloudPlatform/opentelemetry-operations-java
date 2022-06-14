@@ -35,8 +35,8 @@ public interface MetricDescriptorStrategy {
   /**
    * A strategy that always sends metric descriptors.
    *
-   * <p>This means EVERY create timeseries call will include several metric descriptor calls.
-   * This is not recommended.</p>
+   * <p>This means EVERY create timeseries call will include several metric descriptor calls. This
+   * is not recommended.
    */
   public static MetricDescriptorStrategy ALWAYS_SEND =
       new MetricDescriptorStrategy() {

@@ -27,7 +27,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,15 +81,16 @@ public class EndToEndTest {
 
   @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
-
   @Test
   public void exportMockSpanDataList() throws IOException {
-    exporter = TraceExporter.createWithConfiguration(TraceConfiguration.builder()
-            .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
-            .setInsecureEndpoint(true)
-            .setFixedAttributes(FIXED_ATTRIBUTES)
-            .setProjectId(PROJECT_ID)
-        .build());
+    exporter =
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setFixedAttributes(FIXED_ATTRIBUTES)
+                .setProjectId(PROJECT_ID)
+                .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne =
@@ -120,12 +119,14 @@ public class EndToEndTest {
 
   @Test
   public void exportEmptySpanDataList() throws IOException {
-    exporter = TraceExporter.createWithConfiguration(TraceConfiguration.builder()
-        .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
-        .setInsecureEndpoint(true)
-        .setFixedAttributes(FIXED_ATTRIBUTES)
-        .setProjectId(PROJECT_ID)
-        .build());
+    exporter =
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setFixedAttributes(FIXED_ATTRIBUTES)
+                .setProjectId(PROJECT_ID)
+                .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();

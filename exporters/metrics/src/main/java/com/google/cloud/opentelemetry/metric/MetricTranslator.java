@@ -43,9 +43,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Utility methods to translate metrics from OTEL to GCM format.
- */
+/** Utility methods to translate metrics from OTEL to GCM format. */
 public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
@@ -56,6 +54,7 @@ public final class MetricTranslator {
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
+
   static Metric mapMetric(Attributes attributes, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
     attributes.forEach(
