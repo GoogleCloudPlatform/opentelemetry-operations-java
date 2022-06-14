@@ -27,6 +27,8 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +57,6 @@ public class EndToEndTest {
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
   private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
 
-  private MockCloudTraceClient mockCloudTraceClient;
   private TraceExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
@@ -75,26 +76,22 @@ public class EndToEndTest {
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
     }
 
-    public MockCloudTraceClient newCloudTraceClient() {
-      return new MockCloudTraceClient(getContainerIpAddress(), getFirstMappedPort());
+    public String getTraceServiceEndpoint() {
+      return getContainerIpAddress() + ":" + getFirstMappedPort();
     }
   }
 
   @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
-  @Before
-  public void setup() {
-    mockCloudTraceClient = mockContainer.newCloudTraceClient();
-  }
 
   @Test
-  public void exportMockSpanDataList() {
-    exporter =
-        new TraceExporter(
-            PROJECT_ID,
-            mockCloudTraceClient,
-            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
-            FIXED_ATTRIBUTES);
+  public void exportMockSpanDataList() throws IOException {
+    exporter = TraceExporter.createWithConfiguration(TraceConfiguration.builder()
+            .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+            .setInsecureEndpoint(true)
+            .setFixedAttributes(FIXED_ATTRIBUTES)
+            .setProjectId(PROJECT_ID)
+        .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne =
@@ -122,13 +119,13 @@ public class EndToEndTest {
   }
 
   @Test
-  public void exportEmptySpanDataList() {
-    exporter =
-        new TraceExporter(
-            PROJECT_ID,
-            mockCloudTraceClient,
-            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
-            FIXED_ATTRIBUTES);
+  public void exportEmptySpanDataList() throws IOException {
+    exporter = TraceExporter.createWithConfiguration(TraceConfiguration.builder()
+        .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+        .setInsecureEndpoint(true)
+        .setFixedAttributes(FIXED_ATTRIBUTES)
+        .setProjectId(PROJECT_ID)
+        .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();

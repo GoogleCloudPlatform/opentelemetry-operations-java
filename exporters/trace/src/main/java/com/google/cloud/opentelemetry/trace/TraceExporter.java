@@ -18,6 +18,9 @@ package com.google.cloud.opentelemetry.trace;
 import static com.google.api.client.util.Preconditions.checkNotNull;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v2.TraceServiceClient;
@@ -27,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import com.google.devtools.cloudtrace.v2.Span;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -54,18 +58,35 @@ public class TraceExporter implements SpanExporter {
     String projectId = configuration.getProjectId();
     TraceServiceStub stub = configuration.getTraceServiceStub();
 
+    // TODO: Remove stub.
     if (stub == null) {
       Credentials credentials =
           configuration.getCredentials() == null
               ? GoogleCredentials.getApplicationDefault()
               : configuration.getCredentials();
+      TraceServiceSettings.Builder builder =
+          TraceServiceSettings.newBuilder()
+              .setCredentialsProvider(
+                  FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
+      // We only use the batchWriteSpans API in this exporter.
+      builder
+          .batchWriteSpansSettings()
+          .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+      builder.setEndpoint(configuration.getTraceServiceEndpoint());
+      // For testing, we need to hack around our gRPC config.
+      if (configuration.getInsecureEndpoint()) {
+        builder.setCredentialsProvider(NoCredentialsProvider.create());
+        builder.setTransportChannelProvider(
+            FixedTransportChannelProvider.create(
+                GrpcTransportChannel.create(
+                    ManagedChannelBuilder.forTarget(configuration.getTraceServiceEndpoint()).usePlaintext().build())));
+      }
 
-      return TraceExporter.createWithCredentials(
+      return new TraceExporter(
           projectId,
-          credentials,
+          new CloudTraceClientImpl(TraceServiceClient.create(builder.build())),
           configuration.getAttributeMapping(),
-          configuration.getFixedAttributes(),
-          configuration.getDeadline());
+          configuration.getFixedAttributes());
     }
     return TraceExporter.createWithClient(
         projectId,
@@ -80,28 +101,6 @@ public class TraceExporter implements SpanExporter {
       ImmutableMap<String, String> attributeMappings,
       Map<String, AttributeValue> fixedAttributes) {
     return new TraceExporter(projectId, cloudTraceClient, attributeMappings, fixedAttributes);
-  }
-
-  private static TraceExporter createWithCredentials(
-      String projectId,
-      Credentials credentials,
-      ImmutableMap<String, String> attributeMappings,
-      Map<String, AttributeValue> fixedAttributes,
-      Duration deadline)
-      throws IOException {
-    TraceServiceSettings.Builder builder =
-        TraceServiceSettings.newBuilder()
-            .setCredentialsProvider(
-                FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
-    // We only use the batchWriteSpans API in this exporter.
-    builder
-        .batchWriteSpansSettings()
-        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new TraceExporter(
-        projectId,
-        new CloudTraceClientImpl(TraceServiceClient.create(builder.build())),
-        attributeMappings,
-        fixedAttributes);
   }
 
   TraceExporter(
