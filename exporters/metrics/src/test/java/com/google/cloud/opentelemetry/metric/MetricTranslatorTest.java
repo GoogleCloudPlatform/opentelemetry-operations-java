@@ -57,7 +57,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapMetricSucceeds() {
-    String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
+    String type = "workload.googleapis.com/" + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
     aLongPoint
@@ -70,7 +70,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapMetricWithWierdAttributeNameSucceeds() {
-    String type = "custom.googleapis.com/OpenTelemetry/" + anInstrumentationLibraryInfo.getName();
+    String type = "workload.googleapis.com/" + anInstrumentationLibraryInfo.getName();
     Attributes attributes =
         io.opentelemetry.api.common.Attributes.of(stringKey("test.bad"), "value");
     Metric expectedMetric =

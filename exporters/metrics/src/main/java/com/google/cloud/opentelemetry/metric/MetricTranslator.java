@@ -50,7 +50,7 @@ public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
-  static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  static final String DESCRIPTOR_TYPE_URL = "workload.googleapis.com/";
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;

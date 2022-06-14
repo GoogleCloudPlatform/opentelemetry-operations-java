@@ -24,6 +24,7 @@ dependencies {
 	api(libraries.google_cloud_core)
 	api(libraries.google_cloud_monitoring)
 	implementation(project(':shared-resourcemapping'))
+	testImplementation(libraries.opentelemetry_semconv)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.mockito)
 	testImplementation(testLibraries.slf4j_simple)
