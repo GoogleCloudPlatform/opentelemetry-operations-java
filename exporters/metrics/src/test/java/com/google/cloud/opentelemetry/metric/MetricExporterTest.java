@@ -81,7 +81,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class MetricExporterTest {
 
-  @Mock private CloudMetricClientImpl mockClient;
+  @Mock private CloudMetricClient mockClient;
 
   @Captor private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
 

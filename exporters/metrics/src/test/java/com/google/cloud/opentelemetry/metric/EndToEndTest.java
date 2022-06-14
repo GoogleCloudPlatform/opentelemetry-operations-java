@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.ArrayList;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,6 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 @RunWith(JUnit4.class)
 public class EndToEndTest {
   private MetricExporter exporter;
-  private MockCloudMetricClient mockClient;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
   private static class CloudOperationsMockContainer
@@ -53,27 +51,37 @@ public class EndToEndTest {
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
     }
 
-    public MockCloudMetricClient newCloudMetricClient() throws IOException {
-      return new MockCloudMetricClient(getContainerIpAddress(), getFirstMappedPort());
+    public String getMetricServiceEndpoint() {
+      return getContainerIpAddress() + ":" + getFirstMappedPort();
     }
   }
 
   @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
-  @Before
-  public void setup() throws Exception {
-    mockClient = mockContainer.newCloudMetricClient();
-  }
-
   @Test
-  public void testExportMockMetricsDataList() {
-    exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+  public void testExportMockMetricsDataList() throws IOException {
+    exporter = MetricExporter.createWithConfiguration(
+    MetricConfiguration.builder()
+        .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
+        .setInsecureEndpoint(true)
+        .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
+        .setProjectId(aProjectId)
+        .build());
+
+    // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(ImmutableList.of(aMetricData)).isSuccess());
   }
 
   @Test
-  public void testExportEmptyMetricsList() {
-    exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+  public void testExportEmptyMetricsList() throws IOException {
+    exporter = MetricExporter.createWithConfiguration(
+        MetricConfiguration.builder()
+            .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
+            .setInsecureEndpoint(true)
+            .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
+            .setProjectId(aProjectId)
+            .build());
+    // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }
 }

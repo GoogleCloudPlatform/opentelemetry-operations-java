@@ -19,6 +19,9 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
@@ -29,6 +32,7 @@ import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -77,10 +81,26 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
             ? GoogleCredentials.getApplicationDefault()
             : configuration.getCredentials();
 
-    return MetricExporter.createWithCredentials(
+    MetricServiceSettings.Builder builder =
+        MetricServiceSettings.newBuilder()
+            .setCredentialsProvider(
+                FixedCredentialsProvider.create(
+                    checkNotNull(credentials, "Credentials not provided.")));
+    builder
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+    builder.setEndpoint(configuration.getMetricServiceEndpoint());
+    // For testing, we need to hack around our gRPC config.
+    if (configuration.getInsecureEndpoint()) {
+      builder.setCredentialsProvider(NoCredentialsProvider.create());
+      builder.setTransportChannelProvider(
+          FixedTransportChannelProvider.create(
+              GrpcTransportChannel.create(
+                  ManagedChannelBuilder.forTarget(configuration.getMetricServiceEndpoint()).usePlaintext().build())));
+    }
+    return new MetricExporter(
         projectId,
-        credentials,
-        configuration.getDeadline(),
+        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy());
   }
 
@@ -90,26 +110,6 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy) {
     return new MetricExporter(projectId, metricServiceClient, descriptorStrategy);
-  }
-
-  private static MetricExporter createWithCredentials(
-      String projectId,
-      Credentials credentials,
-      Duration deadline,
-      MetricDescriptorStrategy descriptorStrategy)
-      throws IOException {
-    MetricServiceSettings.Builder builder =
-        MetricServiceSettings.newBuilder()
-            .setCredentialsProvider(
-                FixedCredentialsProvider.create(
-                    checkNotNull(credentials, "Credentials not provided.")));
-    builder
-        .createMetricDescriptorSettings()
-        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(
-        projectId,
-        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
-        descriptorStrategy);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {

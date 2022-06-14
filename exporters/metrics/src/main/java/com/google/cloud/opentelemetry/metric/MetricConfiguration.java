@@ -20,6 +20,9 @@ import static java.time.Duration.ZERO;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
+import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.time.Duration;
@@ -75,6 +78,17 @@ public abstract class MetricConfiguration {
   public abstract MetricDescriptorStrategy getDescriptorStrategy();
 
   /**
+   * Returns the endpoint where to write metrics.
+   *
+   * <p> The default is monitoring.googleapis.com:443</p>
+   */
+  @Nullable
+  public abstract String getMetricServiceEndpoint();
+
+  @VisibleForTesting
+  abstract boolean getInsecureEndpoint();
+
+  /**
    * Constructs a {@link MetricConfiguration.Builder} with default values.
    *
    * <p>This will construct a builder with the following default configuration:
@@ -91,7 +105,9 @@ public abstract class MetricConfiguration {
     return new AutoValue_MetricConfiguration.Builder()
         .setProjectId(DEFAULT_PROJECT_ID)
         .setDeadline(DEFAULT_DEADLINE)
-        .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE);
+        .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
+        .setInsecureEndpoint(false)
+        .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 
   /** Builder for {@link MetricConfiguration}. */
@@ -115,6 +131,12 @@ public abstract class MetricConfiguration {
 
     /** Set the policy for sending metric descriptors, e.g. always, never or once. */
     public abstract Builder setDescriptorStrategy(MetricDescriptorStrategy strategy);
+
+    /** Sets the endpoint where to write Metrics.  Defaults to monitoring.googleapis.com:443. */
+    public abstract Builder setMetricServiceEndpoint(String endpoint);
+
+    @VisibleForTesting
+    abstract Builder setInsecureEndpoint(boolean value);
 
     abstract MetricConfiguration autoBuild();
 
