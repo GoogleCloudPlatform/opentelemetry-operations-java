@@ -72,23 +72,15 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
-    MetricServiceStub stub = configuration.getMetricServiceStub();
+    Credentials credentials =
+        configuration.getCredentials() == null
+            ? GoogleCredentials.getApplicationDefault()
+            : configuration.getCredentials();
 
-    if (stub == null) {
-      Credentials credentials =
-          configuration.getCredentials() == null
-              ? GoogleCredentials.getApplicationDefault()
-              : configuration.getCredentials();
-
-      return MetricExporter.createWithCredentials(
-          projectId,
-          credentials,
-          configuration.getDeadline(),
-          configuration.getDescriptorStrategy());
-    }
-    return MetricExporter.createWithClient(
+    return MetricExporter.createWithCredentials(
         projectId,
-        new CloudMetricClientImpl(MetricServiceClient.create(stub)),
+        credentials,
+        configuration.getDeadline(),
         configuration.getDescriptorStrategy());
   }
 

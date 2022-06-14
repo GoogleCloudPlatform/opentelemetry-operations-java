@@ -33,7 +33,7 @@ public interface MetricTimeSeriesBuilder {
   /** Records a DoubleHistogramPointData for the given metric. */
   void recordPoint(MetricData metric, HistogramPointData point);
 
-  /** The set of descriptors assocaited with the current time series. */
+  /** The set of descriptors associated with the current time series. */
   Collection<MetricDescriptor> getDescriptors();
   /** The set (unique by metric+label) of time series that were built. */
   List<TimeSeries> getTimeSeries();

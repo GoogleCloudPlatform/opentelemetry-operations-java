@@ -60,6 +60,6 @@ class MockCloudMetricClient implements CloudMetricClient {
   }
 
   public final void shutdown() {
-    // Empty because not being tested
+    stub.shutdown();
   }
 }
