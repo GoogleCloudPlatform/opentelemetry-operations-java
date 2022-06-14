@@ -74,21 +74,7 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
-    Credentials credentials =
-        configuration.getCredentials() == null
-            ? GoogleCredentials.getApplicationDefault()
-            : configuration.getCredentials();
-
-    MetricServiceSettings.Builder builder =
-        MetricServiceSettings.newBuilder()
-            .setCredentialsProvider(
-                FixedCredentialsProvider.create(
-                    checkNotNull(credentials, "Credentials not provided.")));
-    builder
-        .createMetricDescriptorSettings()
-        .setSimpleTimeoutNoRetries(
-            org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
-    builder.setEndpoint(configuration.getMetricServiceEndpoint());
+    MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
     // For testing, we need to hack around our gRPC config.
     if (configuration.getInsecureEndpoint()) {
       builder.setCredentialsProvider(NoCredentialsProvider.create());
@@ -98,7 +84,22 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
                   ManagedChannelBuilder.forTarget(configuration.getMetricServiceEndpoint())
                       .usePlaintext()
                       .build())));
+    } else {
+      // For any other endpoint, we force credentials to exist.
+      Credentials credentials =
+          configuration.getCredentials() == null
+              ? GoogleCredentials.getApplicationDefault()
+              : configuration.getCredentials();
+
+      builder.setCredentialsProvider(
+          FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
+      builder.setEndpoint(configuration.getMetricServiceEndpoint());
     }
+    builder
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(
+            org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+
     return new MetricExporter(
         projectId,
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
