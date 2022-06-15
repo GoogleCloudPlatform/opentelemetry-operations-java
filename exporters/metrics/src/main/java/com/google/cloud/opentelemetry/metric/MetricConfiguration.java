@@ -46,6 +46,8 @@ public abstract class MetricConfiguration {
   /**
    * Returns the {@link Credentials}.
    *
+   * <p>Defaults to the application default credential's project.</p>
+   *
    * @return the {@code Credentials}.
    */
   @Nullable

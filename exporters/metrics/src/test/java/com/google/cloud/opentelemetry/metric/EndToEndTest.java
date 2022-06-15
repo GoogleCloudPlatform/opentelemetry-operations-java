@@ -68,8 +68,6 @@ public class EndToEndTest {
                 .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
                 .setProjectId(aProjectId)
                 .build());
-
-    // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(ImmutableList.of(aMetricData)).isSuccess());
   }
 
@@ -83,7 +81,6 @@ public class EndToEndTest {
                 .setDescriptorStrategy(MetricDescriptorStrategy.ALWAYS_SEND)
                 .setProjectId(aProjectId)
                 .build());
-    // exporter = new MetricExporter(aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     assertTrue(exporter.export(new ArrayList<>()).isSuccess());
   }
 }
