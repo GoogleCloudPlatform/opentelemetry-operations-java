@@ -22,7 +22,7 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDe
 import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
 
 import com.google.api.MetricDescriptor;
-import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.Attributes;

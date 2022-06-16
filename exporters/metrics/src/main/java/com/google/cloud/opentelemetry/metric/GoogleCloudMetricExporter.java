@@ -48,9 +48,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
+public class GoogleCloudMetricExporter
+    implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(GoogleCloudMetricExporter.class);
 
   private static final String PROJECT_NAME_PREFIX = "projects/";
   private static final int MAX_BATCH_SIZE = 200;
@@ -59,19 +60,19 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final String projectId;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
 
-  MetricExporter(
+  GoogleCloudMetricExporter(
       String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
     this.projectId = projectId;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
   }
 
-  public static MetricExporter createWithDefaultConfiguration() throws IOException {
+  public static GoogleCloudMetricExporter createWithDefaultConfiguration() throws IOException {
     MetricConfiguration configuration = MetricConfiguration.builder().build();
-    return MetricExporter.createWithConfiguration(configuration);
+    return GoogleCloudMetricExporter.createWithConfiguration(configuration);
   }
 
-  public static MetricExporter createWithConfiguration(MetricConfiguration configuration)
+  public static GoogleCloudMetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
     MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
@@ -100,18 +101,18 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
         .setSimpleTimeoutNoRetries(
             org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
 
-    return new MetricExporter(
+    return new GoogleCloudMetricExporter(
         projectId,
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy());
   }
 
   @VisibleForTesting
-  static MetricExporter createWithClient(
+  static GoogleCloudMetricExporter createWithClient(
       String projectId,
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy) {
-    return new MetricExporter(projectId, metricServiceClient, descriptorStrategy);
+    return new GoogleCloudMetricExporter(projectId, metricServiceClient, descriptorStrategy);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {

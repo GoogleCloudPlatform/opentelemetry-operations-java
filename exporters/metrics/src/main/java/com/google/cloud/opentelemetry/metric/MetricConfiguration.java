@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Configurations for {@link MetricExporter}.
+ * Configurations for {@link GoogleCloudMetricExporter}.
  *
  * <p>See {@link #builder()} for usage.
  */
@@ -46,7 +46,7 @@ public abstract class MetricConfiguration {
   /**
    * Returns the {@link Credentials}.
    *
-   * <p>Defaults to the application default credential's project.</p>
+   * <p>Defaults to the application default credential's project.
    *
    * @return the {@code Credentials}.
    */

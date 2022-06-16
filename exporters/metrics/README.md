@@ -35,12 +35,13 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 
 import com.google.cloud.opentelemetry.metric.MetricConfiguration;
 import com.google.cloud.opentelemetry.metric.MetricDescriptorStrategy;
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 
 import java.util.Collections;
 
 // Configure the exporter in code.
 MetricExporter cloudMonitoringExporter =
-  com.google.cloud.opentelemetry.metric.MetricExporter.createWithConfiguration(
+  GoogleCloudMetricExporter.createWithConfiguration(
       MetricConfiguration.builder()
       // Configure the cloud project id.  Note: this is autodiscovered by default.
       .setProjectId(...)
@@ -59,7 +60,9 @@ MeterProvider provider = SdkMeterProvider.builder()
     // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
     // Rate at which data can be written to a single time series: one point each 10
     // seconds.
-    PeriodicMetricReader.create(metricExporter, java.time.Duration.ofSeconds(20)))
+    PeriodicMetricReader.builder(metricExporter)
+    .setImterval(java.time.Duration.ofSeconds(20))
+    .build())
   .build();
 ```
 

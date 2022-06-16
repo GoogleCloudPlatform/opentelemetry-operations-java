@@ -59,10 +59,6 @@ public class TraceExporter implements SpanExporter {
 
     // TODO: Remove stub.
     if (stub == null) {
-      Credentials credentials =
-          configuration.getCredentials() == null
-              ? GoogleCredentials.getApplicationDefault()
-              : configuration.getCredentials();
       TraceServiceSettings.Builder builder = TraceServiceSettings.newBuilder();
 
       // We only use the batchWriteSpans API in this exporter.
@@ -80,6 +76,10 @@ public class TraceExporter implements SpanExporter {
                         .usePlaintext()
                         .build())));
       } else {
+        Credentials credentials =
+            configuration.getCredentials() == null
+                ? GoogleCredentials.getApplicationDefault()
+                : configuration.getCredentials();
         builder.setCredentialsProvider(
             FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
         builder.setEndpoint(configuration.getTraceServiceEndpoint());
@@ -117,10 +117,10 @@ public class TraceExporter implements SpanExporter {
     this.translator = new TraceTranslator(attributeMappings, fixedAttributes);
   }
 
-  // TODO @imnoahcook add support for flush
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofFailure();
+    // We do no exporter buffering of spans, so we're always flushed.
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

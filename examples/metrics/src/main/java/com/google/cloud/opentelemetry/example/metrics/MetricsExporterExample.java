@@ -15,7 +15,7 @@
  */
 package com.google.cloud.opentelemetry.example.metrics;
 
-import com.google.cloud.opentelemetry.metric.MetricExporter;
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -31,7 +31,8 @@ public class MetricsExporterExample {
 
   private static void setupMetricExporter() {
     try {
-      MetricExporter metricExporter = MetricExporter.createWithDefaultConfiguration();
+      GoogleCloudMetricExporter metricExporter =
+          GoogleCloudMetricExporter.createWithDefaultConfiguration();
       METER_PROVIDER =
           SdkMeterProvider.builder()
               .registerMetricReader(

@@ -32,7 +32,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
-  private MetricExporter exporter;
+  private GoogleCloudMetricExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
   private static class CloudOperationsMockContainer
@@ -61,7 +61,7 @@ public class EndToEndTest {
   @Test
   public void testExportMockMetricsDataList() throws IOException {
     exporter =
-        MetricExporter.createWithConfiguration(
+        GoogleCloudMetricExporter.createWithConfiguration(
             MetricConfiguration.builder()
                 .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
                 .setInsecureEndpoint(true)
@@ -74,7 +74,7 @@ public class EndToEndTest {
   @Test
   public void testExportEmptyMetricsList() throws IOException {
     exporter =
-        MetricExporter.createWithConfiguration(
+        GoogleCloudMetricExporter.createWithConfiguration(
             MetricConfiguration.builder()
                 .setMetricServiceEndpoint(mockContainer.getMetricServiceEndpoint())
                 .setInsecureEndpoint(true)
