@@ -21,10 +21,24 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import java.util.List;
 
+/** Wrapper interface for writing to Google Cloud Monitoring. */
 public interface CloudMetricClient {
+  /**
+   * Construct a metric descriptor.
+   *
+   * <p>This informs Cloud Monitoring of label descriptions, metric descriptions, units, etc.
+   */
   MetricDescriptor createMetricDescriptor(CreateMetricDescriptorRequest request);
 
+  /**
+   * Send a timeseries to Cloud Monitoring.
+   *
+   * @param name The name of the project where we write the timeseries.
+   * @param timeSeries The list of timeseries to write.
+   *     <p>Note: This can only take one point at per timeseries.
+   */
   void createTimeSeries(ProjectName name, List<TimeSeries> timeSeries);
 
+  /** Shutdown this client, cleaning up any resources. */
   void shutdown();
 }

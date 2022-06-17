@@ -79,9 +79,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
-public class MetricExporterTest {
+public class GoogleCloudMetricExporterTest {
 
-  @Mock private CloudMetricClientImpl mockClient;
+  @Mock private CloudMetricClient mockClient;
 
   @Captor private ArgumentCaptor<ArrayList<TimeSeries>> timeSeriesArgCaptor;
 
@@ -102,14 +102,16 @@ public class MetricExporterTest {
             .setProjectId(aProjectId)
             .setCredentials(aFakeCredential)
             .build();
-    MetricExporter exporter = MetricExporter.createWithConfiguration(configuration);
+    GoogleCloudMetricExporter exporter =
+        GoogleCloudMetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
 
   @Test
   public void testExportSendsAllDescriptorsOnce() {
-    MetricExporter exporter =
-        MetricExporter.createWithClient(aProjectId, mockClient, MetricDescriptorStrategy.SEND_ONCE);
+    GoogleCloudMetricExporter exporter =
+        GoogleCloudMetricExporter.createWithClient(
+            aProjectId, mockClient, MetricDescriptorStrategy.SEND_ONCE);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
     CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -189,8 +191,8 @@ public class MetricExporterTest {
             .build();
     ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    MetricExporter exporter =
-        MetricExporter.createWithClient(
+    GoogleCloudMetricExporter exporter =
+        GoogleCloudMetricExporter.createWithClient(
             aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
@@ -286,8 +288,8 @@ public class MetricExporterTest {
                     .putLabels("zone", aCloudZone)
                     .build())
             .build();
-    MetricExporter exporter =
-        MetricExporter.createWithClient(
+    GoogleCloudMetricExporter exporter =
+        GoogleCloudMetricExporter.createWithClient(
             aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -302,8 +304,8 @@ public class MetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
-    MetricExporter exporter =
-        MetricExporter.createWithClient(
+    GoogleCloudMetricExporter exporter =
+        GoogleCloudMetricExporter.createWithClient(
             aProjectId, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =

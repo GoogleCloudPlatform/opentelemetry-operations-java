@@ -109,8 +109,8 @@ subprojects {
 		googleCloudVersion = '2.0.5'
 		googleTraceVersion = '2.0.0'
 		cloudMonitoringVersion = '3.0.0'
-		openTelemetryVersion = '1.13.0'
-		openTelemetryInstrumentationVersion = '1.13.0'
+		openTelemetryVersion = '1.15.0'
+		openTelemetryInstrumentationVersion = '1.14.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
 		pubSubVersion = '1.111.2'
@@ -139,7 +139,7 @@ subprojects {
 			opentelemetry_autoconfigure_spi : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
 			opentelemetry_autoconfigure  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
 			opentelemetry_semconv        : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
-			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha",
+			opentelemetry_sdk_metrics    : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}",
 			opentelemetry_sdk_autoconf   : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_resources  : "io.opentelemetry:opentelemetry-sdk-extension-resources:${openTelemetryVersion}",
 			opentelemetry_agent_extension: "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",

@@ -22,7 +22,8 @@ import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import java.util.List;
 
-public class CloudMetricClientImpl implements CloudMetricClient {
+/** Directly talks to Cloud Monitoring. */
+public final class CloudMetricClientImpl implements CloudMetricClient {
   private final MetricServiceClient metricServiceClient;
 
   public CloudMetricClientImpl(MetricServiceClient metricServiceClient) {

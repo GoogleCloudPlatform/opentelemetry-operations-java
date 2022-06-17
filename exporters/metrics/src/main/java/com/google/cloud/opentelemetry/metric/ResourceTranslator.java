@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.resources.Resource;
 public class ResourceTranslator {
   private ResourceTranslator() {}
 
-  /** Converts a Java OpenTelemetyr SDK resoruce into a MonitoredResource from GCP. */
+  /** Converts a Java OpenTelemetry SDK resource into a MonitoredResource from GCP. */
   public static MonitoredResource mapResource(Resource resource) {
     GcpResource gcpResource =
         com.google.cloud.opentelemetry.resource.ResourceTranslator.mapResource(resource);

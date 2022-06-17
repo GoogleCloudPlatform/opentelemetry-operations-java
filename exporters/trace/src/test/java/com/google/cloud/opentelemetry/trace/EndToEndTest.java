@@ -27,13 +27,13 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +55,6 @@ public class EndToEndTest {
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
   private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
 
-  private MockCloudTraceClient mockCloudTraceClient;
   private TraceExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
@@ -67,34 +66,31 @@ public class EndToEndTest {
               .withDockerfileFromBuilder(
                   builder ->
                       builder
-                          .from("golang:1.15")
-                          .run("go get github.com/googleinterns/cloud-operations-api-mock/cmd")
-                          .cmd(
-                              "go run github.com/googleinterns/cloud-operations-api-mock/cmd --address=:8080")
+                          .from("golang:1.17")
+                          .run(
+                              "go install github.com/googleinterns/cloud-operations-api-mock/cmd@latest")
+                          .cmd("cmd --address=:8080")
                           .build()));
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
     }
 
-    public MockCloudTraceClient newCloudTraceClient() {
-      return new MockCloudTraceClient(getContainerIpAddress(), getFirstMappedPort());
+    public String getTraceServiceEndpoint() {
+      return getContainerIpAddress() + ":" + getFirstMappedPort();
     }
   }
 
   @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
-  @Before
-  public void setup() {
-    mockCloudTraceClient = mockContainer.newCloudTraceClient();
-  }
-
   @Test
-  public void exportMockSpanDataList() {
+  public void exportMockSpanDataList() throws IOException {
     exporter =
-        new TraceExporter(
-            PROJECT_ID,
-            mockCloudTraceClient,
-            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
-            FIXED_ATTRIBUTES);
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setFixedAttributes(FIXED_ATTRIBUTES)
+                .setProjectId(PROJECT_ID)
+                .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     TestSpanData spanDataOne =
@@ -122,13 +118,15 @@ public class EndToEndTest {
   }
 
   @Test
-  public void exportEmptySpanDataList() {
+  public void exportEmptySpanDataList() throws IOException {
     exporter =
-        new TraceExporter(
-            PROJECT_ID,
-            mockCloudTraceClient,
-            TraceConfiguration.DEFAULT_ATTRIBUTE_MAPPING,
-            FIXED_ATTRIBUTES);
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setTraceServiceEndpoint(mockContainer.getTraceServiceEndpoint())
+                .setInsecureEndpoint(true)
+                .setFixedAttributes(FIXED_ATTRIBUTES)
+                .setProjectId(PROJECT_ID)
+                .build());
     Collection<SpanData> spanDataList = new ArrayList<>();
 
     // Invokes export();

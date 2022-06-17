@@ -37,53 +37,23 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetricTranslator {
+/** Utility methods to translate metrics from OTEL to GCM format. */
+public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
-  static final String DESCRIPTOR_TYPE_URL = "custom.googleapis.com/OpenTelemetry/";
+  static final String DESCRIPTOR_TYPE_URL = "workload.googleapis.com/";
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
-  private static final String DEFAULT_RESOURCE_TYPE = "global";
-  private static final String RESOURCE_PROJECT_ID_LABEL = "project_id";
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
-
-  // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-  private static final Map<String, AttributeKey<String>> gceMap =
-      Stream.of(
-              new Object[][] {
-                {"project_id", ResourceAttributes.CLOUD_ACCOUNT_ID},
-                {"instance_id", ResourceAttributes.HOST_ID},
-                {"zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE}
-              })
-          .collect(
-              Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
-
-  // Mapping outlined at https://cloud.google.com/monitoring/api/resources#tag_gke_container
-  private static final Map<String, AttributeKey<String>> gkeMap =
-      Stream.of(
-              new Object[][] {
-                {"project_id", ResourceAttributes.CLOUD_ACCOUNT_ID},
-                {"cluster_name", ResourceAttributes.K8S_CLUSTER_NAME},
-                {"namespace_id", ResourceAttributes.K8S_NAMESPACE_NAME},
-                {"instance_id", ResourceAttributes.HOST_ID},
-                {"pod_id", ResourceAttributes.K8S_POD_NAME},
-                {"container_name", ResourceAttributes.K8S_CONTAINER_NAME},
-                {"zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE}
-              })
-          .collect(
-              Collectors.toMap(data -> (String) data[0], data -> (AttributeKey<String>) data[1]));
 
   static Metric mapMetric(Attributes attributes, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);

@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 /** The strategy for how to handle metric descriptors. */
 public interface MetricDescriptorStrategy {
   /**
-   * Determines what to do with metrci descriptors.
+   * Determines what to do with metric descriptors.
    *
    * @param batchDescriptors The set of metrics being exported in a batch.
    * @param export A consumer that will ensure metric descriptors are registered to cloud
@@ -32,7 +32,12 @@ public interface MetricDescriptorStrategy {
   void exportDescriptors(
       Iterable<MetricDescriptor> batchDescriptors, Consumer<MetricDescriptor> export);
 
-  /** A strategy that always sends metric descriptors. */
+  /**
+   * A strategy that always sends metric descriptors.
+   *
+   * <p>This means EVERY create timeseries call will include several metric descriptor calls. This
+   * is not recommended.
+   */
   public static MetricDescriptorStrategy ALWAYS_SEND =
       new MetricDescriptorStrategy() {
 

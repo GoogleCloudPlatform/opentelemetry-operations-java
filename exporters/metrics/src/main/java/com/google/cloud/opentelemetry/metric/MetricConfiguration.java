@@ -20,14 +20,19 @@ import static java.time.Duration.ZERO;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
-import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
+import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.time.Duration;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** Configurations for {@link MetricExporter}. */
+/**
+ * Configurations for {@link GoogleCloudMetricExporter}.
+ *
+ * <p>See {@link #builder()} for usage.
+ */
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
@@ -41,6 +46,8 @@ public abstract class MetricConfiguration {
   /**
    * Returns the {@link Credentials}.
    *
+   * <p>Defaults to the application default credential's project.
+   *
    * @return the {@code Credentials}.
    */
   @Nullable
@@ -52,14 +59,6 @@ public abstract class MetricConfiguration {
    * @return the cloud project id.
    */
   public abstract String getProjectId();
-
-  /**
-   * Returns a MetricsServiceStub instance used to make RPC calls.
-   *
-   * @return the metrics service stub.
-   */
-  @Nullable
-  public abstract MetricServiceStub getMetricServiceStub();
 
   /**
    * Returns the deadline for exporting to Cloud Monitoring backend.
@@ -79,11 +78,37 @@ public abstract class MetricConfiguration {
    */
   public abstract MetricDescriptorStrategy getDescriptorStrategy();
 
+  /**
+   * Returns the endpoint where to write metrics.
+   *
+   * <p>The default is monitoring.googleapis.com:443
+   */
+  @Nullable
+  public abstract String getMetricServiceEndpoint();
+
+  @VisibleForTesting
+  abstract boolean getInsecureEndpoint();
+
+  /**
+   * Constructs a {@link MetricConfiguration.Builder} with default values.
+   *
+   * <p>This will construct a builder with the following default configuration:
+   *
+   * <ul>
+   *   <li>Project ID will be discovered/derived from the environment
+   *   <li>Metric export deadline will 10 seconds
+   *   <li>Metric descriptors will only be sent once for the lifetime of the exporter
+   * </ul>
+   *
+   * @return the configuration builder.
+   */
   public static Builder builder() {
     return new AutoValue_MetricConfiguration.Builder()
         .setProjectId(DEFAULT_PROJECT_ID)
         .setDeadline(DEFAULT_DEADLINE)
-        .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE);
+        .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
+        .setInsecureEndpoint(false)
+        .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 
   /** Builder for {@link MetricConfiguration}. */
@@ -96,15 +121,23 @@ public abstract class MetricConfiguration {
 
     abstract Duration getDeadline();
 
+    /** Set the GCP project where metrics should be writtten. */
     public abstract Builder setProjectId(String projectId);
 
+    /** Set the credentials to use when writing metrics. */
     public abstract Builder setCredentials(Credentials newCredentials);
 
-    public abstract Builder setMetricServiceStub(MetricServiceStub newMetricServiceStub);
-
+    /** Set the deadline for exporting batches of metric timeseries. */
     public abstract Builder setDeadline(Duration deadline);
 
+    /** Set the policy for sending metric descriptors, e.g. always, never or once. */
     public abstract Builder setDescriptorStrategy(MetricDescriptorStrategy strategy);
+
+    /** Sets the endpoint where to write Metrics. Defaults to monitoring.googleapis.com:443. */
+    public abstract Builder setMetricServiceEndpoint(String endpoint);
+
+    @VisibleForTesting
+    abstract Builder setInsecureEndpoint(boolean value);
 
     abstract MetricConfiguration autoBuild();
 

@@ -19,16 +19,19 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
-import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -38,7 +41,6 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,9 +48,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetricExporter implements io.opentelemetry.sdk.metrics.export.MetricExporter {
+public class GoogleCloudMetricExporter
+    implements io.opentelemetry.sdk.metrics.export.MetricExporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(MetricExporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(GoogleCloudMetricExporter.class);
 
   private static final String PROJECT_NAME_PREFIX = "projects/";
   private static final int MAX_BATCH_SIZE = 200;
@@ -57,67 +60,59 @@ public class MetricExporter implements io.opentelemetry.sdk.metrics.export.Metri
   private final String projectId;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
 
-  MetricExporter(
+  GoogleCloudMetricExporter(
       String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
     this.projectId = projectId;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
   }
 
-  public static MetricExporter createWithDefaultConfiguration() throws IOException {
+  public static GoogleCloudMetricExporter createWithDefaultConfiguration() throws IOException {
     MetricConfiguration configuration = MetricConfiguration.builder().build();
-    return MetricExporter.createWithConfiguration(configuration);
+    return GoogleCloudMetricExporter.createWithConfiguration(configuration);
   }
 
-  public static MetricExporter createWithConfiguration(MetricConfiguration configuration)
+  public static GoogleCloudMetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
-    MetricServiceStub stub = configuration.getMetricServiceStub();
-
-    if (stub == null) {
+    MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
+    // For testing, we need to hack around our gRPC config.
+    if (configuration.getInsecureEndpoint()) {
+      builder.setCredentialsProvider(NoCredentialsProvider.create());
+      builder.setTransportChannelProvider(
+          FixedTransportChannelProvider.create(
+              GrpcTransportChannel.create(
+                  ManagedChannelBuilder.forTarget(configuration.getMetricServiceEndpoint())
+                      .usePlaintext()
+                      .build())));
+    } else {
+      // For any other endpoint, we force credentials to exist.
       Credentials credentials =
           configuration.getCredentials() == null
               ? GoogleCredentials.getApplicationDefault()
               : configuration.getCredentials();
 
-      return MetricExporter.createWithCredentials(
-          projectId,
-          credentials,
-          configuration.getDeadline(),
-          configuration.getDescriptorStrategy());
+      builder.setCredentialsProvider(
+          FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")));
+      builder.setEndpoint(configuration.getMetricServiceEndpoint());
     }
-    return MetricExporter.createWithClient(
+    builder
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(
+            org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
+
+    return new GoogleCloudMetricExporter(
         projectId,
-        new CloudMetricClientImpl(MetricServiceClient.create(stub)),
+        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy());
   }
 
   @VisibleForTesting
-  static MetricExporter createWithClient(
+  static GoogleCloudMetricExporter createWithClient(
       String projectId,
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy) {
-    return new MetricExporter(projectId, metricServiceClient, descriptorStrategy);
-  }
-
-  private static MetricExporter createWithCredentials(
-      String projectId,
-      Credentials credentials,
-      Duration deadline,
-      MetricDescriptorStrategy descriptorStrategy)
-      throws IOException {
-    MetricServiceSettings.Builder builder =
-        MetricServiceSettings.newBuilder()
-            .setCredentialsProvider(
-                FixedCredentialsProvider.create(
-                    checkNotNull(credentials, "Credentials not provided.")));
-    builder
-        .createMetricDescriptorSettings()
-        .setSimpleTimeoutNoRetries(org.threeten.bp.Duration.ofMillis(deadline.toMillis()));
-    return new MetricExporter(
-        projectId,
-        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
-        descriptorStrategy);
+    return new GoogleCloudMetricExporter(projectId, metricServiceClient, descriptorStrategy);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {

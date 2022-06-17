@@ -43,7 +43,6 @@ public class MetricConfigurationTest {
 
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
-    assertNull(configuration.getMetricServiceStub());
   }
 
   @Test

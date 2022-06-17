@@ -19,6 +19,7 @@ import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
+import com.google.cloud.trace.v2.stub.TraceServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -82,7 +83,16 @@ public abstract class TraceConfiguration {
    * @return the trace service stub.
    */
   @Nullable
+  @Deprecated
   public abstract TraceServiceStub getTraceServiceStub();
+
+  /**
+   * Returns the endpoint where to write traces.
+   *
+   * <p>The default is tracing.googleapis.com:443
+   */
+  @Nullable
+  public abstract String getTraceServiceEndpoint();
 
   /**
    * Returns a map of attributes that is added to all the exported spans.
@@ -107,6 +117,9 @@ public abstract class TraceConfiguration {
    */
   public abstract Duration getDeadline();
 
+  @VisibleForTesting
+  abstract boolean getInsecureEndpoint();
+
   /**
    * Returns a new {@link Builder}.
    *
@@ -117,6 +130,8 @@ public abstract class TraceConfiguration {
         .setProjectId(DEFAULT_PROJECT_ID)
         .setFixedAttributes(Collections.emptyMap())
         .setDeadline(DEFAULT_DEADLINE)
+        .setTraceServiceEndpoint(TraceServiceStubSettings.getDefaultEndpoint())
+        .setInsecureEndpoint(false)
         .setAttributeMapping(DEFAULT_ATTRIBUTE_MAPPING);
   }
 
@@ -147,10 +162,15 @@ public abstract class TraceConfiguration {
     /**
      * Sets the trace service stub used to send gRPC calls.
      *
+     * @deprecated("Use setTraceServiceEndpoint")
      * @param traceServiceStub the {@code TraceServiceStub}.
      * @return this.
      */
+    @Deprecated
     public abstract Builder setTraceServiceStub(TraceServiceStub traceServiceStub);
+
+    /** Sets the endpoint where to write traces. Defaults to tracing.googleapis.com:443. */
+    public abstract Builder setTraceServiceEndpoint(String endpoint);
 
     /**
      * Sets the map of attributes that is added to all the exported spans.
@@ -199,6 +219,9 @@ public abstract class TraceConfiguration {
     abstract Map<String, AttributeValue> getFixedAttributes();
 
     abstract Duration getDeadline();
+
+    @VisibleForTesting
+    abstract Builder setInsecureEndpoint(boolean value);
 
     abstract TraceConfiguration autoBuild();
 

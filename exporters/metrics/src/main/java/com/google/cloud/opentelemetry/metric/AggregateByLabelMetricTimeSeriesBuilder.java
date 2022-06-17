@@ -22,7 +22,7 @@ import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDe
 import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
 
 import com.google.api.MetricDescriptor;
-import com.google.cloud.opentelemetry.metric.MetricExporter.MetricWithLabels;
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter.MetricWithLabels;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.Attributes;
@@ -36,7 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeriesBuilder {
+/**
+ * Builds GCM TimeSeries from each OTEL metric point, creating metric descriptors based on the
+ * "first" seen point for any given metric.
+ */
+public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeriesBuilder {
 
   private final Map<String, MetricDescriptor> descriptors = new HashMap<>();
   private final Map<MetricWithLabels, TimeSeries.Builder> pendingTimeSeries = new HashMap<>();
