@@ -66,10 +66,9 @@ public class EndToEndTest {
               .withDockerfileFromBuilder(
                   builder ->
                       builder
-                          .from("golang:1.15")
-                          .run("go get github.com/googleinterns/cloud-operations-api-mock/cmd")
-                          .cmd(
-                              "go run github.com/googleinterns/cloud-operations-api-mock/cmd --address=:8080")
+                          .from("golang:1.17")
+                          .run("go install github.com/googleinterns/cloud-operations-api-mock/cmd@latest")
+                          .cmd("cmd --address=:8080")
                           .build()));
       this.withExposedPorts(8080).waitingFor(Wait.forLogMessage(".*Listening on.*\\n", 1));
     }
