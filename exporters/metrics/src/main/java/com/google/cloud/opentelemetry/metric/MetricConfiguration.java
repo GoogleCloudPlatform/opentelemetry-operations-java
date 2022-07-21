@@ -39,7 +39,8 @@ public abstract class MetricConfiguration {
 
   private static final String DEFAULT_PROJECT_ID =
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
-  private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
+  private static final Duration DEFAULT_DEADLINE =
+      Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
 
   MetricConfiguration() {}
 
