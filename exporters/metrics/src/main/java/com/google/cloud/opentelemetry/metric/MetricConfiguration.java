@@ -64,7 +64,7 @@ public abstract class MetricConfiguration {
   /**
    * Returns the deadline for exporting to Cloud Monitoring backend.
    *
-   * <p>Default value is 10 seconds.
+   * <p>Default value is {@value #DEFAULT_DEADLINE}.
    *
    * @return the export deadline.
    */
