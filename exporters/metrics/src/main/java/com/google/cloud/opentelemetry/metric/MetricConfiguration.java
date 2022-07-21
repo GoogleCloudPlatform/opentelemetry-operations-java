@@ -39,7 +39,8 @@ public abstract class MetricConfiguration {
 
   private static final String DEFAULT_PROJECT_ID =
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
-  private static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
+  private static final Duration DEFAULT_DEADLINE =
+      Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
 
   MetricConfiguration() {}
 
@@ -63,7 +64,7 @@ public abstract class MetricConfiguration {
   /**
    * Returns the deadline for exporting to Cloud Monitoring backend.
    *
-   * <p>Default value is 10 seconds.
+   * <p>Default value is {@value #DEFAULT_DEADLINE}.
    *
    * @return the export deadline.
    */
