@@ -70,7 +70,7 @@ MeterProvider provider = SdkMeterProvider.builder()
 | ------------- | -------------------- | ------------ | ----------- | ------- |
 | projectId     | GOOGLE_CLOUD_PROJECT or GOOGLE_APPLICATION_CREDENTIALS | ??? | The cloud project id.  This is autodiscovered. | The autodiscovered value. |
 | credentials | GOOGLE_APPLICATION_CREDENTIALS | N/A | Credentials to use when talking to Cloud Monitoring API. | App Engine, Cloud Shell, GCE built-in or provided by `gcloud auth application-default login` |
-| deadline      | ??? | ??? | The deadline limit on export calls to Cloud Monitoring API | 10 seconds |
+| deadline      | ??? | ??? | The deadline limit on export calls to Cloud Monitoring API | 12 seconds |
 | metricDescriptorStrategy | ??? | ??? | How to adapt OpenTelemetry metric definition into google cloud. `ALWAYS_SEND` will try to create metric descriptors on every export.  `SEND_ONCE` will try to create metric descriptors once per Java instance/classloader. `NEVER_SEND` will rely on Cloud Monitoring's auto-generated MetricDescriptors from time series. | `SEND_ONCE` |
 
 
