@@ -61,7 +61,7 @@ MeterProvider provider = SdkMeterProvider.builder()
     // Rate at which data can be written to a single time series: one point each 10
     // seconds.
     PeriodicMetricReader.builder(metricExporter)
-    .setImterval(java.time.Duration.ofSeconds(20))
+    .setInterval(java.time.Duration.ofSeconds(20))
     .build())
   .build();
 ```
