@@ -98,7 +98,7 @@ public class ScenarioHandlerManager {
           Tracer tracer = sdk.getTestTracer();
           Span span =
               tracer
-                  .spanBuilder("detectResource")
+                  .spanBuilder("resourceDetectionTrace")
                   .setAttribute(Constants.TEST_ID, request.testId())
                   .startSpan();
           try {
