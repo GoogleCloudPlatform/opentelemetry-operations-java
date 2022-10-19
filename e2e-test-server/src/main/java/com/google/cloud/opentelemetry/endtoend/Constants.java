@@ -21,19 +21,22 @@ import com.google.pubsub.v1.ProjectTopicName;
 /** Constants we use in this test. Note: Some are pulled from the env. */
 public class Constants {
 
-  public static String INSTRUMENTING_MODULE_NAME = "opentelemetry-ops-e2e-test-server";
-  public static String SCENARIO = "scenario";
-  public static String STATUS_CODE = "status_code";
-  public static String TEST_ID = "test_id";
-  public static String TRACE_ID = "trace_id";
+  public static final String INSTRUMENTING_MODULE_NAME = "opentelemetry-ops-e2e-test-server";
+  public static final String SCENARIO = "scenario";
+  public static final String STATUS_CODE = "status_code";
+  public static final String TEST_ID = "test_id";
+  public static final String TRACE_ID = "trace_id";
+  public static final String SUBSCRIPTION_MODE_PUSH = "push";
+  public static final String SUBSCRIPTION_MODE_PULL = "pull";
 
   // TODO: Add good error messages below.
-  public static String SUBCRIPTION_MODE = System.getenv().getOrDefault("SUBSCRIPTION_MODE", "");
+  public static String SUBSCRIPTION_MODE = System.getenv().getOrDefault("SUBSCRIPTION_MODE", "");
   public static String PROJECT_ID = System.getenv().getOrDefault("PROJECT_ID", "");
   public static String REQUEST_SUBSCRIPTION_NAME =
       System.getenv().getOrDefault("REQUEST_SUBSCRIPTION_NAME", "");
   public static String RESPONSE_TOPIC_NAME =
       System.getenv().getOrDefault("RESPONSE_TOPIC_NAME", "");
+  public static String PUSH_PORT = System.getenv().getOrDefault("PUSH_PORT", "");
 
   public static ProjectSubscriptionName getRequestSubscription() {
     return ProjectSubscriptionName.of(PROJECT_ID, REQUEST_SUBSCRIPTION_NAME);

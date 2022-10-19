@@ -101,10 +101,12 @@ public class Server implements AutoCloseable {
   }
 
   /** Execute a scenario based on the incoming message from the test runner. */
-  public void handleMessage(PubsubMessage message, AckReplyConsumer consumer) {
+  public String handleMessage(PubsubMessage message, AckReplyConsumer consumer) {
+    System.out.println("Handling Message");
     if (!message.containsAttributes(Constants.TEST_ID)) {
       consumer.nack();
-      return;
+      System.out.println("Returning nack");
+      return "nack";
     }
     String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
     if (!message.containsAttributes(Constants.SCENARIO)) {
@@ -113,7 +115,9 @@ public class Server implements AutoCloseable {
           Response.invalidArgument(
               String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
       consumer.ack();
-      return;
+      System.out.println(
+          "Returning ack - Expected attribute " + Constants.SCENARIO + " is missing");
+      return "ack";
     }
     String scenario = message.getAttributesOrDefault(Constants.SCENARIO, "");
     Request request = Request.make(testId, message.getAttributesMap(), message.getData());
@@ -129,16 +133,37 @@ public class Server implements AutoCloseable {
       respond(testId, response);
       consumer.ack();
     }
+    System.out.println("Handled message");
+    return "ack";
   }
 
   /** Runs our server. */
   public static void main(String[] args) throws Exception {
-    try (Server server = new Server()) {
-      server.start();
-      // Docs for Subscriber recommend doing this to block main thread while daemon thread consumes
-      // stuff.
-      for (; ; ) {
-        Thread.sleep(Long.MAX_VALUE);
+    System.out.println("Subscription mode is " + Constants.SUBSCRIPTION_MODE);
+    if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
+      try (Server server = new Server()) {
+        server.start();
+        // Docs for Subscriber recommend doing this to block main thread while daemon thread
+        // consumes
+        // stuff.
+        for (; ; ) {
+          Thread.sleep(Long.MAX_VALUE);
+        }
+      }
+    } else {
+      System.out.println(
+          String.format(
+              "Subscription mode should be %s, push port is %s",
+              Constants.SUBSCRIPTION_MODE_PUSH, Constants.PUSH_PORT));
+      Server server = new Server();
+      try (PubSubPushServer pubSubPushServer =
+          new PubSubPushServer(Integer.parseInt(Constants.PUSH_PORT), server)) {
+        pubSubPushServer.start();
+        System.out.println("Started server");
+
+        for (; ; ) {
+          Thread.sleep(Long.MAX_VALUE);
+        }
       }
     }
   }
