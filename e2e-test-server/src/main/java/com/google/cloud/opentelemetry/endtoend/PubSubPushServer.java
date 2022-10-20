@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+import com.google.cloud.opentelemetry.endtoend.PubSubMessageHandler.PubSubMessageResponse;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
@@ -32,18 +33,18 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class PubSubPushServer implements AutoCloseable {
+public class PubSubPushServer implements PubSubServer {
   public static final String POST_REQUEST = "POST";
 
   private final int port;
   private final HttpServer httpServer;
   private final HttpHandler rootRequestHandler;
-  private final Server mainPullServer;
+  private final PubSubMessageHandler mainPullServer;
 
   // We require main pull server to get access to the handle message functionality
   // TODO: Refactor class to take out the handle function responsibility into a different 'Main'
   // class
-  public PubSubPushServer(int port, Server mainPullServer) {
+  public PubSubPushServer(int port, PubSubMessageHandler mainPullServer) {
     this.port = port;
     this.mainPullServer = mainPullServer;
     this.rootRequestHandler = createRootRequestHandler();
@@ -51,6 +52,7 @@ public class PubSubPushServer implements AutoCloseable {
   }
 
   /** Starts the Google cloud pub-sub push server. */
+  @Override
   public void start() {
     this.httpServer.start();
   }
@@ -58,6 +60,7 @@ public class PubSubPushServer implements AutoCloseable {
   @Override
   public void close() throws Exception {
     System.out.println("Server is closed");
+    this.httpServer.stop(60);
   }
 
   private PubsubMessage parseIncomingMessage(HttpExchange httpExchange) {
@@ -102,8 +105,8 @@ public class PubSubPushServer implements AutoCloseable {
         }
         PubsubMessage message = parseIncomingMessage(httpExchange);
         System.out.println("PubSub Message parsed " + message);
-        String ack_or_nack =
-            mainPullServer.handleMessage(
+        PubSubMessageResponse ack_or_nack =
+            mainPullServer.handlePubSubMessage(
                 message,
                 new AckReplyConsumer() {
                   @Override
@@ -118,7 +121,7 @@ public class PubSubPushServer implements AutoCloseable {
                 });
         String finalResponse = "";
         System.out.println("Final ack or nack " + ack_or_nack);
-        if (ack_or_nack.equals("ack")) {
+        if (ack_or_nack.equals(PubSubMessageResponse.ACK)) {
           finalResponse = "Success";
           httpExchange.sendResponseHeaders(200, finalResponse.length());
         } else {
