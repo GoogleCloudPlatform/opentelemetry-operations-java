@@ -21,6 +21,7 @@ import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v2.TraceServiceClient;
@@ -46,6 +47,10 @@ public class TraceExporter implements SpanExporter {
   private final ProjectName projectName;
   private final String projectId;
   private final TraceTranslator translator;
+
+  private static final Map<String, String> HEADERS =
+      Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
+  private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
 
   public static TraceExporter createWithDefaultConfiguration() throws IOException {
     TraceConfiguration configuration = TraceConfiguration.builder().build();
@@ -83,6 +88,7 @@ public class TraceExporter implements SpanExporter {
         builder.setCredentialsProvider(
             FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
         builder.setEndpoint(configuration.getTraceServiceEndpoint());
+        builder.setHeaderProvider(HEADER_PROVIDER);
       }
 
       return new TraceExporter(
