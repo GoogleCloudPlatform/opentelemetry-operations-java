@@ -15,7 +15,6 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -62,10 +61,9 @@ public interface PubSubMessageHandler {
    * This method accepts and processes an incoming {@link PubsubMessage}.
    *
    * @param message The incoming {@link PubsubMessage} that should be processed.
-   * @param consumer Accepts a reply, sending it to the service.
    * @return a {@link PubSubMessageResponse} indicating if the message was processed successfully.
    */
-  PubSubMessageResponse handlePubSubMessage(PubsubMessage message, AckReplyConsumer consumer);
+  PubSubMessageResponse handlePubSubMessage(PubsubMessage message);
 
   /**
    * This method is responsible for doing any cleanup tasks required for the {@link

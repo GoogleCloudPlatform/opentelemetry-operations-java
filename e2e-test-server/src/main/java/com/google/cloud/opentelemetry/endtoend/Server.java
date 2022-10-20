@@ -18,7 +18,6 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
@@ -48,10 +47,8 @@ public class Server implements PubSubMessageHandler {
   }
 
   @Override
-  public PubSubMessageResponse handlePubSubMessage(
-      PubsubMessage message, AckReplyConsumer consumer) {
+  public PubSubMessageResponse handlePubSubMessage(PubsubMessage message) {
     if (!message.containsAttributes(Constants.TEST_ID)) {
-      consumer.nack();
       return PubSubMessageResponse.NACK;
     }
     String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
@@ -60,7 +57,6 @@ public class Server implements PubSubMessageHandler {
           testId,
           Response.invalidArgument(
               String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
-      consumer.ack();
       return PubSubMessageResponse.ACK;
     }
     String scenario = message.getAttributesOrDefault(Constants.SCENARIO, "");
@@ -75,7 +71,6 @@ public class Server implements PubSubMessageHandler {
       response = Response.internalError(e);
     } finally {
       respond(testId, response);
-      consumer.ack();
     }
     return PubSubMessageResponse.ACK;
   }

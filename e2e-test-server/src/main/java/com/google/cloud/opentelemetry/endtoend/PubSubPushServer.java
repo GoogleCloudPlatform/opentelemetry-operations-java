@@ -16,7 +16,6 @@
 package com.google.cloud.opentelemetry.endtoend;
 
 import com.google.cloud.opentelemetry.endtoend.PubSubMessageHandler.PubSubMessageResponse;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -129,20 +128,7 @@ public class PubSubPushServer implements PubSubServer {
         }
         PubsubMessage message = parseIncomingMessage(httpExchange);
         System.out.println("PubSub Message parsed " + message);
-        PubSubMessageResponse ack_or_nack =
-            pubsubMessageHandler.handlePubSubMessage(
-                message,
-                new AckReplyConsumer() {
-                  @Override
-                  public void ack() {
-                    System.out.println("Ack");
-                  }
-
-                  @Override
-                  public void nack() {
-                    System.out.println("Nack");
-                  }
-                });
+        PubSubMessageResponse ack_or_nack = pubsubMessageHandler.handlePubSubMessage(message);
         String finalResponse = "";
         System.out.println("Final ack or nack " + ack_or_nack);
         if (ack_or_nack.equals(PubSubMessageResponse.ACK)) {

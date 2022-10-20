@@ -49,7 +49,16 @@ public class PubSubPullServer implements PubSubServer {
     this.pubSubMessageHandler = pubSubMessageHandler;
     this.subscriber =
         Subscriber.newBuilder(
-                Constants.getRequestSubscription(), pubSubMessageHandler::handlePubSubMessage)
+                Constants.getRequestSubscription(),
+                (message, consumer) -> {
+                  PubSubMessageHandler.PubSubMessageResponse response =
+                      pubSubMessageHandler.handlePubSubMessage(message);
+                  if (response == PubSubMessageHandler.PubSubMessageResponse.ACK) {
+                    consumer.ack();
+                  } else {
+                    consumer.nack();
+                  }
+                })
             .build();
     this.subscriber.addListener(
         new Subscriber.Listener() {
