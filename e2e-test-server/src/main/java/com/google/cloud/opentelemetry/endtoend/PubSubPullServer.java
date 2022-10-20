@@ -15,17 +15,38 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
-import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 
+/**
+ * A {@link PubSubServer} that can handle running the integration test scenarios when {@link
+ * Constants#SUBSCRIPTION_MODE} points to 'pull' mode.
+ *
+ * <p>This kind of {@link PubSubServer} works well with Google Cloud's non-serverless compute
+ * offerings like GCE and GKE. This server should be avoided for running tests in serverless
+ * environments.
+ *
+ * <p>This class is responsible for the following:
+ *
+ * <ul>
+ *   <li>Setting up a PubSub {@link Subscriber} with the appropriate subscription name and {@link
+ *       com.google.cloud.pubsub.v1.MessageReceiver}.
+ *   <li>Attaching a failure listener to subscriber to get causes for failures.
+ * </ul>
+ */
 public class PubSubPullServer implements PubSubServer {
 
-  private final Publisher publisher;
+  private final PubSubMessageHandler pubSubMessageHandler;
   private final Subscriber subscriber;
 
-  public PubSubPullServer(Publisher publisher, PubSubMessageHandler pubSubMessageHandler) {
-    this.publisher = publisher;
+  /**
+   * Public constructor for {@link PubSubPullServer}.
+   *
+   * @param pubSubMessageHandler The {@link PubSubMessageHandler} that will be used to process
+   *     incoming {@link com.google.pubsub.v1.PubsubMessage}s.
+   */
+  public PubSubPullServer(PubSubMessageHandler pubSubMessageHandler) {
+    this.pubSubMessageHandler = pubSubMessageHandler;
     this.subscriber =
         Subscriber.newBuilder(
                 Constants.getRequestSubscription(), pubSubMessageHandler::handlePubSubMessage)
@@ -48,9 +69,7 @@ public class PubSubPullServer implements PubSubServer {
       subscriber.stopAsync();
       subscriber.awaitTerminated();
     }
-    if (publisher != null) {
-      publisher.shutdown();
-    }
+    pubSubMessageHandler.cleanupMessageHandler();
   }
 
   @Override

@@ -15,6 +15,14 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+/**
+ * Interface that represents a server program capable of processing {@link
+ * com.google.pubsub.v1.PubsubMessage}s.
+ */
 public interface PubSubServer extends AutoCloseable {
+  /**
+   * Method responsible for starting the server. Once the server is 'started', it should begin
+   * listening/processing requests.
+   */
   void start();
 }

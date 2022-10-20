@@ -18,13 +18,36 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
 
+/**
+ * An interface containing functionality to handle an incoming {@link PubsubMessage} and returning
+ * appropriate response indicating if handling was successful or not.
+ */
 public interface PubSubMessageHandler {
+
+  /**
+   * Represents the possible responses for handling an incoming {@link PubsubMessage} handled via
+   * PubSubMessageHandler.
+   */
   enum PubSubMessageResponse {
+    /**
+     * Response that should be sent when a {@link PubsubMessage} has been successfully processed.
+     * The service should not send the message again.
+     */
     ACK("ack"),
+
+    /**
+     * Response that should be sent when a {@link PubsubMessage} has not been successfully
+     * processed. The service should resend the message.
+     */
     NACK("nack");
 
     private final String stringValue;
 
+    /**
+     * Constructor for the {@link PubSubMessageResponse}.
+     *
+     * @param stringValue the string representation for the enum value.
+     */
     PubSubMessageResponse(String stringValue) {
       this.stringValue = stringValue;
     }
@@ -35,5 +58,18 @@ public interface PubSubMessageHandler {
     }
   }
 
+  /**
+   * This method accepts and processes an incoming {@link PubsubMessage}.
+   *
+   * @param message The incoming {@link PubsubMessage} that should be processed.
+   * @param consumer Accepts a reply, sending it to the service.
+   * @return a {@link PubSubMessageResponse} indicating if the message was processed successfully.
+   */
   PubSubMessageResponse handlePubSubMessage(PubsubMessage message, AckReplyConsumer consumer);
+
+  /**
+   * This method is responsible for doing any cleanup tasks required for the {@link
+   * PubSubMessageHandler} when handler is no longer required.
+   */
+  void cleanupMessageHandler();
 }

@@ -29,15 +29,13 @@ import com.google.pubsub.v1.PubsubMessage;
  * <p>It is responsible for the following:
  *
  * <ul>
- *   <li>Setting up a subscriber queue for inbound "RPC Request" messages
- *   <li>Converting incoming pub sub messages to {@link Request}
- *   <li>Setting up a publisher queue for outbound "RPC Response" messages
- *   <li>Converting from outbound {@link Response} to pubsub messages.
- *   <li>Handling any/all failures escaping the test scenario.
+ *   <li>Implementing logic for handling incoming {@link PubsubMessage}s.
+ *   <li>Starting the correct server to run integration tests depending on {@link
+ *       Constants#SUBSCRIPTION_MODE}.
  * </ul>
  *
  * <p>This class includes a main method which runs the integration test driver using locally
- * available credentials to acccess pubsub channels.
+ * available credentials to access pubsub channels.
  */
 public class Server implements PubSubMessageHandler {
 
@@ -47,45 +45,6 @@ public class Server implements PubSubMessageHandler {
   public Server() throws Exception {
     this.scenarioHandlers = new ScenarioHandlerManager();
     this.publisher = Publisher.newBuilder(Constants.getResponseTopic()).build();
-  }
-
-  /** Starts the subcriber pulling requests. */
-  //  public void start() {
-  //    subscriber.startAsync().awaitRunning();
-  //  }
-  //
-  //  /** Closes our subscriptions. */
-  //  public void close() {
-  //    if (subscriber != null) {
-  //      subscriber.stopAsync();
-  //      subscriber.awaitTerminated();
-  //    }
-  //    if (publisher != null) {
-  //      publisher.shutdown();
-  //    }
-  //  }
-
-  /** This method converts from {@link Response} to pubsub and sends out the publisher channel. */
-  private void respond(final String testId, final Response response) {
-    final PubsubMessage message =
-        PubsubMessage.newBuilder()
-            .putAllAttributes(response.headers())
-            .putAttributes(Constants.TEST_ID, testId)
-            .putAttributes(Constants.STATUS_CODE, Integer.toString(response.statusCode().ordinal()))
-            .setData(response.data())
-            .build();
-    ApiFuture<String> messageIdFuture = publisher.publish(message);
-    ApiFutures.addCallback(
-        messageIdFuture,
-        new ApiFutureCallback<String>() {
-          public void onSuccess(String messageId) {}
-
-          public void onFailure(Throwable t) {
-            System.out.println("failed to publish response to test: " + testId);
-            t.printStackTrace();
-          }
-        },
-        MoreExecutors.directExecutor());
   }
 
   @Override
@@ -121,49 +80,46 @@ public class Server implements PubSubMessageHandler {
     return PubSubMessageResponse.ACK;
   }
 
-  /** Execute a scenario based on the incoming message from the test runner. */
-  //  public String handleMessage(PubsubMessage message, AckReplyConsumer consumer) {
-  //    System.out.println("Handling Message");
-  //    if (!message.containsAttributes(Constants.TEST_ID)) {
-  //      consumer.nack();
-  //      System.out.println("Returning nack");
-  //      return "nack";
-  //    }
-  //    String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
-  //    if (!message.containsAttributes(Constants.SCENARIO)) {
-  //      respond(
-  //          testId,
-  //          Response.invalidArgument(
-  //              String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
-  //      consumer.ack();
-  //      System.out.println(
-  //          "Returning ack - Expected attribute " + Constants.SCENARIO + " is missing");
-  //      return "ack";
-  //    }
-  //    String scenario = message.getAttributesOrDefault(Constants.SCENARIO, "");
-  //    Request request = Request.make(testId, message.getAttributesMap(), message.getData());
-  //
-  //    // Run the given request/response cycle through a handler and respond with results.
-  //    Response response = Response.EMPTY;
-  //    try {
-  //      response = scenarioHandlers.handleScenario(scenario, request);
-  //    } catch (Throwable e) {
-  //      e.printStackTrace(System.err);
-  //      response = Response.internalError(e);
-  //    } finally {
-  //      respond(testId, response);
-  //      consumer.ack();
-  //    }
-  //    System.out.println("Handled message");
-  //    return "ack";
-  //  }
+  /**
+   * This method is responsible for doing any cleanup tasks required for the {@link
+   * PubSubMessageHandler} when handler is no longer required.
+   */
+  @Override
+  public void cleanupMessageHandler() {
+    if (publisher != null) {
+      publisher.shutdown();
+    }
+  }
+
+  /** This method converts from {@link Response} to pubsub and sends out the publisher channel. */
+  private void respond(final String testId, final Response response) {
+    final PubsubMessage message =
+        PubsubMessage.newBuilder()
+            .putAllAttributes(response.headers())
+            .putAttributes(Constants.TEST_ID, testId)
+            .putAttributes(Constants.STATUS_CODE, Integer.toString(response.statusCode().ordinal()))
+            .setData(response.data())
+            .build();
+    ApiFuture<String> messageIdFuture = publisher.publish(message);
+    ApiFutures.addCallback(
+        messageIdFuture,
+        new ApiFutureCallback<String>() {
+          public void onSuccess(String messageId) {}
+
+          public void onFailure(Throwable t) {
+            System.out.println("failed to publish response to test: " + testId);
+            t.printStackTrace();
+          }
+        },
+        MoreExecutors.directExecutor());
+  }
 
   /** Runs our server. */
   public static void main(String[] args) throws Exception {
     System.out.println("Subscription mode is " + Constants.SUBSCRIPTION_MODE);
     Server server = new Server();
     if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
-      try (PubSubServer pullServer = new PubSubPullServer(server.publisher, server)) {
+      try (PubSubServer pullServer = new PubSubPullServer(server)) {
         pullServer.start();
         // Docs for Subscriber recommend doing this to block main thread while daemon thread
         // consumes

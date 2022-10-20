@@ -33,34 +33,58 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * A {@link PubSubServer} that can handle running the integration test scenarios when {@link
+ * Constants#SUBSCRIPTION_MODE} points to 'push' mode.
+ *
+ * <p>Google cloud's serverless offerings like CloudRun and CloudFunctions use 'push' mode instead
+ * of 'pull' since these offerings require running code (the instance spun up is like a daemon when
+ * no request is processing). This means we need a dedicated server actively listening on a port
+ * instead of waiting on messages being pushed to a topic which can then be pulled (this is what
+ * happens in 'pull' subscription mode). This server sets up an {@link HttpServer} on a specified
+ * port which actively listens for incoming requests.
+ *
+ * <p>This class is responsible for the following:
+ *
+ * <ul>
+ *   <li>Setting up a {@link HttpServer} bound to a specified port, listening for incoming requests.
+ *   <li>Validate incoming HTTP requests and parse them into {@link PubsubMessage}s.
+ *   <li>Hand off the parsed {@link PubsubMessage}s to a specified {@link PubSubMessageHandler}.
+ * </ul>
+ */
 public class PubSubPushServer implements PubSubServer {
-  public static final String POST_REQUEST = "POST";
+
+  private static final String POST_REQUEST = "POST";
 
   private final int port;
   private final HttpServer httpServer;
   private final HttpHandler rootRequestHandler;
-  private final PubSubMessageHandler mainPullServer;
+  private final PubSubMessageHandler pubsubMessageHandler;
 
-  // We require main pull server to get access to the handle message functionality
-  // TODO: Refactor class to take out the handle function responsibility into a different 'Main'
-  // class
-  public PubSubPushServer(int port, PubSubMessageHandler mainPullServer) {
+  /**
+   * Public constructor for the {@link PubSubPushServer}.
+   *
+   * @param port The port on which the HTTP server should listen for incoming requests.
+   * @param pubSubMessageHandler The {@link PubSubMessageHandler} responsible for handling the
+   *     incoming HTTP requests.
+   */
+  public PubSubPushServer(int port, PubSubMessageHandler pubSubMessageHandler) {
     this.port = port;
-    this.mainPullServer = mainPullServer;
+    this.pubsubMessageHandler = pubSubMessageHandler;
     this.rootRequestHandler = createRootRequestHandler();
     this.httpServer = createHttpServer();
   }
 
-  /** Starts the Google cloud pub-sub push server. */
   @Override
   public void start() {
     this.httpServer.start();
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     System.out.println("Server is closed");
-    this.httpServer.stop(60);
+    httpServer.stop(60);
+    pubsubMessageHandler.cleanupMessageHandler();
   }
 
   private PubsubMessage parseIncomingMessage(HttpExchange httpExchange) {
@@ -106,7 +130,7 @@ public class PubSubPushServer implements PubSubServer {
         PubsubMessage message = parseIncomingMessage(httpExchange);
         System.out.println("PubSub Message parsed " + message);
         PubSubMessageResponse ack_or_nack =
-            mainPullServer.handlePubSubMessage(
+            pubsubMessageHandler.handlePubSubMessage(
                 message,
                 new AckReplyConsumer() {
                   @Override
@@ -149,18 +173,27 @@ public class PubSubPushServer implements PubSubServer {
     return contentType.equalsIgnoreCase("application/json");
   }
 
+  /**
+   * A POJO class containing equivalent Java representation of the incoming HTTP request's (to
+   * {@link PubSubPushServer}) JSON form.
+   */
   private static class Message {
     private Map<String, String> attributes;
     private String messageId;
     private String publishTime;
-    private String data;
 
-    public Message(
-        Map<String, String> attributes, String messageId, String publishTime, String data) {
+    /**
+     * Parameterized constructor for the class.
+     *
+     * @param attributes A mapping of String key-value pairs containing custom fields in the
+     *     request.
+     * @param messageId The unique ID associated with the incoming request.
+     * @param publishTime The timestamp at which the request was issued.
+     */
+    public Message(Map<String, String> attributes, String messageId, String publishTime) {
       this.attributes = attributes;
       this.messageId = messageId;
       this.publishTime = publishTime;
-      this.data = data;
     }
 
     public Message() {
@@ -173,14 +206,6 @@ public class PubSubPushServer implements PubSubServer {
 
     public void setAttributes(Map<String, String> attributes) {
       this.attributes = attributes;
-    }
-
-    public String getData() {
-      return data;
-    }
-
-    public void setData(String data) {
-      this.data = data;
     }
 
     public String getMessageId() {
@@ -209,9 +234,6 @@ public class PubSubPushServer implements PubSubServer {
           + '\''
           + ", publishTime='"
           + publishTime
-          + '\''
-          + ", data='"
-          + data
           + '\''
           + '}';
     }
