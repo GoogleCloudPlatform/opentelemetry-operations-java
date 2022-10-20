@@ -111,7 +111,6 @@ public class Server implements PubSubMessageHandler {
 
   /** Runs our server. */
   public static void main(String[] args) throws Exception {
-    System.out.println("Subscription mode is " + Constants.SUBSCRIPTION_MODE);
     Server server = new Server();
     if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
       try (PubSubServer pullServer = new PubSubPullServer(server)) {
@@ -124,14 +123,9 @@ public class Server implements PubSubMessageHandler {
         }
       }
     } else {
-      System.out.println(
-          String.format(
-              "Subscription mode should be %s, push port is %s",
-              Constants.SUBSCRIPTION_MODE_PUSH, Constants.PUSH_PORT));
       try (PubSubServer pushServer =
           new PubSubPushServer(Integer.parseInt(Constants.PUSH_PORT), server)) {
         pushServer.start();
-        System.out.println("Started server");
 
         for (; ; ) {
           Thread.sleep(Long.MAX_VALUE);

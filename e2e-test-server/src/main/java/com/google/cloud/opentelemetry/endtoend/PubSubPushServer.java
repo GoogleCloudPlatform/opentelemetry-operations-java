@@ -81,7 +81,6 @@ public class PubSubPushServer implements PubSubServer {
 
   @Override
   public void close() {
-    System.out.println("Server is closed");
     httpServer.stop(60);
     pubsubMessageHandler.cleanupMessageHandler();
   }
@@ -91,14 +90,9 @@ public class PubSubPushServer implements PubSubServer {
         new InputStreamReader(httpExchange.getRequestBody(), StandardCharsets.UTF_8);
     JsonElement jsonRoot = JsonParser.parseReader(inputStreamReader);
     String msgStr = jsonRoot.getAsJsonObject().get("message").toString();
-    System.out.println("Parsing Incoming message " + msgStr);
     Gson gson = new Gson();
     Message message = gson.fromJson(msgStr, Message.class);
-    System.out.println("Message parsed, generated message " + message);
-    PubsubMessage pubsubMessage =
-        PubsubMessage.newBuilder().putAllAttributes(message.getAttributes()).build();
-    System.out.println("Pubsub message after parsing is " + pubsubMessage);
-    return pubsubMessage;
+    return PubsubMessage.newBuilder().putAllAttributes(message.getAttributes()).build();
   }
 
   private HttpServer createHttpServer() {
@@ -115,7 +109,6 @@ public class PubSubPushServer implements PubSubServer {
 
   private HttpHandler createRootRequestHandler() {
     return httpExchange -> {
-      System.out.println("Handling the response");
       if (httpExchange.getRequestMethod().equals(POST_REQUEST)) {
         if (!isRequestJSON(httpExchange)) {
           String response = "Expecting request in JSON format";
@@ -127,10 +120,8 @@ public class PubSubPushServer implements PubSubServer {
           return;
         }
         PubsubMessage message = parseIncomingMessage(httpExchange);
-        System.out.println("PubSub Message parsed " + message);
         PubSubMessageResponse ack_or_nack = pubsubMessageHandler.handlePubSubMessage(message);
         String finalResponse = "";
-        System.out.println("Final ack or nack " + ack_or_nack);
         if (ack_or_nack.equals(PubSubMessageResponse.ACK)) {
           finalResponse = "Success";
           httpExchange.sendResponseHeaders(200, finalResponse.length());
