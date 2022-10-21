@@ -24,7 +24,7 @@ import com.google.common.util.concurrent.MoreExecutors;
  *
  * <p>This kind of {@link PubSubServer} works well with Google Cloud's non-serverless compute
  * offerings like GCE and GKE. This server should be avoided for running tests in serverless
- * environments.
+ * environments like CloudRun.
  *
  * <p>This class is responsible for the following:
  *

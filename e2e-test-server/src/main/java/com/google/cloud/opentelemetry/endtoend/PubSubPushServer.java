@@ -36,12 +36,15 @@ import java.util.Map;
  * A {@link PubSubServer} that can handle running the integration test scenarios when {@link
  * Constants#SUBSCRIPTION_MODE} points to 'push' mode.
  *
- * <p>Google cloud's serverless offerings like CloudRun and CloudFunctions use 'push' mode instead
- * of 'pull' since these offerings require running code (the instance spun up is like a daemon when
- * no request is processing). This means we need a dedicated server actively listening on a port
- * instead of waiting on messages being pushed to a topic which can then be pulled (this is what
- * happens in 'pull' subscription mode). This server sets up an {@link HttpServer} on a specified
- * port which actively listens for incoming requests.
+ * <p>Google cloud's serverless offerings like CloudRun recommend using 'push' mode instead of
+ * 'pull' for subscriptions in pub/sub since CloudRun requires running code (the instance spun up is
+ * like a daemon when no request is processing). This means we need a dedicated server actively
+ * listening on a port instead of waiting on messages being pushed to a topic which can then be
+ * pulled (this is what happens in 'pull' subscription mode). This server sets up an {@link
+ * HttpServer} on a specified port which actively listens for incoming requests.
+ *
+ * <p>More information on why 'push' mode is preferred can be seen <a
+ * href="https://cloud.google.com/run/docs/triggering/pubsub-push#:~:text=Note%3A%20Google,minimum%20instances">here</a>.
  *
  * <p>This class is responsible for the following:
  *
