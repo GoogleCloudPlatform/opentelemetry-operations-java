@@ -60,8 +60,8 @@ public class CloudRunResourceTest {
   public void testCloudRunNotGCP() {
     CloudRunResource testResource = new CloudRunResource();
 
-    /* The default meta data url is unreachable through testing so getAttributes should not detect a
-    GCP environment, hence returning empty attributes */
+    // The default metadata url is unreachable through testing so getAttributes should not detect a
+    // GCP environment, hence returning empty attributes.
     // Note: Currently this does not support GKE outside of Google Cloud (e.g. GKE on AWS, GKE on
     // premise)
     assertThat(testResource.getAttributes()).isEmpty();

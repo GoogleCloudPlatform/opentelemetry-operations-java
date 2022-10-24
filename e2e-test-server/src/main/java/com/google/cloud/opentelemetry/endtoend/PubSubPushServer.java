@@ -123,9 +123,9 @@ public class PubSubPushServer implements PubSubServer {
           return;
         }
         PubsubMessage message = parseIncomingMessage(httpExchange);
-        PubSubMessageResponse ack_or_nack = pubsubMessageHandler.handlePubSubMessage(message);
+        PubSubMessageResponse ackOrNack = pubsubMessageHandler.handlePubSubMessage(message);
         String finalResponse = "";
-        if (ack_or_nack.equals(PubSubMessageResponse.ACK)) {
+        if (ackOrNack.equals(PubSubMessageResponse.ACK)) {
           finalResponse = "Success";
           httpExchange.sendResponseHeaders(200, finalResponse.length());
         } else {

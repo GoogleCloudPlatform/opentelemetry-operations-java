@@ -109,27 +109,22 @@ public class Server implements PubSubMessageHandler {
         MoreExecutors.directExecutor());
   }
 
+  private static PubSubServer createPubSubServer(Server server) {
+    if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
+      return new PubSubPullServer(server);
+    }
+    return new PubSubPushServer(Integer.parseInt(Constants.PUSH_PORT), server);
+  }
+
   /** Runs our server. */
   public static void main(String[] args) throws Exception {
     Server server = new Server();
-    if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
-      try (PubSubServer pullServer = new PubSubPullServer(server)) {
-        pullServer.start();
-        // Docs for Subscriber recommend doing this to block main thread while daemon thread
-        // consumes
-        // stuff.
-        for (; ; ) {
-          Thread.sleep(Long.MAX_VALUE);
-        }
-      }
-    } else {
-      try (PubSubServer pushServer =
-          new PubSubPushServer(Integer.parseInt(Constants.PUSH_PORT), server)) {
-        pushServer.start();
-
-        for (; ; ) {
-          Thread.sleep(Long.MAX_VALUE);
-        }
+    try (PubSubServer pubSubServer = createPubSubServer(server)) {
+      pubSubServer.start();
+      // Docs for Subscriber recommend doing this to block main thread while daemon thread
+      // consumes stuff.
+      for (; ; ) {
+        Thread.sleep(Long.MAX_VALUE);
       }
     }
   }

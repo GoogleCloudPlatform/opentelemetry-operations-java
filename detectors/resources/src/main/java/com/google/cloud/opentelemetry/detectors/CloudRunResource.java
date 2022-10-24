@@ -46,7 +46,7 @@ public final class CloudRunResource implements ResourceProvider {
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
 
     if (envVars.get("K_CONFIGURATION") != null) {
-      // add the resource attributes for CloudFunctions
+      // add the resource attributes for Cloud Run
       attrBuilders.put(
           ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
 
