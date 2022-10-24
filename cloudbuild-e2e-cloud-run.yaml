@@ -1,4 +1,4 @@
-# Copyright 2021 Google
+# Copyright 2022 Google
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,13 +24,12 @@ steps:
 
   # Run the test
   - name: $_TEST_RUNNER_IMAGE
-    id: run-tests-local
+    id: run-tests-cloudrun
     dir: /
     env: ["PROJECT_ID=$PROJECT_ID"]
     args:
-      - local
+      - cloud-run
       - --image=$_TEST_SERVER_IMAGE
-      - --network=cloudbuild
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
 substitutions:

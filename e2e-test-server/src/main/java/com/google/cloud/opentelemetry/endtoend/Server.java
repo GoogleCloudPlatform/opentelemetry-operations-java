@@ -18,9 +18,7 @@ package com.google.cloud.opentelemetry.endtoend;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
 
@@ -30,55 +28,66 @@ import com.google.pubsub.v1.PubsubMessage;
  * <p>It is responsible for the following:
  *
  * <ul>
- *   <li>Setting up a subscriber queue for inbound "RPC Request" messages
- *   <li>Converting incoming pub sub messages to {@link Request}
- *   <li>Setting up a publisher queue for outbound "RPC Response" messages
- *   <li>Converting from outbound {@link Response} to pubsub messages.
- *   <li>Handling any/all failures escaping the test scenario.
+ *   <li>Implementing logic for handling incoming {@link PubsubMessage}s.
+ *   <li>Starting the correct server to run integration tests depending on {@link
+ *       Constants#SUBSCRIPTION_MODE}.
  * </ul>
  *
  * <p>This class includes a main method which runs the integration test driver using locally
- * available credentials to acccess pubsub channels.
+ * available credentials to access pubsub channels.
  */
-public class Server implements AutoCloseable {
-  private final ScenarioHandlerManager scenarioHandlers = new ScenarioHandlerManager();
+public class Server implements PubSubMessageHandler {
+
+  private final ScenarioHandlerManager scenarioHandlers;
   private final Publisher publisher;
-  private final Subscriber subscriber;
 
   public Server() throws Exception {
+    this.scenarioHandlers = new ScenarioHandlerManager();
     this.publisher = Publisher.newBuilder(Constants.getResponseTopic()).build();
-    this.subscriber =
-        Subscriber.newBuilder(Constants.getRequestSubscription(), this::handleMessage).build();
-    subscriber.addListener(
-        new Subscriber.Listener() {
-          @Override
-          public void failed(Subscriber.State from, Throwable failure) {
-            // Handle failure. This is called when the Subscriber encountered a fatal error and is
-            // shutting down.
-            System.err.println(failure);
-          }
-        },
-        MoreExecutors.directExecutor());
   }
 
-  /** Starts the subcriber pulling requests. */
-  public void start() {
-    subscriber.startAsync().awaitRunning();
-  }
-
-  /** Closes our subscriptions. */
-  public void close() {
-    if (subscriber != null) {
-      subscriber.stopAsync();
-      subscriber.awaitTerminated();
+  @Override
+  public PubSubMessageResponse handlePubSubMessage(PubsubMessage message) {
+    if (!message.containsAttributes(Constants.TEST_ID)) {
+      return PubSubMessageResponse.NACK;
     }
+    String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
+    if (!message.containsAttributes(Constants.SCENARIO)) {
+      respond(
+          testId,
+          Response.invalidArgument(
+              String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
+      return PubSubMessageResponse.ACK;
+    }
+    String scenario = message.getAttributesOrDefault(Constants.SCENARIO, "");
+    Request request = Request.make(testId, message.getAttributesMap(), message.getData());
+
+    // Run the given request/response cycle through a handler and respond with results.
+    Response response = Response.EMPTY;
+    try {
+      response = scenarioHandlers.handleScenario(scenario, request);
+    } catch (Throwable e) {
+      e.printStackTrace(System.err);
+      response = Response.internalError(e);
+    } finally {
+      respond(testId, response);
+    }
+    return PubSubMessageResponse.ACK;
+  }
+
+  /**
+   * This method is responsible for doing any cleanup tasks required for the {@link
+   * PubSubMessageHandler} when handler is no longer required.
+   */
+  @Override
+  public void cleanupMessageHandler() {
     if (publisher != null) {
       publisher.shutdown();
     }
   }
 
   /** This method converts from {@link Response} to pubsub and sends out the publisher channel. */
-  public void respond(final String testId, final Response response) {
+  private void respond(final String testId, final Response response) {
     final PubsubMessage message =
         PubsubMessage.newBuilder()
             .putAllAttributes(response.headers())
@@ -100,43 +109,20 @@ public class Server implements AutoCloseable {
         MoreExecutors.directExecutor());
   }
 
-  /** Execute a scenario based on the incoming message from the test runner. */
-  public void handleMessage(PubsubMessage message, AckReplyConsumer consumer) {
-    if (!message.containsAttributes(Constants.TEST_ID)) {
-      consumer.nack();
-      return;
+  private static PubSubServer createPubSubServer(Server server) {
+    if (Constants.SUBSCRIPTION_MODE.equals(Constants.SUBSCRIPTION_MODE_PULL)) {
+      return new PubSubPullServer(server);
     }
-    String testId = message.getAttributesOrDefault(Constants.TEST_ID, "");
-    if (!message.containsAttributes(Constants.SCENARIO)) {
-      respond(
-          testId,
-          Response.invalidArgument(
-              String.format("Expected attribute \"%s\" is missing", Constants.SCENARIO)));
-      consumer.ack();
-      return;
-    }
-    String scenario = message.getAttributesOrDefault(Constants.SCENARIO, "");
-    Request request = Request.make(testId, message.getAttributesMap(), message.getData());
-
-    // Run the given request/response cycle through a handler and respond with results.
-    Response response = Response.EMPTY;
-    try {
-      response = scenarioHandlers.handleScenario(scenario, request);
-    } catch (Throwable e) {
-      e.printStackTrace(System.err);
-      response = Response.internalError(e);
-    } finally {
-      respond(testId, response);
-      consumer.ack();
-    }
+    return new PubSubPushServer(Integer.parseInt(Constants.PUSH_PORT), server);
   }
 
   /** Runs our server. */
   public static void main(String[] args) throws Exception {
-    try (Server server = new Server()) {
-      server.start();
-      // Docs for Subscriber recommend doing this to block main thread while daemon thread consumes
-      // stuff.
+    Server server = new Server();
+    try (PubSubServer pubSubServer = createPubSubServer(server)) {
+      pubSubServer.start();
+      // Docs for Subscriber recommend doing this to block main thread while daemon thread
+      // consumes stuff.
       for (; ; ) {
         Thread.sleep(Long.MAX_VALUE);
       }
