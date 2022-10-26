@@ -23,9 +23,9 @@ plugins {
 description = 'Examples for showing resource detection in various GCP environments.'
 
 dependencies {
-	compile project(':detector-resources')
-	compile(libraries.opentelemetry_sdk_autoconf)
-	compile(libraries.opentelemetry_sdk_resources)
+	implementation project(':detector-resources')
+	implementation(libraries.opentelemetry_sdk_autoconf)
+	implementation(libraries.opentelemetry_sdk_resources)
 }
 
 mainClassName = 'com.google.cloud.opentelemetry.example.resource.ResourceExample'
