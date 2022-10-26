@@ -183,7 +183,7 @@ public abstract class TraceConfiguration {
     /**
      * Sets the map of attribute keys that will be renamed.
      *
-     * @param attributeMapping the map of attribute OTEL key -> GCP attribute name.
+     * @param attributeMapping the map of attribute OTEL key to GCP attribute name.
      * @return this.
      */
     public abstract Builder setAttributeMapping(ImmutableMap<String, String> attributeMapping);
