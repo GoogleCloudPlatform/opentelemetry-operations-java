@@ -24,10 +24,10 @@ mainClassName = 'com.google.cloud.opentelemetry.example.trace.TraceExporterExamp
 description = 'Examples for Cloud Trace Exporter'
 
 dependencies {
-	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_sdk)
-	compile(libraries.google_cloud_trace)
-	compile project(':exporter-trace')
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.google_cloud_trace)
+	implementation project(':exporter-trace')
 	runtimeOnly project(':detector-resources')
 }
 

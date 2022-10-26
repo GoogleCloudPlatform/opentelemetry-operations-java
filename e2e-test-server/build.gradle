@@ -26,13 +26,13 @@ application {
 description = 'End-To-End integration testing server'
 
 dependencies {
-	compile(libraries.opentelemetry_autoconfigure)
-	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_sdk)
-	compile(libraries.google_cloud_trace)
-	compile(libraries.google_cloud_pubsub)
-	compile project(':exporter-trace')
-	compile project(':propagators-gcp')
+	implementation(libraries.opentelemetry_autoconfigure)
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.google_cloud_trace)
+	implementation(libraries.google_cloud_pubsub)
+	implementation project(':exporter-trace')
+	implementation project(':propagators-gcp')
 	runtimeOnly project(':detector-resources')
 }
 

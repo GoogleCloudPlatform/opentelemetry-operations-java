@@ -23,8 +23,8 @@ plugins {
 description = 'Examples for using java autoconfiguration and Google Cloud Operations'
 
 dependencies {
-	compile(libraries.opentelemetry_api)
-	compile(libraries.opentelemetry_sdk_metrics)
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk_metrics)
 	runtimeOnly(libraries.opentelemetry_sdk_autoconf)
 	runtimeOnly(libraries.opentelemetry_sdk)
 	runtimeOnly project(':exporter-auto')
