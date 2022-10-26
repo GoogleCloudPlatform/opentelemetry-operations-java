@@ -20,7 +20,7 @@ plugins {
 }
 
 application {
-	mainClassName = 'com.google.cloud.opentelemetry.endtoend.Server'
+	mainClass.set('com.google.cloud.opentelemetry.endtoend.Server')
 }
 
 description = 'End-To-End integration testing server'
