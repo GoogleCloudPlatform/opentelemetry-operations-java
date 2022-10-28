@@ -50,7 +50,7 @@ public final class XCloudTraceContextPropagator implements TextMapPropagator {
   /**
    * Constructs a new text map propogator that leverages the X-Cloud-Trace-Context header.
    *
-   * @param oneway
+   * @param oneway boolean to configure if the trace should propagate in a single direction.
    */
   public XCloudTraceContextPropagator(boolean oneway) {
     this.oneway = oneway;

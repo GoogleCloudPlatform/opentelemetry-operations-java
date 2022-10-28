@@ -61,8 +61,8 @@ subprojects {
 	group = "com.google.cloud.opentelemetry"
 	// Note: Version now comes from nebula plugin
 
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
 
 	repositories {
 		mavenCentral()

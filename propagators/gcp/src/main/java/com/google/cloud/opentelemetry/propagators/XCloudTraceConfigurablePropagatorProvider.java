@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * flag behaves subtly different from expectations in both w3c traceparent *and* opentelemetry
  * propagation.
  *
- * @see {@link OneWayXCloudTraceConfigurablePropagatorProvider}
+ * @see OneWayXCloudTraceConfigurablePropagatorProvider
  */
 @AutoService(ConfigurablePropagatorProvider.class)
 public class XCloudTraceConfigurablePropagatorProvider implements ConfigurablePropagatorProvider {
