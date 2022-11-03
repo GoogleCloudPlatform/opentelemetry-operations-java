@@ -50,17 +50,8 @@ public final class GCEResource implements ResourceProvider {
       attrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, projectId);
     }
 
-    // Example zone: australia-southeast1-a
-    String zone = metadata.getZone();
-    if (zone != null) {
-      attrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone);
-
-      // Parsing required to scope up to a region
-      String[] splitArr = zone.split("-");
-      if (splitArr.length > 2) {
-        attrBuilders.put(ResourceAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
-      }
-    }
+    AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
+    AttributesExtractorUtil.addCloudRegionFromMetadata(attrBuilders, metadata);
 
     String instanceId = metadata.getInstanceId();
     if (instanceId != null) {

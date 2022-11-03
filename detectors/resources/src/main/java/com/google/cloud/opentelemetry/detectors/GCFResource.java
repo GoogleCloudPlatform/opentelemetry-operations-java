@@ -51,31 +51,19 @@ public class GCFResource implements ResourceProvider {
           ResourceAttributes.CLOUD_PLATFORM,
           ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
 
-      String zone = metadata.getZone();
-      if (zone != null) {
-        attrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone);
-
-        // Parsing required to scope up to a region
-        String[] splitArr = zone.split("-");
-        if (splitArr.length > 2) {
-          attrBuilders.put(ResourceAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
-        }
+      String cloudFunctionName = envVars.get("K_SERVICE");
+      if (cloudFunctionName != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudFunctionName);
       }
 
-      String cloudRunService = envVars.get("K_SERVICE");
-      if (cloudRunService != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudRunService);
+      String cloudFunctionVersion = envVars.get("K_REVISION");
+      if (cloudFunctionVersion != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudFunctionVersion);
       }
 
-      String cloudRunServiceRevision = envVars.get("K_REVISION");
-      if (cloudRunServiceRevision != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
-      }
-
-      String instanceId = metadata.getInstanceId();
-      if (instanceId != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_ID, instanceId);
-      }
+      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
+      AttributesExtractorUtil.addCloudRegionFromMetadata(attrBuilders, metadata);
+      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilders, metadata);
     }
 
     return attrBuilders.build();
