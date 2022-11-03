@@ -118,18 +118,22 @@ subprojects {
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
+		cloudEventsCoreVersion = '2.4.0'
+		cloudFunctionsFrameworkApiVersion = '1.0.4'
 
 		libraries = [
 			auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
 			auto_service                 : "com.google.auto.service:auto-service:${autoServiceVersion}",
 			auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
 			auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
+			cloudevents_core : "io.cloudevents:cloudevents-core:${cloudEventsCoreVersion}",
 			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
 			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleTraceVersion}",
 			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:2.0.1",
 			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
 			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
 			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
+			google_cloud_functions_framework : "com.google.cloud.functions:functions-framework-api:${cloudFunctionsFrameworkApiVersion}",
 			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_context        : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",
