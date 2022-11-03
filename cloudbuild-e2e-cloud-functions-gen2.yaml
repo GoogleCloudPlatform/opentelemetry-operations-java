@@ -17,7 +17,7 @@ steps:
   - name: "gradle:7.5.1-jdk11"
     id: generate-jar
     entrypoint: "gradle"
-    timeout: 2m
+    timeout: 4m
     args: ["shadowJar"]
 
   # Zip the generated JAR file
@@ -25,7 +25,12 @@ steps:
     id: zip-jar
     entrypoint: bash
     args:
-      - cd build/libs && zip function-source e2e-test-server-0.1.0-SNAPSHOT-all.jar
+      - '-c'
+      - |
+         apt-get update && \
+         apt-get install zip --assume-yes && \
+         cd e2e-test-server/build/libs && \
+         zip function-source e2e-test-server-0.1.0-SNAPSHOT-all.jar
 
   # Run the test
   - name: $_TEST_RUNNER_IMAGE
@@ -33,12 +38,12 @@ steps:
     dir: /
     env: ["PROJECT_ID=$PROJECT_ID"]
     args:
-      - cloud-function-v2
-      - --functionSource=build/libs/e2e-test-server-0.1.0-SNAPSHOT-all.zip
+      - cloud-functions-gen2
+      - --functionsource=/workspace/e2e-test-server/build/libs/function-source.zip
       - --runtime=java11
-      - --entryPoint=com.google.cloud.opentelemetry.endtoend.CloudFunctionHandler
+      - --entrypoint=com.google.cloud.opentelemetry.endtoend.CloudFunctionHandler
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
 substitutions:
-  _TEST_RUNNER_IMAGE: gcr.io/${PROJECT_ID}/opentelemetry-operations-e2e-testing:0.13.0
+  _TEST_RUNNER_IMAGE: gcr.io/${PROJECT_ID}/opentelemetry-operations-e2e-testing:0.14.0
   _TEST_SERVER_IMAGE: gcr.io/${PROJECT_ID}/opentelemetry-operations-java-e2e-test-server:${SHORT_SHA}
