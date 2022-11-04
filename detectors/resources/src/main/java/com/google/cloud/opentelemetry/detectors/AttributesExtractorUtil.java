@@ -21,18 +21,54 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 /**
  * A utility class that contains method that facilitate extraction of attributes from environment
  * variables and metadata configurations.
+ *
+ * <p>This class only adds helper methods to extract {@link ResourceAttributes} that are common
+ * across all the supported compute environments.
  */
 public class AttributesExtractorUtil {
 
+  /**
+   * Utility method to extract cloud availability zone from passed {@link GCPMetadataConfig}. The
+   * method modifies the passed attributesBuilder by adding the extracted property to it. If the
+   * zone cannot be found, calling this method has no effect.
+   *
+   * <ul>
+   *   <li>If the availability zone cannot be found, calling this method has no effect.
+   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_AVAILABILITY_ZONE}
+   *       attribute.
+   * </ul>
+   *
+   * <p>Example zone: australia-southeast1-a
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
+   *     be added.
+   * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud availability zone
+   *     value is extracted.
+   */
   public static void addAvailabilityZoneFromMetadata(
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
-    // Example zone: australia-southeast1-a
     String zone = metadataConfig.getZone();
     if (zone != null) {
       attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone);
     }
   }
 
+  /**
+   * Utility method to extract the cloud region from passed {@link GCPMetadataConfig}. The method
+   * modifies the passed attributesBuilder by adding the extracted property to it.
+   *
+   * <ul>
+   *   <li>If the cloud region cannot be found, calling this method has no effect.
+   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   * </ul>
+   *
+   * <p>Example region: australia-southeast1
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
+   *     be added.
+   * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud region value is
+   *     extracted.
+   */
   public static void addCloudRegionFromMetadata(
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String zone = metadataConfig.getZone();
@@ -45,6 +81,21 @@ public class AttributesExtractorUtil {
     }
   }
 
+  /**
+   * Utility method to extract the current compute instance ID from the passed {@link
+   * GCPMetadataConfig}. The method modifies the passed attributesBuilder by adding the extracted
+   * property to it.
+   *
+   * <ul>
+   *   <li>If the instance ID cannot be found, calling this method has no effect.
+   *   <li>Calling this method will update {@link ResourceAttributes#FAAS_ID} attribute.
+   * </ul>
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
+   *     be added.
+   * @param metadataConfig The {@link GCPMetadataConfig} from which the instance ID value is
+   *     extracted.
+   */
   public static void addInstanceIdFromMetadata(
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String instanceId = metadataConfig.getInstanceId();
