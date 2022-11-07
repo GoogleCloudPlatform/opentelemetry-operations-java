@@ -113,10 +113,7 @@ public class Server implements PubSubMessageHandler {
       // Wait for the future to get completed.
       // This prevents cloud functions from exiting too quickly
       messageIdFuture.get(30, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException | TimeoutException e) {
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
       e.printStackTrace();
     }
   }
