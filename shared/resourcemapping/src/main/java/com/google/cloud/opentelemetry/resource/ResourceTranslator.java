@@ -91,6 +91,10 @@ public class ResourceTranslator {
           AttributeMapping.create("service_name", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("configuration_name", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("revision_name", ResourceAttributes.FAAS_VERSION));
+  private static List<AttributeMapping> GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS =
+      java.util.Arrays.asList(
+          AttributeMapping.create("region", ResourceAttributes.CLOUD_REGION),
+          AttributeMapping.create("function_name", ResourceAttributes.FAAS_NAME));
   private static List<AttributeMapping> GENERIC_TASK_LABELS =
       java.util.Arrays.asList(
           AttributeMapping.create(
@@ -117,6 +121,8 @@ public class ResourceTranslator {
         return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN:
         return mapBase(resource, "cloud_run_revision", GOOGLE_CLOUD_RUN_INSTANCE_LABELS);
+      case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS:
+        return mapBase(resource, "cloud_function", GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS);
       default:
         return mapBase(resource, "generic_task", GENERIC_TASK_LABELS);
     }

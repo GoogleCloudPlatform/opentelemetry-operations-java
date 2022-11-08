@@ -21,6 +21,9 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Server implements the "integration test driver" for this language.
@@ -102,11 +105,17 @@ public class Server implements PubSubMessageHandler {
           public void onSuccess(String messageId) {}
 
           public void onFailure(Throwable t) {
-            System.out.println("failed to publish response to test: " + testId);
             t.printStackTrace();
           }
         },
         MoreExecutors.directExecutor());
+    try {
+      // Wait for the future to get completed.
+      // This prevents cloud functions from exiting too quickly
+      messageIdFuture.get(30, TimeUnit.SECONDS);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      e.printStackTrace();
+    }
   }
 
   private static PubSubServer createPubSubServer(Server server) {

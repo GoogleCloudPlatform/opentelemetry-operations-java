@@ -22,17 +22,17 @@ import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
-public final class CloudRunResource implements ResourceProvider {
+public final class GCFResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
-  public CloudRunResource() {
+  public GCFResource() {
     this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
     this.envVars = EnvVars.DEFAULT_INSTANCE;
   }
 
   // For testing only
-  CloudRunResource(GCPMetadataConfig metadata, EnvVars envVars) {
+  GCFResource(GCPMetadataConfig metadata, EnvVars envVars) {
     this.metadata = metadata;
     this.envVars = envVars;
   }
@@ -45,19 +45,20 @@ public final class CloudRunResource implements ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
 
-    if (envVars.get("K_CONFIGURATION") != null) {
+    if (envVars.get("FUNCTION_TARGET") != null) {
       // add the resource attributes for Cloud Run
       attrBuilders.put(
-          ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
+          ResourceAttributes.CLOUD_PLATFORM,
+          ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
 
-      String cloudRunService = envVars.get("K_SERVICE");
-      if (cloudRunService != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudRunService);
+      String cloudFunctionName = envVars.get("K_SERVICE");
+      if (cloudFunctionName != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudFunctionName);
       }
 
-      String cloudRunServiceRevision = envVars.get("K_REVISION");
-      if (cloudRunServiceRevision != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
+      String cloudFunctionVersion = envVars.get("K_REVISION");
+      if (cloudFunctionVersion != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudFunctionVersion);
       }
 
       AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);

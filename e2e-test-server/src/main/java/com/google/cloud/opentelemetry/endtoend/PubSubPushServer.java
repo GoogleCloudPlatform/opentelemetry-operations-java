@@ -157,7 +157,7 @@ public class PubSubPushServer implements PubSubServer {
    * A POJO class containing equivalent Java representation of the incoming HTTP request's (to
    * {@link PubSubPushServer}) JSON form.
    */
-  private static class Message {
+  public static class Message {
     private Map<String, String> attributes;
     private String messageId;
     private String publishTime;
