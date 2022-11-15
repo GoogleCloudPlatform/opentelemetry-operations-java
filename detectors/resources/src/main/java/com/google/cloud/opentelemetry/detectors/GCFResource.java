@@ -46,7 +46,7 @@ public final class GCFResource implements ResourceProvider {
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
 
     if (envVars.get("FUNCTION_TARGET") != null) {
-      // add the resource attributes for Cloud Run
+      // add the resource attributes for Cloud Function
       attrBuilders.put(
           ResourceAttributes.CLOUD_PLATFORM,
           ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
