@@ -103,6 +103,8 @@ public class PubSubPushServer implements PubSubServer {
     try {
       httpServer = HttpServer.create(new InetSocketAddress(this.port), 0);
       httpServer.createContext("/", this.rootRequestHandler);
+      httpServer.createContext("/ready", createStandardStringResponseHandler("Server Ready"));
+      httpServer.createContext("/alive", createStandardStringResponseHandler("Server Alive"));
       httpServer.setExecutor(MoreExecutors.directExecutor());
     } catch (IOException e) {
       e.printStackTrace();
@@ -144,6 +146,16 @@ public class PubSubPushServer implements PubSubServer {
         os.close();
         httpExchange.close();
       }
+    };
+  }
+
+  private HttpHandler createStandardStringResponseHandler(String response) {
+    return httpExchange -> {
+      httpExchange.sendResponseHeaders(200, response.length());
+      OutputStream os = httpExchange.getResponseBody();
+      os.write(response.getBytes(StandardCharsets.UTF_8));
+      os.close();
+      httpExchange.close();
     };
   }
 
