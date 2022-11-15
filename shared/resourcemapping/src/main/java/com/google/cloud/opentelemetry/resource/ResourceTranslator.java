@@ -95,6 +95,12 @@ public class ResourceTranslator {
       java.util.Arrays.asList(
           AttributeMapping.create("region", ResourceAttributes.CLOUD_REGION),
           AttributeMapping.create("function_name", ResourceAttributes.FAAS_NAME));
+  private static List<AttributeMapping> GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS =
+      java.util.Arrays.asList(
+          AttributeMapping.create("module_id", ResourceAttributes.FAAS_NAME),
+          AttributeMapping.create("version_id", ResourceAttributes.FAAS_VERSION),
+          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_ID),
+          AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION));
   private static List<AttributeMapping> GENERIC_TASK_LABELS =
       java.util.Arrays.asList(
           AttributeMapping.create(
@@ -123,6 +129,8 @@ public class ResourceTranslator {
         return mapBase(resource, "cloud_run_revision", GOOGLE_CLOUD_RUN_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS:
         return mapBase(resource, "cloud_function", GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS);
+      case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
+        return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
         return mapBase(resource, "generic_task", GENERIC_TASK_LABELS);
     }
