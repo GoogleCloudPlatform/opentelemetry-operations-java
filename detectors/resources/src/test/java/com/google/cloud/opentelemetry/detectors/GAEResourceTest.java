@@ -15,10 +15,12 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
@@ -72,9 +74,11 @@ public class GAEResourceTest {
   }
 
   @Test
-  public void testAppEngineResourceWithAppEngineAttributesSucceeds() {
+  public void testAppEngineResourceWithAppEngineAttributesSucceedsInFlex() {
     stubEndpoint("/project/project-id", "GCF-pid");
+    // for flex, the region should be parsed from zone attribute
     stubEndpoint("/instance/zone", "country-region-zone");
+    stubEndpoint("/instance/region", "country-region1");
     stubEndpoint("/instance/id", "GCF-instance-id");
 
     GAEResource testResource = new GAEResource(metadataConfig, new EnvVarMock(envVars));
@@ -86,6 +90,30 @@ public class GAEResourceTest {
             ResourceAttributes.CLOUD_PLATFORM,
             ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
         .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
+        .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
+        .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
+        .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));
+  }
+
+  @Test
+  public void testAppEngineResourceWithAppEngineAttributesSucceedsInStandard() {
+    stubEndpoint("/project/project-id", "GCF-pid");
+    // for standard, the region should be extracted from region attribute
+    stubEndpoint("/instance/zone", "country-region-zone");
+    stubEndpoint("/instance/region", "country-region1");
+    stubEndpoint("/instance/id", "GCF-instance-id");
+
+    Map<String, String> updatedEnvVars = new HashMap<>(envVars);
+    updatedEnvVars.put("GAE_ENV", "standard");
+    GAEResource testResource = new GAEResource(metadataConfig, new EnvVarMock(updatedEnvVars));
+    assertThat(testResource.getAttributes())
+        .hasSize(6)
+        .containsEntry(
+            ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
+        .containsEntry(
+            ResourceAttributes.CLOUD_PLATFORM,
+            ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
+        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region1")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
         .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));

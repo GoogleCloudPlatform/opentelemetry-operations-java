@@ -24,7 +24,7 @@ steps:
 
   # Run the test
   - name: $_TEST_RUNNER_IMAGE
-    id: run-tests-cloudrun
+    id: run-tests-gae
     dir: /
     env: [ "PROJECT_ID=$PROJECT_ID" ]
     args:

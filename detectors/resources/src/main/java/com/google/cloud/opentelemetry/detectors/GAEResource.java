@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public class GAEResource implements ResourceProvider {
+  private static final String GAE_ENVIRONMENT = "GAE_ENV";
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
@@ -65,7 +66,7 @@ public class GAEResource implements ResourceProvider {
         attrBuilders.put(ResourceAttributes.FAAS_ID, appInstanceId);
       }
 
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
+      updateAttributesWithRegion(attrBuilders);
     }
     return attrBuilders.build();
   }
@@ -73,5 +74,19 @@ public class GAEResource implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
     return Resource.create(getAttributes());
+  }
+
+  /**
+   * Selects the correct method to extract the region, depending on the GAE environment.
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} object to which the extracted region
+   *     would be added.
+   */
+  private void updateAttributesWithRegion(AttributesBuilder attributesBuilder) {
+    if (envVars.get(GAE_ENVIRONMENT) != null && envVars.get(GAE_ENVIRONMENT).equals("standard")) {
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingRegion(attributesBuilder, metadata);
+    } else {
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attributesBuilder, metadata);
+    }
   }
 }

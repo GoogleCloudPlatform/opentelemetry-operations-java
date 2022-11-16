@@ -62,6 +62,18 @@ final class GCPMetadataConfig {
     return zone;
   }
 
+  // Use this method only when the region cannot be parsed from the zone. Known use-cases of this
+  // method involve detecting region in GAE standard environment
+  // Example response: projects/5689182099321/regions/us-central1
+  // Returns null on failure to retrieve from metadata server
+  String getRegion() {
+    String region = getAttribute("instance/region");
+    if (region != null && region.contains("/")) {
+      region = region.substring(region.lastIndexOf('/') + 1);
+    }
+    return region;
+  }
+
   // Example response: projects/640212054955/machineTypes/e2-medium
   String getMachineType() {
     String machineType = getAttribute("instance/machine-type");

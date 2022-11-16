@@ -83,6 +83,31 @@ public class AttributesExtractorUtil {
   }
 
   /**
+   * Utility method to extract the cloud region from passed {@link GCPMetadataConfig}. The method
+   * modifies the passed attributesBuilder by adding the extracted property to it.
+   *
+   * <ul>
+   *   <li>If the cloud region cannot be found, calling this method has no effect.
+   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>This method directly uses the region attribute from the metadata config.
+   * </ul>
+   *
+   * <p>Example region: australia-southeast1
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
+   *     be added.
+   * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud region value is
+   *     extracted.
+   */
+  public static void addCloudRegionFromMetadataUsingRegion(
+      AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
+    String region = metadataConfig.getRegion();
+    if (region != null) {
+      attributesBuilder.put(ResourceAttributes.CLOUD_REGION, region);
+    }
+  }
+
+  /**
    * Utility method to extract the current compute instance ID from the passed {@link
    * GCPMetadataConfig}. The method modifies the passed attributesBuilder by adding the extracted
    * property to it.
