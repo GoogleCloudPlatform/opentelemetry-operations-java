@@ -61,7 +61,7 @@ public final class CloudRunResource implements ResourceProvider {
       }
 
       AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
-      AttributesExtractorUtil.addCloudRegionFromMetadata(attrBuilders, metadata);
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
       AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilders, metadata);
     }
 

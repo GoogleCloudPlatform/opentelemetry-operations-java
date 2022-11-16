@@ -60,6 +60,7 @@ public class AttributesExtractorUtil {
    * <ul>
    *   <li>If the cloud region cannot be found, calling this method has no effect.
    *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>This method uses zone attribute to parse region from it.
    * </ul>
    *
    * <p>Example region: australia-southeast1
@@ -69,7 +70,7 @@ public class AttributesExtractorUtil {
    * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud region value is
    *     extracted.
    */
-  public static void addCloudRegionFromMetadata(
+  public static void addCloudRegionFromMetadataUsingZone(
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String zone = metadataConfig.getZone();
     if (zone != null) {

@@ -51,7 +51,7 @@ public final class GCEResource implements ResourceProvider {
     }
 
     AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
-    AttributesExtractorUtil.addCloudRegionFromMetadata(attrBuilders, metadata);
+    AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
 
     String instanceId = metadata.getInstanceId();
     if (instanceId != null) {

@@ -65,7 +65,7 @@ public class GAEResource implements ResourceProvider {
         attrBuilders.put(ResourceAttributes.FAAS_ID, appInstanceId);
       }
 
-      AttributesExtractorUtil.addCloudRegionFromMetadata(attrBuilders, metadata);
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
     }
     return attrBuilders.build();
   }
