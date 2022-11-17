@@ -60,6 +60,7 @@ public class AttributesExtractorUtil {
    * <ul>
    *   <li>If the cloud region cannot be found, calling this method has no effect.
    *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>This method uses zone attribute to parse region from it.
    * </ul>
    *
    * <p>Example region: australia-southeast1
@@ -69,7 +70,7 @@ public class AttributesExtractorUtil {
    * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud region value is
    *     extracted.
    */
-  public static void addCloudRegionFromMetadata(
+  public static void addCloudRegionFromMetadataUsingZone(
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String zone = metadataConfig.getZone();
     if (zone != null) {
@@ -78,6 +79,31 @@ public class AttributesExtractorUtil {
       if (splitArr.length > 2) {
         attributesBuilder.put(ResourceAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
       }
+    }
+  }
+
+  /**
+   * Utility method to extract the cloud region from passed {@link GCPMetadataConfig}. The method
+   * modifies the passed attributesBuilder by adding the extracted property to it.
+   *
+   * <ul>
+   *   <li>If the cloud region cannot be found, calling this method has no effect.
+   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>This method directly uses the region attribute from the metadata config.
+   * </ul>
+   *
+   * <p>Example region: australia-southeast1
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
+   *     be added.
+   * @param metadataConfig The {@link GCPMetadataConfig} from which the cloud region value is
+   *     extracted.
+   */
+  public static void addCloudRegionFromMetadataUsingRegion(
+      AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
+    String region = metadataConfig.getRegion();
+    if (region != null) {
+      attributesBuilder.put(ResourceAttributes.CLOUD_REGION, region);
     }
   }
 

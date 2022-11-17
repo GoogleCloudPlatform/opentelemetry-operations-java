@@ -1,10 +1,11 @@
-# Copyright 2021 Google
+# Copyright 2022 Google
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0 #
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,18 +18,19 @@ steps:
     id: wait-for-image
     entrypoint: "sh"
     timeout: 3m
-    env: ["_TEST_SERVER_IMAGE=${_TEST_SERVER_IMAGE}"]
+    env: [ "_TEST_SERVER_IMAGE=${_TEST_SERVER_IMAGE}" ]
     args:
       - e2e-test-server/wait-for-image.sh
 
   # Run the test
   - name: $_TEST_RUNNER_IMAGE
-    id: run-tests-gke
+    id: run-tests-gae
     dir: /
-    env: ["PROJECT_ID=$PROJECT_ID"]
+    env: [ "PROJECT_ID=$PROJECT_ID" ]
     args:
-      - gke
+      - gae
       - --image=$_TEST_SERVER_IMAGE
+      - --runtime=java11
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
 substitutions:

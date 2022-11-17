@@ -22,17 +22,18 @@ import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
-public final class CloudRunResource implements ResourceProvider {
+public class GAEResource implements ResourceProvider {
+  private static final String GAE_ENVIRONMENT = "GAE_ENV";
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
-  public CloudRunResource() {
+  public GAEResource() {
     this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
     this.envVars = EnvVars.DEFAULT_INSTANCE;
   }
 
   // For testing only
-  CloudRunResource(GCPMetadataConfig metadata, EnvVars envVars) {
+  GAEResource(GCPMetadataConfig metadata, EnvVars envVars) {
     this.metadata = metadata;
     this.envVars = envVars;
   }
@@ -45,31 +46,47 @@ public final class CloudRunResource implements ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
 
-    if (envVars.get("K_CONFIGURATION") != null) {
-      // add the resource attributes for Cloud Run
+    if (envVars.get("GAE_SERVICE") != null) {
+      // add the resource attributes for App Engine
       attrBuilders.put(
-          ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
+          ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE);
 
-      String cloudRunService = envVars.get("K_SERVICE");
-      if (cloudRunService != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudRunService);
+      String appModuleName = envVars.get("GAE_SERVICE");
+      if (appModuleName != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_NAME, appModuleName);
       }
 
-      String cloudRunServiceRevision = envVars.get("K_REVISION");
-      if (cloudRunServiceRevision != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
+      String appVersionId = envVars.get("GAE_VERSION");
+      if (appVersionId != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_VERSION, appVersionId);
       }
 
-      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
-      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilders, metadata);
+      String appInstanceId = envVars.get("GAE_INSTANCE");
+      if (appInstanceId != null) {
+        attrBuilders.put(ResourceAttributes.FAAS_ID, appInstanceId);
+      }
+
+      updateAttributesWithRegion(attrBuilders);
     }
-
     return attrBuilders.build();
   }
 
   @Override
   public Resource createResource(ConfigProperties config) {
     return Resource.create(getAttributes());
+  }
+
+  /**
+   * Selects the correct method to extract the region, depending on the GAE environment.
+   *
+   * @param attributesBuilder The {@link AttributesBuilder} object to which the extracted region
+   *     would be added.
+   */
+  private void updateAttributesWithRegion(AttributesBuilder attributesBuilder) {
+    if (envVars.get(GAE_ENVIRONMENT) != null && envVars.get(GAE_ENVIRONMENT).equals("standard")) {
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingRegion(attributesBuilder, metadata);
+    } else {
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attributesBuilder, metadata);
+    }
   }
 }
