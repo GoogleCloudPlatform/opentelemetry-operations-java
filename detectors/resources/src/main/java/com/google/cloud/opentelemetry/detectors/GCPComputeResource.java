@@ -22,6 +22,11 @@ import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
+/**
+ * This class is used to detect the correct GCP compute platform resource. Supports detection of
+ * Google Compute Engine (GCE), Google Kubernetes Engine (GKE), Google Cloud Functions (GCF), Google
+ * App Engine (GAE) and Google Cloud Run (GCR).
+ */
 public class GCPComputeResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
@@ -37,6 +42,12 @@ public class GCPComputeResource implements ResourceProvider {
     this.envVars = envVars;
   }
 
+  /**
+   * Generates and returns the attributes for the resource. The attributes vary depending on the
+   * type of resource detected.
+   *
+   * @return The {@link Attributes} for the detected resource.
+   */
   public Attributes getAttributes() {
     if (!metadata.isRunningOnGcp()) {
       return Attributes.empty();
@@ -97,6 +108,15 @@ public class GCPComputeResource implements ResourceProvider {
     }
   }
 
+  /**
+   * Updates the attributes with the required keys for a GKE (Google Kubernetes Engine) environment.
+   * The attributes are not updated in case the environment is not deemed to be GKE.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   * @return a boolean indicating if the environment was determined to be GKE and GKE specific
+   *     attributes were applied.
+   */
   private boolean generateGKEAttributesIfApplicable(AttributesBuilder attrBuilder) {
     if (envVars.get("KUBERNETES_SERVICE_HOST") != null) {
       // add all gce attributes
@@ -132,30 +152,48 @@ public class GCPComputeResource implements ResourceProvider {
     return false;
   }
 
-  private boolean generateGCRAttributesIfApplicable(AttributesBuilder attrBuilders) {
+  /**
+   * Updates the attributes with the required keys for a GCR (Google Cloud Run) environment. The
+   * attributes are not updated in case the environment is not deemed to be GCR.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   * @return a boolean indicating if the environment was determined to be GCR and GCR specific
+   *     attributes were applied.
+   */
+  private boolean generateGCRAttributesIfApplicable(AttributesBuilder attrBuilder) {
     if (envVars.get("K_CONFIGURATION") != null) {
       // add the resource attributes for Cloud Run
-      attrBuilders.put(
+      attrBuilder.put(
           ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
 
       String cloudRunService = envVars.get("K_SERVICE");
       if (cloudRunService != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_NAME, cloudRunService);
+        attrBuilder.put(ResourceAttributes.FAAS_NAME, cloudRunService);
       }
 
       String cloudRunServiceRevision = envVars.get("K_REVISION");
       if (cloudRunServiceRevision != null) {
-        attrBuilders.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
+        attrBuilder.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
       }
 
-      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilders, metadata);
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilders, metadata);
-      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilders, metadata);
+      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
+      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
+      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilder, metadata);
       return true;
     }
     return false;
   }
 
+  /**
+   * Updates the attributes with the required keys for a GCF (Google Cloud Functions) environment.
+   * The attributes are not updated in case the environment is not deemed to be GCF.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   * @return a boolean indicating if the environment was determined to be GCF and GCF specific
+   *     attributes were applied.
+   */
   private boolean generateGCFAttributesIfApplicable(AttributesBuilder attrBuilder) {
     if (envVars.get("FUNCTION_TARGET") != null) {
       // add the resource attributes for Cloud Function
@@ -181,6 +219,15 @@ public class GCPComputeResource implements ResourceProvider {
     return false;
   }
 
+  /**
+   * Updates the attributes with the required keys for a GAE (Google App Engine) environment. The
+   * attributes are not updated in case the environment is not deemed to be GAE.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   * @return a boolean indicating if the environment was determined to be GAE and GAE specific
+   *     attributes were applied.
+   */
   private boolean generateGAEAttributesIfApplicable(AttributesBuilder attrBuilder) {
     if (envVars.get("GAE_SERVICE") != null) {
       // add the resource attributes for App Engine
