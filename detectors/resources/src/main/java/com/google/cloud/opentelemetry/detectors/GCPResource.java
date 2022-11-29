@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.detectors;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
@@ -119,9 +120,6 @@ public class GCPResource implements ResourceProvider {
    */
   private boolean generateGKEAttributesIfApplicable(AttributesBuilder attrBuilder) {
     if (envVars.get("KUBERNETES_SERVICE_HOST") != null) {
-      // add all gce attributes
-      addGCEAttributes(attrBuilder);
-      // overwrite/add GKE specific attributes
       attrBuilder.put(
           ResourceAttributes.CLOUD_PLATFORM,
           ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
@@ -143,6 +141,14 @@ public class GCPResource implements ResourceProvider {
         attrBuilder.put(ResourceAttributes.K8S_CONTAINER_NAME, containerName);
       }
 
+      String instanceId = metadata.getInstanceId();
+      if (instanceId != null) {
+        attrBuilder.put(ResourceAttributes.HOST_ID, instanceId);
+      }
+
+      String clusterLocation = metadata.getClusterLocation();
+      assignGKEAvailabilityZoneOrRegion(clusterLocation, attrBuilder);
+
       String clusterName = metadata.getClusterName();
       if (clusterName != null && !clusterName.isEmpty()) {
         attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName);
@@ -150,6 +156,38 @@ public class GCPResource implements ResourceProvider {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Function that assigns either the cloud region or cloud availability zone depending on whether
+   * the cluster is regional or zonal respectively. Assigns both values if the cluster location
+   * passed is in an unexpected format.
+   *
+   * @param clusterLocation The location of the GKE cluster. Can either be an availability zone or a
+   *     region.
+   * @param attributesBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   */
+  private void assignGKEAvailabilityZoneOrRegion(
+      String clusterLocation, AttributesBuilder attributesBuilder) {
+    long dashCount =
+        StringUtils.isNullOrEmpty(clusterLocation)
+            ? 0
+            : clusterLocation.chars().filter(ch -> ch == '-').count();
+    switch ((int) dashCount) {
+      case 1:
+        // this is a region
+        attributesBuilder.put(ResourceAttributes.CLOUD_REGION, clusterLocation);
+        break;
+      case 2:
+        // this is a zone
+        attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, clusterLocation);
+        break;
+      default:
+        attributesBuilder.put(ResourceAttributes.CLOUD_REGION, clusterLocation);
+        attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, clusterLocation);
+        System.out.printf("Unrecognized format for cluster location: %s%n", clusterLocation);
+    }
   }
 
   /**

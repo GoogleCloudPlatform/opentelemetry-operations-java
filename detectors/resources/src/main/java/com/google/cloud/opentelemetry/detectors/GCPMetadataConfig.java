@@ -94,6 +94,11 @@ final class GCPMetadataConfig {
   }
 
   // Returns null on failure to retrieve from metadata server
+  String getClusterLocation() {
+    return getAttribute("instance/attributes/cluster-location");
+  }
+
+  // Returns null on failure to retrieve from metadata server
   String getInstanceHostName() {
     return getAttribute("instance/hostname");
   }

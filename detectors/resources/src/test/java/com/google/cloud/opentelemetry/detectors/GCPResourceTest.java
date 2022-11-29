@@ -15,22 +15,24 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class GCPResourceTest {
@@ -99,7 +101,7 @@ public class GCPResourceTest {
 
   /** Google Kubernetes Engine Tests * */
   @Test
-  public void testGKEResourceWithGKEAttributesSucceeds() {
+  public void testGKEResourceWithGKEAttributesSucceedsLocationZone() {
     envVars.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
     envVars.put("NAMESPACE", "GKE-testNameSpace");
     // Hostname can truncate pod name, so we test downward API override.
@@ -108,23 +110,48 @@ public class GCPResourceTest {
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
     stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
     stubEndpoint("/instance/id", "GCE-instance-id");
     stubEndpoint("/instance/name", "GCE-instance-name");
     stubEndpoint("/instance/machine-type", "GCE-instance-type");
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
 
     GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
-        .hasSize(12)
+        .hasSize(8)
         .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
         .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
-        .containsEntry(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid")
         .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
+        .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
+        .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
+        .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
+        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName-full-1234")
+        .containsEntry(ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName");
+  }
+
+  @Test
+  public void testGKEResourceWithGKEAttributesSucceedsLocationRegion() {
+    envVars.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
+    envVars.put("NAMESPACE", "GKE-testNameSpace");
+    // Hostname can truncate pod name, so we test downward API override.
+    envVars.put("HOSTNAME", "GKE-testHostName");
+    envVars.put("POD_NAME", "GKE-testHostName-full-1234");
+    envVars.put("CONTAINER_NAME", "GKE-testContainerName");
+
+    stubEndpoint("/project/project-id", "GCE-pid");
+    stubEndpoint("/instance/id", "GCE-instance-id");
+    stubEndpoint("/instance/name", "GCE-instance-name");
+    stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    stubEndpoint("/instance/attributes/cluster-location", "country-region");
+
+    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    assertThat(testResource.getAttributes())
+        .hasSize(8)
+        .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
+        .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
         .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
         .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
-        .containsEntry(ResourceAttributes.HOST_NAME, "GCE-instance-name")
-        .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type")
         .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
         .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
         .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName-full-1234")

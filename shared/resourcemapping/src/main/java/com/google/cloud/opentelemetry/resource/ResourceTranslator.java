@@ -75,7 +75,10 @@ public class ResourceTranslator {
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID));
   private static List<AttributeMapping> K8S_CONTAINER_LABELS =
       java.util.Arrays.asList(
-          AttributeMapping.create("location", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
+          AttributeMapping.create(
+              "location",
+              java.util.Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
