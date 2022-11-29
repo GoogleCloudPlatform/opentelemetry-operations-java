@@ -162,24 +162,12 @@ public class GCPComputeResource implements ResourceProvider {
    *     attributes were applied.
    */
   private boolean generateGCRAttributesIfApplicable(AttributesBuilder attrBuilder) {
-    if (envVars.get("K_CONFIGURATION") != null) {
+    if (envVars.get("K_CONFIGURATION") != null && envVars.get("FUNCTION_TARGET") == null) {
       // add the resource attributes for Cloud Run
       attrBuilder.put(
           ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
 
-      String cloudRunService = envVars.get("K_SERVICE");
-      if (cloudRunService != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_NAME, cloudRunService);
-      }
-
-      String cloudRunServiceRevision = envVars.get("K_REVISION");
-      if (cloudRunServiceRevision != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_VERSION, cloudRunServiceRevision);
-      }
-
-      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
-      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilder, metadata);
+      updateCommonAttributesForServerlessCompute(attrBuilder);
       return true;
     }
     return false;
@@ -201,22 +189,33 @@ public class GCPComputeResource implements ResourceProvider {
           ResourceAttributes.CLOUD_PLATFORM,
           ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
 
-      String cloudFunctionName = envVars.get("K_SERVICE");
-      if (cloudFunctionName != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_NAME, cloudFunctionName);
-      }
-
-      String cloudFunctionVersion = envVars.get("K_REVISION");
-      if (cloudFunctionVersion != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_VERSION, cloudFunctionVersion);
-      }
-
-      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
-      AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilder, metadata);
+      updateCommonAttributesForServerlessCompute(attrBuilder);
       return true;
     }
     return false;
+  }
+
+  /**
+   * This function adds common attributes required for most serverless compute platforms within GCP.
+   * Currently, these attributes are required for both GCF and GCR.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   */
+  private void updateCommonAttributesForServerlessCompute(AttributesBuilder attrBuilder) {
+    String serverlessComputeName = envVars.get("K_SERVICE");
+    if (serverlessComputeName != null) {
+      attrBuilder.put(ResourceAttributes.FAAS_NAME, serverlessComputeName);
+    }
+
+    String serverlessComputeVersion = envVars.get("K_REVISION");
+    if (serverlessComputeVersion != null) {
+      attrBuilder.put(ResourceAttributes.FAAS_VERSION, serverlessComputeVersion);
+    }
+
+    AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
+    AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
+    AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilder, metadata);
   }
 
   /**
