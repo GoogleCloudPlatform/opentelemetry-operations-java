@@ -27,17 +27,17 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
  * Google Compute Engine (GCE), Google Kubernetes Engine (GKE), Google Cloud Functions (GCF), Google
  * App Engine (GAE) and Google Cloud Run (GCR).
  */
-public class GCPComputeResource implements ResourceProvider {
+public class GCPResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
-  public GCPComputeResource() {
+  public GCPResource() {
     this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
     this.envVars = EnvVars.DEFAULT_INSTANCE;
   }
 
   // for testing only
-  GCPComputeResource(GCPMetadataConfig metadata, EnvVars envVars) {
+  GCPResource(GCPMetadataConfig metadata, EnvVars envVars) {
     this.metadata = metadata;
     this.envVars = envVars;
   }
