@@ -15,7 +15,7 @@
  */
 package com.google.cloud.opentelemetry.example.resource;
 
-import com.google.cloud.opentelemetry.detectors.GKEResource;
+import com.google.cloud.opentelemetry.detectors.GCPResource;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
 public class ResourceExample {
@@ -29,7 +29,7 @@ public class ResourceExample {
             .getResource();
     System.out.println(autoResource.getAttributes());
     System.out.println("Detecting resource: hardcoded");
-    GKEResource resource = new GKEResource();
+    GCPResource resource = new GCPResource();
     System.out.println(resource.getAttributes());
   }
 }
