@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.logging.Logger;
 
 /**
  * This class is used to detect the correct GCP compute platform resource. Supports detection of
@@ -31,6 +32,8 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 public class GCPResource implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
+
+  private static final Logger LOGGER = Logger.getLogger(GCPResource.class.getSimpleName());
 
   public GCPResource() {
     this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
@@ -184,9 +187,9 @@ public class GCPResource implements ResourceProvider {
         attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, clusterLocation);
         break;
       default:
-        attributesBuilder.put(ResourceAttributes.CLOUD_REGION, clusterLocation);
-        attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, clusterLocation);
-        System.out.printf("Unrecognized format for cluster location: %s%n", clusterLocation);
+        // TODO: Figure out how to handle unexpected conditions like this - Issue #183
+        LOGGER.severe(
+            String.format("Unrecognized format for cluster location: %s", clusterLocation));
     }
   }
 
