@@ -28,6 +28,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
 import static org.junit.Assert.assertEquals;
@@ -79,7 +80,6 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
 public class GoogleCloudMetricExporterTest {
-  static final String workloadPrefix = "workload.googleapis.com";
 
   @Mock private CloudMetricClient mockClient;
 
@@ -111,7 +111,7 @@ public class GoogleCloudMetricExporterTest {
   public void testExportSendsAllDescriptorsOnce() {
     GoogleCloudMetricExporter exporter =
         GoogleCloudMetricExporter.createWithClient(
-            aProjectId, workloadPrefix, mockClient, MetricDescriptorStrategy.SEND_ONCE);
+            aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.SEND_ONCE);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
     CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -127,8 +127,8 @@ public class GoogleCloudMetricExporterTest {
         metricDescriptorCaptor.getAllValues().stream()
             .map(d -> d.getMetricDescriptor().getType())
             .collect(Collectors.toSet());
-    assertTrue(metricDescriptorTypes.contains(workloadPrefix + "/" + aMetricData.getName()));
-    assertTrue(metricDescriptorTypes.contains(workloadPrefix + "/" + aHistogram.getName()));
+    assertTrue(metricDescriptorTypes.contains(DEFAULT_PREFIX + "/" + aMetricData.getName()));
+    assertTrue(metricDescriptorTypes.contains(DEFAULT_PREFIX + "/" + aHistogram.getName()));
   }
 
   @Test
@@ -136,7 +136,7 @@ public class GoogleCloudMetricExporterTest {
     MetricDescriptor expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
-            .setType(workloadPrefix + "/" + aMetricData.getName())
+            .setType(DEFAULT_PREFIX + "/" + aMetricData.getName())
             .addLabels(
                 LabelDescriptor.newBuilder()
                     .setKey("label1")
@@ -193,7 +193,7 @@ public class GoogleCloudMetricExporterTest {
 
     GoogleCloudMetricExporter exporter =
         GoogleCloudMetricExporter.createWithClient(
-            aProjectId, workloadPrefix, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+            aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -212,7 +212,7 @@ public class GoogleCloudMetricExporterTest {
     MetricDescriptor expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(aHistogram.getName())
-            .setType(workloadPrefix + "/" + aHistogram.getName())
+            .setType(DEFAULT_PREFIX + "/" + aHistogram.getName())
             .addLabels(
                 LabelDescriptor.newBuilder().setKey("test").setValueType(ValueType.STRING).build())
             .setMetricKind(MetricKind.CUMULATIVE)
@@ -290,7 +290,7 @@ public class GoogleCloudMetricExporterTest {
             .build();
     GoogleCloudMetricExporter exporter =
         GoogleCloudMetricExporter.createWithClient(
-            aProjectId, workloadPrefix, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+            aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1))
@@ -306,7 +306,7 @@ public class GoogleCloudMetricExporterTest {
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
     GoogleCloudMetricExporter exporter =
         GoogleCloudMetricExporter.createWithClient(
-            aProjectId, workloadPrefix, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
+            aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =
         ImmutableMetricData.createDoubleSummary(
