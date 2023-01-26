@@ -45,14 +45,16 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final Map<String, MetricDescriptor> descriptors = new HashMap<>();
   private final Map<MetricWithLabels, TimeSeries.Builder> pendingTimeSeries = new HashMap<>();
   private final String projectId;
+  private final String prefix;
 
-  public AggregateByLabelMetricTimeSeriesBuilder(String projectId) {
+  public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
     this.projectId = projectId;
+    this.prefix = prefix;
   }
 
   @Override
   public void recordPoint(MetricData metric, LongPointData point) {
-    MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
+    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
     if (descriptor == null) {
       // Unsupported type.
       return;
@@ -71,7 +73,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public void recordPoint(MetricData metric, DoublePointData point) {
-    MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
+    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
     if (descriptor == null) {
       // Unsupported type.
       return;
@@ -89,7 +91,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public void recordPoint(MetricData metric, HistogramPointData point) {
-    MetricDescriptor descriptor = mapMetricDescriptor(metric, point);
+    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
     if (descriptor == null) {
       // Unsupported type.
       return;

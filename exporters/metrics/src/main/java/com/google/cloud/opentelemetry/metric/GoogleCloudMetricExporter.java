@@ -58,11 +58,16 @@ public class GoogleCloudMetricExporter
 
   private final CloudMetricClient metricServiceClient;
   private final String projectId;
+  private final String prefix;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
 
   GoogleCloudMetricExporter(
-      String projectId, CloudMetricClient client, MetricDescriptorStrategy descriptorStrategy) {
+      String projectId,
+      String prefix,
+      CloudMetricClient client,
+      MetricDescriptorStrategy descriptorStrategy) {
     this.projectId = projectId;
+    this.prefix = prefix;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
   }
@@ -75,6 +80,7 @@ public class GoogleCloudMetricExporter
   public static GoogleCloudMetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
+    String prefix = configuration.getPrefix();
     MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
     // For testing, we need to hack around our gRPC config.
     if (configuration.getInsecureEndpoint()) {
@@ -103,6 +109,7 @@ public class GoogleCloudMetricExporter
 
     return new GoogleCloudMetricExporter(
         projectId,
+        prefix,
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy());
   }
@@ -110,9 +117,11 @@ public class GoogleCloudMetricExporter
   @VisibleForTesting
   static GoogleCloudMetricExporter createWithClient(
       String projectId,
+      String prefix,
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy) {
-    return new GoogleCloudMetricExporter(projectId, metricServiceClient, descriptorStrategy);
+    return new GoogleCloudMetricExporter(
+        projectId, prefix, metricServiceClient, descriptorStrategy);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
@@ -135,7 +144,8 @@ public class GoogleCloudMetricExporter
     // 1. Iterate over all points in the set of metrics to export
     // 2. Attempt to register MetricDescriptors (using configured strategy)
     // 3. Fire the set of time series off.
-    MetricTimeSeriesBuilder builder = new AggregateByLabelMetricTimeSeriesBuilder(projectId);
+    MetricTimeSeriesBuilder builder =
+        new AggregateByLabelMetricTimeSeriesBuilder(projectId, prefix);
     for (final MetricData metricData : metrics) {
       // Extract all the underlying points.
       switch (metricData.getType()) {
