@@ -62,8 +62,8 @@ public abstract class MetricConfiguration {
   public abstract String getProjectId();
 
   /**
-   * Returns the prefix prepended to metric names. See
-   * https://cloud.google.com/monitoring/custom-metrics#identifier for more details.
+   * Returns the prefix prepended to metric names.
+   * @see <a href="https://cloud.google.com/monitoring/custom-metrics#identifier">Custom Metrics Identifiers</a>
    *
    * <p>Defaults to workload.googleapis.com.
    *
