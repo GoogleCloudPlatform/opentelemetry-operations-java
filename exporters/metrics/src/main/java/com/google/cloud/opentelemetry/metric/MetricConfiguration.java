@@ -36,6 +36,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
+  static final String DEFAULT_PREFIX = "workload.googleapis.com";
 
   private static final String DEFAULT_PROJECT_ID =
       Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
@@ -60,6 +61,16 @@ public abstract class MetricConfiguration {
    * @return the cloud project id.
    */
   public abstract String getProjectId();
+
+  /**
+   * Returns the prefix prepended to metric names.
+   *
+   * @see <a href="https://cloud.google.com/monitoring/custom-metrics#identifier">Custom Metrics
+   *     Identifiers</a>
+   *     <p>Defaults to workload.googleapis.com.
+   * @return the prefix to attach to metrics.
+   */
+  public abstract String getPrefix();
 
   /**
    * Returns the deadline for exporting to Cloud Monitoring backend.
@@ -106,6 +117,7 @@ public abstract class MetricConfiguration {
   public static Builder builder() {
     return new AutoValue_MetricConfiguration.Builder()
         .setProjectId(DEFAULT_PROJECT_ID)
+        .setPrefix(DEFAULT_PREFIX)
         .setDeadline(DEFAULT_DEADLINE)
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
         .setInsecureEndpoint(false)
@@ -124,6 +136,9 @@ public abstract class MetricConfiguration {
 
     /** Set the GCP project where metrics should be writtten. */
     public abstract Builder setProjectId(String projectId);
+
+    /** Set the prefix prepended to metric names. */
+    public abstract Builder setPrefix(String prefix);
 
     /** Set the credentials to use when writing metrics. */
     public abstract Builder setCredentials(Credentials newCredentials);

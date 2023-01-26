@@ -37,6 +37,7 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -48,7 +49,6 @@ public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
 
-  static final String DESCRIPTOR_TYPE_URL = "workload.googleapis.com/";
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;
@@ -69,12 +69,12 @@ public final class MetricTranslator {
   }
 
   static MetricDescriptor mapMetricDescriptor(
-      MetricData metric, io.opentelemetry.sdk.metrics.data.PointData metricPoint) {
+      String prefix, MetricData metric, io.opentelemetry.sdk.metrics.data.PointData metricPoint) {
     MetricDescriptor.Builder builder =
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
             .setDescription(metric.getDescription())
-            .setType(mapMetricType(metric.getName()))
+            .setType(mapMetricType(metric.getName(), prefix))
             .setUnit(metric.getUnit());
     metricPoint
         .getAttributes()
@@ -136,13 +136,13 @@ public final class MetricTranslator {
     }
   }
 
-  private static String mapMetricType(String instrumentName) {
+  private static String mapMetricType(String instrumentName, String prefix) {
     for (String domain : KNOWN_DOMAINS) {
       if (instrumentName.contains(domain)) {
         return instrumentName;
       }
     }
-    return DESCRIPTOR_TYPE_URL + instrumentName;
+    return Paths.get(prefix, instrumentName).toString();
   }
 
   static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {

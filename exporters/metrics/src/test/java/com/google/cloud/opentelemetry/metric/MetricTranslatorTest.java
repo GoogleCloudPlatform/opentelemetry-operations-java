@@ -22,7 +22,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.DESCRIPTOR_TYPE_URL;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
@@ -54,10 +54,11 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class MetricTranslatorTest {
+  static final String customPrefix = "custom.googleapis.com";
 
   @Test
   public void testMapMetricSucceeds() {
-    String type = "workload.googleapis.com/" + anInstrumentationLibraryInfo.getName();
+    String type = DEFAULT_PREFIX + "/" + anInstrumentationLibraryInfo.getName();
 
     Builder expectedMetricBuilder = Metric.newBuilder().setType(type);
     aLongPoint
@@ -70,7 +71,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapMetricWithWierdAttributeNameSucceeds() {
-    String type = "workload.googleapis.com/" + anInstrumentationLibraryInfo.getName();
+    String type = DEFAULT_PREFIX + "/" + anInstrumentationLibraryInfo.getName();
     Attributes attributes =
         io.opentelemetry.api.common.Attributes.of(stringKey("test.bad"), "value");
     Metric expectedMetric =
@@ -84,7 +85,7 @@ public class MetricTranslatorTest {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
-            .setType(DESCRIPTOR_TYPE_URL + aMetricData.getName())
+            .setType(DEFAULT_PREFIX + "/" + aMetricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
@@ -93,7 +94,25 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.INT64);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(aMetricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, aMetricData, aLongPoint);
+    assertEquals(expectedDescriptor.build(), actualDescriptor);
+  }
+
+  @Test
+  public void testMapMetricDescriptorCustomPrefixSucceeds() {
+    MetricDescriptor.Builder expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aMetricData.getName())
+            .setType(customPrefix + "/" + aMetricData.getName())
+            .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(aMetricData.getDescription())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.INT64);
+
+    MetricDescriptor actualDescriptor =
+        MetricTranslator.mapMetricDescriptor(customPrefix, aMetricData, aLongPoint);
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -114,7 +133,7 @@ public class MetricTranslatorTest {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(metricData.getName())
-            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .setType(DEFAULT_PREFIX + "/" + metricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
@@ -123,7 +142,7 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.INT64);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -144,7 +163,7 @@ public class MetricTranslatorTest {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(metricData.getName())
-            .setType(DESCRIPTOR_TYPE_URL + metricData.getName())
+            .setType(DEFAULT_PREFIX + "/" + metricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("test").setValueType(ValueType.STRING))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
             .setDescription(metricData.getDescription())
@@ -152,7 +171,7 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(metricData, aHistogramPoint);
+        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aHistogramPoint);
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -171,7 +190,7 @@ public class MetricTranslatorTest {
             ImmutableSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
     assertNull(actualDescriptor);
   }
 
@@ -191,7 +210,7 @@ public class MetricTranslatorTest {
                 true, AggregationTemporality.DELTA, ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
     assertNull(actualDescriptor);
   }
 
