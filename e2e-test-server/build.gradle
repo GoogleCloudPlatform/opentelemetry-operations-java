@@ -25,6 +25,10 @@ application {
 
 description = 'End-To-End integration testing server'
 
+shadowJar {
+	mergeServiceFiles()
+}
+
 dependencies {
 	implementation(libraries.opentelemetry_autoconfigure)
 	implementation(libraries.opentelemetry_api)
