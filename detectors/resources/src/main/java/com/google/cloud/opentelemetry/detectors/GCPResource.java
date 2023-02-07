@@ -289,6 +289,7 @@ public class GCPResource implements ResourceProvider {
         attrBuilder.put(ResourceAttributes.FAAS_ID, appInstanceId);
       }
       updateAttributesWithRegion(attrBuilder);
+      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
       return true;
     }
     return false;
