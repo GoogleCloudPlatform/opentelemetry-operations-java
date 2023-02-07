@@ -200,13 +200,14 @@ public class GCPResourceTest {
 
     GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
-        .hasSize(6)
+        .hasSize(7)
         .containsEntry(
             ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
         .containsEntry(
             ResourceAttributes.CLOUD_PLATFORM,
             ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
         .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
+        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
         .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));
@@ -228,13 +229,14 @@ public class GCPResourceTest {
     updatedEnvVars.put("GAE_ENV", "standard");
     GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(updatedEnvVars));
     assertThat(testResource.getAttributes())
-        .hasSize(6)
+        .hasSize(7)
         .containsEntry(
             ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
         .containsEntry(
             ResourceAttributes.CLOUD_PLATFORM,
             ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
         .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region1")
+        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
         .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));
