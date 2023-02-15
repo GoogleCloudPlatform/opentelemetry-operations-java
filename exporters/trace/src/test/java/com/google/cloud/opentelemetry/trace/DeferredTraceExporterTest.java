@@ -20,7 +20,7 @@ public class DeferredTraceExporterTest {
 //            .build());
 
 
-        SpanExporter gcpTraceExporter = DeferredTraceExporter.createWithConfiguration(TraceConfiguration.builder().build());
+        SpanExporter gcpTraceExporter = DeferredTraceExporter.createWithConfiguration(TraceConfiguration.builder());
 
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(gcpTraceExporter).build())
