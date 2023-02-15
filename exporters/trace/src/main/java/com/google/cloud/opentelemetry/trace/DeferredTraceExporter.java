@@ -33,7 +33,7 @@ public class DeferredTraceExporter implements SpanExporter {
         this.traceExporter = null;
     }
 
-    private static DeferredTraceExporter generateStubTraceExporter(TraceConfiguration.Builder configBuilder) {
+    private static SpanExporter generateStubTraceExporter(TraceConfiguration.Builder configBuilder) {
         return new DeferredTraceExporter(configBuilder);
     }
 
@@ -41,11 +41,11 @@ public class DeferredTraceExporter implements SpanExporter {
         return TraceExporter.createWithConfiguration(this.customTraceConfigurationBuilder.build());
     }
 
-    public static DeferredTraceExporter createWithDefaultConfiguration() throws IOException {
+    public static SpanExporter createWithDefaultConfiguration() throws IOException {
         return generateStubTraceExporter(TraceConfiguration.builder());
     }
 
-    public static DeferredTraceExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
+    public static SpanExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
         return generateStubTraceExporter(configBuilder);
     }
 
