@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -216,7 +217,7 @@ public class ScenarioHandlerManager {
             .setProjectId(Constants.PROJECT_ID != "" ? Constants.PROJECT_ID : null)
             .build();
 
-    TraceExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
+    SpanExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
     // Register the TraceExporter with OpenTelemetry
     return OpenTelemetrySdk.builder()
         .setPropagators(

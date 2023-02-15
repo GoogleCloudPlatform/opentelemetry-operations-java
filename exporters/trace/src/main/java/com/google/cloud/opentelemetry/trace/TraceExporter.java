@@ -52,12 +52,12 @@ public class TraceExporter implements SpanExporter {
       Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
   private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
 
-  public static TraceExporter createWithDefaultConfiguration() throws IOException {
+  public static SpanExporter createWithDefaultConfiguration() throws IOException {
     TraceConfiguration configuration = TraceConfiguration.builder().build();
     return TraceExporter.createWithConfiguration(configuration);
   }
 
-  public static TraceExporter createWithConfiguration(TraceConfiguration configuration)
+  public static SpanExporter createWithConfiguration(TraceConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
     TraceServiceStub stub = configuration.getTraceServiceStub();
