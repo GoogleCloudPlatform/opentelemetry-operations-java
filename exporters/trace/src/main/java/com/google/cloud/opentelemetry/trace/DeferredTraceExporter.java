@@ -25,29 +25,28 @@ import java.util.Collection;
 
 public class DeferredTraceExporter implements SpanExporter {
 
-    private final TraceConfiguration customTraceConfiguration;
+    private final TraceConfiguration.Builder customTraceConfigurationBuilder;
     private SpanExporter traceExporter;
 
-    private DeferredTraceExporter(TraceConfiguration configuration) {
-        this.customTraceConfiguration = configuration;
+    private DeferredTraceExporter(TraceConfiguration.Builder configurationBuilder) {
+        this.customTraceConfigurationBuilder = configurationBuilder;
         this.traceExporter = null;
-
     }
 
-    private static DeferredTraceExporter generateStubTraceExporter(TraceConfiguration configuration) {
-        return new DeferredTraceExporter(configuration);
-    }
-
-    public static SpanExporter createWithDefaultConfiguration() throws IOException {
-        return generateStubTraceExporter(TraceConfiguration.builder().build());
-    }
-
-    public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
-        return generateStubTraceExporter(configuration);
+    private static DeferredTraceExporter generateStubTraceExporter(TraceConfiguration.Builder configBuilder) {
+        return new DeferredTraceExporter(configBuilder);
     }
 
     private SpanExporter createActualTraceExporter() throws IOException {
-        return TraceExporter.createWithConfiguration(this.customTraceConfiguration);
+        return TraceExporter.createWithConfiguration(this.customTraceConfigurationBuilder.build());
+    }
+
+    public static DeferredTraceExporter createWithDefaultConfiguration() throws IOException {
+        return generateStubTraceExporter(TraceConfiguration.builder());
+    }
+
+    public static DeferredTraceExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
+        return generateStubTraceExporter(configBuilder);
     }
 
     @Override
