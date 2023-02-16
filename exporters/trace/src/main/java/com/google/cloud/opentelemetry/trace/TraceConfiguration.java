@@ -228,7 +228,13 @@ public abstract class TraceConfiguration {
      */
     public TraceConfiguration build() {
       // If project ID is not set, attempt to get the Default Project ID
-      if (Strings.isNullOrEmpty(getProjectId())) {
+      String currentProjectId;
+      try {
+        currentProjectId = getProjectId();
+      } catch (IllegalStateException e) {
+        currentProjectId = null;
+      }
+      if (Strings.isNullOrEmpty(currentProjectId)) {
         setProjectId(Strings.nullToEmpty(ServiceOptions.getDefaultProjectId()));
       }
       // Make a defensive copy of fixed attributes.
