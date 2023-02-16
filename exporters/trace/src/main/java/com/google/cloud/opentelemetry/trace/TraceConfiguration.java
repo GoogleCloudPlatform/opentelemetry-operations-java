@@ -25,20 +25,18 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
 /** Configurations for {@link TraceExporter}. */
 @AutoValue
 @Immutable
 public abstract class TraceConfiguration {
-
-  private static final String DEFAULT_PROJECT_ID =
-      Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
 
   @VisibleForTesting static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
@@ -127,7 +125,6 @@ public abstract class TraceConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_TraceConfiguration.Builder()
-        .setProjectId(DEFAULT_PROJECT_ID)
         .setFixedAttributes(Collections.emptyMap())
         .setDeadline(DEFAULT_DEADLINE)
         .setTraceServiceEndpoint(TraceServiceStubSettings.getDefaultEndpoint())
@@ -231,6 +228,10 @@ public abstract class TraceConfiguration {
      * @return a {@code TraceConfiguration}.
      */
     public TraceConfiguration build() {
+      // If project ID is not set, attempt to get the Default Project ID
+      if (Strings.isNullOrEmpty(getProjectId())) {
+        setProjectId(Strings.nullToEmpty(ServiceOptions.getDefaultProjectId()));
+      }
       // Make a defensive copy of fixed attributes.
       setFixedAttributes(Collections.unmodifiableMap(new LinkedHashMap<>(getFixedAttributes())));
       Preconditions.checkArgument(
