@@ -27,6 +27,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +56,7 @@ public class EndToEndTest {
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
   private static final StatusData SPAN_DATA_STATUS = StatusData.ok();
 
-  private TraceExporter exporter;
+  private SpanExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
   private static class CloudOperationsMockContainer
