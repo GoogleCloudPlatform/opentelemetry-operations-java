@@ -20,18 +20,13 @@ import com.google.cloud.opentelemetry.trace.TraceExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
 
 @AutoService(ConfigurableSpanExporterProvider.class)
 public class GoogleCloudSpanExporterFactory implements ConfigurableSpanExporterProvider {
 
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
-    try {
-      return TraceExporter.createWithDefaultConfiguration();
-    } catch (IOException ex) {
-      throw new RuntimeException(ex);
-    }
+    return TraceExporter.createWithDefaultConfiguration();
   }
 
   @Override
