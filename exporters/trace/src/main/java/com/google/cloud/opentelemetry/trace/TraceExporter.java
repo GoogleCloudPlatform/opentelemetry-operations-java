@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
+import com.google.cloud.ServiceOptions;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -42,10 +43,36 @@ public class TraceExporter implements SpanExporter {
         this.customTraceConfigurationBuilder.build());
   }
 
+  /**
+   * Method that generates an instance of {@link TraceExporter} using a minimally configured {@link
+   * TraceConfiguration} object that requires no input from the user. Since no project ID is
+   * specified, default project ID is used instead. See {@link ServiceOptions#getDefaultProjectId()}
+   * for details.
+   *
+   * <p>This method defers the creation of an actual {@link TraceExporter} to a point when it is
+   * actually needed - which is when the spans need to be exported. As a result, while this method
+   * does not throw any exception, an exception may still be thrown during the attempt to generate
+   * the actual {@link TraceExporter}.
+   *
+   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object.
+   */
   public static SpanExporter createWithDefaultConfiguration() {
     return generateStubTraceExporter(TraceConfiguration.builder());
   }
 
+  /**
+   * Method that generates an instance of {@link TraceExporter} using a {@link
+   * TraceConfiguration.Builder} that allows the user to provide preferences.
+   *
+   * <p>This method defers the creation of an actual {@link TraceExporter} to a point when it is
+   * actually needed - which is when the spans need to be exported. As a result, while this method
+   * does not throw any exception, an exception may still be thrown during the attempt to generate
+   * the actual {@link TraceExporter}.
+   *
+   * @param configBuilder The {@link TraceConfiguration.Builder} object containing user preferences
+   *     for Trace.
+   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object.
+   */
   public static SpanExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
     return generateStubTraceExporter(configBuilder);
   }
