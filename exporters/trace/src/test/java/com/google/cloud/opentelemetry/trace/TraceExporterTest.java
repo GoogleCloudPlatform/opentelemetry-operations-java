@@ -15,19 +15,18 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
+import static org.junit.Assert.assertNotNull;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class TraceExporterTest {

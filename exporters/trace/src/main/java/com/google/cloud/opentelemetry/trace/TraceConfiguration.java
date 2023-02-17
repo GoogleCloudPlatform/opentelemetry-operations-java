@@ -25,13 +25,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /** Configurations for {@link TraceExporter}. */
 @AutoValue
