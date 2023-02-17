@@ -22,15 +22,16 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TraceExporter implements SpanExporter {
 
     private final TraceConfiguration.Builder customTraceConfigurationBuilder;
-    private SpanExporter internalTraceExporter;
+    private final AtomicReference<SpanExporter> internalTraceExporter;
 
     private TraceExporter(TraceConfiguration.Builder configurationBuilder) {
         this.customTraceConfigurationBuilder = configurationBuilder;
-        this.internalTraceExporter = null;
+        this.internalTraceExporter = new AtomicReference<>(null);
     }
 
     private static SpanExporter generateStubTraceExporter(TraceConfiguration.Builder configBuilder) {
@@ -56,19 +57,17 @@ public class TraceExporter implements SpanExporter {
 
     @Override
     public CompletableResultCode flush() {
-        if (internalTraceExporter == null) {
+        if (internalTraceExporter.get() == null) {
             return CompletableResultCode.ofFailure();
         }
-        return internalTraceExporter.flush();
+        return internalTraceExporter.get().flush();
     }
 
     @Override
     public CompletableResultCode export(@Nonnull Collection<SpanData> spanDataList) {
         try {
-            if (internalTraceExporter == null) {
-                internalTraceExporter = createActualTraceExporter();
-            }
-            return internalTraceExporter.export(spanDataList);
+            internalTraceExporter.compareAndSet(null, createActualTraceExporter());
+            return internalTraceExporter.get().export(spanDataList);
         } catch (IOException e) {
             e.printStackTrace();
             return CompletableResultCode.ofFailure();
@@ -77,8 +76,8 @@ public class TraceExporter implements SpanExporter {
 
     @Override
     public CompletableResultCode shutdown() {
-        if (internalTraceExporter != null) {
-            return internalTraceExporter.shutdown();
+        if (internalTraceExporter.get() != null) {
+            return internalTraceExporter.get().shutdown();
         } else {
             return CompletableResultCode.ofFailure();
         }
