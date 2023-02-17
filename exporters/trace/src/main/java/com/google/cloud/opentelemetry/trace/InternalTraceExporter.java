@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google
+ * Copyright 2022 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.google.cloud.opentelemetry.trace;
+
+import static com.google.api.client.util.Preconditions.checkNotNull;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -33,14 +35,12 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import static com.google.api.client.util.Preconditions.checkNotNull;
+import javax.annotation.Nonnull;
 
 class InternalTraceExporter implements SpanExporter {
 
@@ -52,6 +52,15 @@ class InternalTraceExporter implements SpanExporter {
   private static final Map<String, String> HEADERS =
       Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
   private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
+
+  private static InternalTraceExporter createWithClient(
+      String projectId,
+      CloudTraceClient cloudTraceClient,
+      ImmutableMap<String, String> attributeMappings,
+      Map<String, AttributeValue> fixedAttributes) {
+    return new InternalTraceExporter(
+        projectId, cloudTraceClient, attributeMappings, fixedAttributes);
+  }
 
   static SpanExporter createWithConfiguration(TraceConfiguration configuration) throws IOException {
     String projectId = configuration.getProjectId();
@@ -99,13 +108,34 @@ class InternalTraceExporter implements SpanExporter {
         configuration.getFixedAttributes());
   }
 
-  private static InternalTraceExporter createWithClient(
-      String projectId,
-      CloudTraceClient cloudTraceClient,
-      ImmutableMap<String, String> attributeMappings,
-      Map<String, AttributeValue> fixedAttributes) {
-    return new InternalTraceExporter(
-        projectId, cloudTraceClient, attributeMappings, fixedAttributes);
+  /**
+   * A noop implementation of {@link TraceExporter}. Should be used when {@link TraceExporter}
+   * cannot be initialized due to some error/exception.
+   *
+   * @return noop implementation of {@link TraceExporter} as a {@link SpanExporter}.
+   */
+  static SpanExporter noop() {
+    return new SpanExporter() {
+      @Override
+      public CompletableResultCode export(@Nonnull Collection<SpanData> spans) {
+        return CompletableResultCode.ofSuccess();
+      }
+
+      @Override
+      public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
+      }
+
+      @Override
+      public CompletableResultCode shutdown() {
+        return CompletableResultCode.ofSuccess();
+      }
+
+      @Override
+      public String toString() {
+        return "NoopTraceExporter{}";
+      }
+    };
   }
 
   InternalTraceExporter(
