@@ -120,6 +120,7 @@ subprojects {
 		springOtelVersion = '1.0.0-M8'
 		cloudEventsCoreVersion = '2.4.0'
 		cloudFunctionsFrameworkApiVersion = '1.0.4'
+		opencensusShim = '1.23.1'
 
 		libraries = [
 			auto_service_annotations     : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -149,6 +150,7 @@ subprojects {
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
+			opencensus_shim: "io.opentelemetry:opentelemetry-opencensus-shim:${opencensusShim}-alpha"
 		]
 		agentLibraries = [
 			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
