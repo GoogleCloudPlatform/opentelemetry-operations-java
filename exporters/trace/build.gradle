@@ -33,7 +33,6 @@ dependencies {
 	testImplementation(testLibraries.test_containers)
 	testImplementation(testLibraries.mockito)
 	testAnnotationProcessor(libraries.auto_value)
-	testImplementation(libraries.opencensus_shim)
 }
 
 // Configure a version.properties file that writes important versions.
