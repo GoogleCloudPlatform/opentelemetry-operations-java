@@ -31,6 +31,7 @@ dependencies {
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
 	testImplementation(testLibraries.test_containers)
+	testImplementation(testLibraries.mockito)
 	testAnnotationProcessor(libraries.auto_value)
 	testImplementation(libraries.opencensus_shim)
 }
