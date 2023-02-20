@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 
 class InternalTraceExporter implements SpanExporter {
 
@@ -115,27 +114,7 @@ class InternalTraceExporter implements SpanExporter {
    * @return noop implementation of {@link TraceExporter} as a {@link SpanExporter}.
    */
   static SpanExporter noop() {
-    return new SpanExporter() {
-      @Override
-      public CompletableResultCode export(@Nonnull Collection<SpanData> spans) {
-        return CompletableResultCode.ofSuccess();
-      }
-
-      @Override
-      public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-      }
-
-      @Override
-      public CompletableResultCode shutdown() {
-        return CompletableResultCode.ofSuccess();
-      }
-
-      @Override
-      public String toString() {
-        return "NoopTraceExporter{}";
-      }
-    };
+    return NoopTraceExporter.getNoopTraceExporter();
   }
 
   InternalTraceExporter(
