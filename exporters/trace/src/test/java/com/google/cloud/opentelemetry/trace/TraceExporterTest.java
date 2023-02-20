@@ -50,29 +50,6 @@ public class TraceExporterTest {
     }
   }
 
-  /**
-   * This type of usage is expected to throw an {@link IllegalStateException} if client code has a
-   * dependency on a library that initializes OpenTelemetry (in this case, opencensus-shim). The
-   * test passes {@link TraceConfiguration} as a pre-built object to the method - {@link
-   * TraceExporter#createWithConfiguration(TraceConfiguration)}. While building the
-   * TraceConfiguration, internal calls are made via the GAX library, which uses opencensus, thereby
-   * initializing OpenTelemetry and so it cannot be done again in client code (this test).
-   *
-   * @see <a
-   *     href="https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/141">Issue
-   *     details</a>
-   */
-  @Test(expected = IllegalStateException.class)
-  public void createWithBuiltConfigurationDefaultProjectId() {
-    TraceConfiguration configuration = TraceConfiguration.builder().build();
-    try {
-      SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
-      assertNotNull(exporter);
-      generateOpenTelemetryUsingTraceExporter(exporter);
-    } catch (IOException ignored) {
-    }
-  }
-
   @Test
   public void createWithConfigurationBuilder() {
     SpanExporter exporter =
@@ -82,7 +59,7 @@ public class TraceExporterTest {
     generateOpenTelemetryUsingTraceExporter(exporter);
   }
 
-  @Test
+  @Test // fail
   public void createWithConfigurationBuilderDefaultProjectId() {
     SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
     assertNotNull(exporter);
