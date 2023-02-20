@@ -33,6 +33,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link TraceConfiguration}. */
 @RunWith(JUnit4.class)
@@ -86,11 +88,18 @@ public class TraceConfigurationTest {
 
   @Test
   public void disallowEmptyProjectId() {
-    TraceConfiguration.Builder builder = TraceConfiguration.builder();
+    try (MockedStatic<ServiceOptions> mockedServiceOptions =
+        Mockito.mockStatic(ServiceOptions.class)) {
+      // default project also returns empty
+      mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn("");
+      TraceConfiguration.Builder builder = TraceConfiguration.builder();
 
-    builder.setProjectId("");
+      builder.setProjectId(""); // user sets empty project
 
-    assertThrows(IllegalArgumentException.class, builder::build);
+      assertThrows(IllegalArgumentException.class, builder::build);
+      // verify that there was an attempt to retrieve the default project ID
+      mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId);
+    }
   }
 
   @Test
