@@ -42,7 +42,8 @@ public class TraceExporter implements SpanExporter {
     this.throttlingLogger = new ThrottlingLogger(logger);
   }
 
-  private static SpanExporter generateStubTraceExporter(TraceConfiguration.Builder configBuilder) {
+  private static SpanExporter generateSkeletonTraceExporter(
+      TraceConfiguration.Builder configBuilder) {
     return new TraceExporter(configBuilder);
   }
 
@@ -62,10 +63,11 @@ public class TraceExporter implements SpanExporter {
    * does not throw any exception, an exception may still be thrown during the attempt to generate
    * the actual {@link TraceExporter}.
    *
-   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object.
+   * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
+   *     {@link TraceExporter#export(Collection)} is called.
    */
   public static SpanExporter createWithDefaultConfiguration() {
-    return generateStubTraceExporter(TraceConfiguration.builder());
+    return generateSkeletonTraceExporter(TraceConfiguration.builder());
   }
 
   /**
@@ -79,12 +81,22 @@ public class TraceExporter implements SpanExporter {
    *
    * @param configBuilder The {@link TraceConfiguration.Builder} object containing user preferences
    *     for Trace.
-   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object.
+   * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
+   *     {@link TraceExporter#export(Collection)} is called.
    */
   public static SpanExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
-    return generateStubTraceExporter(configBuilder);
+    return generateSkeletonTraceExporter(configBuilder);
   }
 
+  /**
+   * Method to generate an eagerly loaded instance of {@link TraceExporter}.
+   *
+   * @param configuration The {@link TraceConfiguration} object that determines the user preferences
+   *     for Trace.
+   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
+   * @throws IOException if there is any issue retrieving the application-default Google credentials
+   *     for the project.
+   */
   @Deprecated
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration)
       throws IOException {
