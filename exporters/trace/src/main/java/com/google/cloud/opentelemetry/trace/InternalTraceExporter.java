@@ -15,6 +15,8 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
+import static com.google.api.client.util.Preconditions.checkNotNull;
+
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
@@ -33,14 +35,11 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import static com.google.api.client.util.Preconditions.checkNotNull;
 
 /**
  * This class encapsulates internal implementation details for exporting spans for applications
