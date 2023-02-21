@@ -17,7 +17,6 @@ package com.google.cloud.opentelemetry.trace;
 
 import com.google.cloud.ServiceOptions;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -34,12 +33,10 @@ public class TraceExporter implements SpanExporter {
 
   private final TraceConfiguration.Builder customTraceConfigurationBuilder;
   private final AtomicReference<SpanExporter> internalTraceExporter;
-  private final ThrottlingLogger throttlingLogger;
 
   private TraceExporter(TraceConfiguration.Builder configurationBuilder) {
     this.customTraceConfigurationBuilder = configurationBuilder;
     this.internalTraceExporter = new AtomicReference<>(null);
-    this.throttlingLogger = new ThrottlingLogger(logger);
   }
 
   private static SpanExporter generateSkeletonTraceExporter(
@@ -119,10 +116,10 @@ public class TraceExporter implements SpanExporter {
           internalTraceExporter.compareAndSet(null, createActualTraceExporter());
         } catch (IOException e) {
           // unable to create actual trace exporter
-          throttlingLogger.log(
+          logger.log(
               Level.WARNING,
               String.format("Unable to initialize trace exporter. Error %s", e.getMessage()));
-          throttlingLogger.log(Level.INFO, "Setting TraceExporter to noop.");
+          logger.log(Level.INFO, "Setting TraceExporter to noop.");
           internalTraceExporter.set(InternalTraceExporter.noop());
         }
       }
