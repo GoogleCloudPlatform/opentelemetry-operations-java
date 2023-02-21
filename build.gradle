@@ -161,7 +161,8 @@ subprojects {
 			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
 			opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
 			test_containers: "org.testcontainers:testcontainers:${testContainersVersion}",
-			wiremock    : "com.github.tomakehurst:wiremock-jre8:${wiremockVersion}"
+			wiremock    : "com.github.tomakehurst:wiremock-jre8:${wiremockVersion}",
+			opencensus_shim: "io.opentelemetry:opentelemetry-opencensus-shim:${opencensusShim}-alpha",
 		]
 	}
 

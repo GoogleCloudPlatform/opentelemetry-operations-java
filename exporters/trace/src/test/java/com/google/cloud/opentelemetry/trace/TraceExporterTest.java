@@ -16,6 +16,7 @@
 package com.google.cloud.opentelemetry.trace;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -59,12 +60,39 @@ public class TraceExporterTest {
     generateOpenTelemetryUsingTraceExporter(exporter);
   }
 
-  @Test // fail
+  @Test
   public void createWithConfigurationBuilderDefaultProjectId() {
     SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
     assertNotNull(exporter);
     generateOpenTelemetryUsingTraceExporter(exporter);
   }
+
+  @Test
+  public void failingTest_opencensusShim() throws IOException {
+    // ServiceOptions.getDefaultProjectId();// this line should cause failure - works
+    //    System.out.println("here");
+    //    ServiceOptions.getDefaultProjectId();
+    //    System.out.println("Here again");
+    // TraceConfiguration traceConfiguration = TraceConfiguration.builder().build();
+    SpanExporter exporter;
+    exporter =
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder().setProjectId("test-id").build());
+    assertNotNull(exporter);
+    System.out.println("Generate OTEL");
+    assertThrows(
+        IllegalStateException.class, () -> generateOpenTelemetryUsingTraceExporter(exporter));
+    System.out.println("Test passed");
+    // assertThrows(IllegalStateException.class, () -> );
+  }
+
+  //  private void configureWireMockStubForMetadataServer() {
+  //    stubFor(get(urlEqualTo("/computeMetadata/v1/project/project-id"))
+  //            .willReturn(aResponse().withStatus(200)
+  //                    .withHeader("Metadata-Flavor","Google")
+  //                    .withBody("test-project"))
+  //    );
+  //  }
 
   private void generateOpenTelemetryUsingTraceExporter(SpanExporter traceExporter) {
     SdkTracerProvider tracerProvider =
