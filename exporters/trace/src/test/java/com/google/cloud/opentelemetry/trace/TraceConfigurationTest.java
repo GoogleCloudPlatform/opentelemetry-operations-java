@@ -26,6 +26,7 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
@@ -87,29 +88,30 @@ public class TraceConfigurationTest {
   }
 
   @Test
-  public void disallowEmptyProjectId() {
-    try (MockedStatic<ServiceOptions> mockedServiceOptions =
-        Mockito.mockStatic(ServiceOptions.class)) {
-      // default project also returns empty
-      mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn("");
-      TraceConfiguration.Builder builder = TraceConfiguration.builder();
-
-      builder.setProjectId(""); // user sets empty project
-
-      assertThrows(IllegalArgumentException.class, builder::build);
-      // verify that there was an attempt to retrieve the default project ID
-      mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId);
-    }
+  public void allowEmptyProjectId() {
+    TraceConfiguration.Builder builder = TraceConfiguration.builder();
+    builder.setProjectId(""); // user sets empty project
+    builder.build();
   }
 
   @Test
   public void allowToUseDefaultProjectId() {
-    String defaultProjectId = ServiceOptions.getDefaultProjectId();
-    // some test providers might not have project IDs set up
-    if (defaultProjectId != null) {
-      TraceConfiguration configuration = TraceConfiguration.builder().build();
+    try (MockedStatic<ServiceOptions> mockedServiceOptions =
+        Mockito.mockStatic(ServiceOptions.class)) {
+      String defaultProjectId = ServiceOptions.getDefaultProjectId();
+      // some test providers might not have project IDs set up
+      if (defaultProjectId != null) {
+        TraceConfiguration configuration = TraceConfiguration.builder().build();
 
-      assertEquals(defaultProjectId, configuration.getProjectId());
+        SpanExporter exporter =
+            TraceExporter.createWithConfiguration(
+                TraceConfiguration.builder().setProjectId(PROJECT_ID).build());
+        // export triggers the lazy initialization
+        exporter.export(Collections.emptyList());
+        // verify that there was an attempt to retrieve the default project ID
+        mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId);
+        assertEquals(defaultProjectId, configuration.getProjectId());
+      }
     }
   }
 
