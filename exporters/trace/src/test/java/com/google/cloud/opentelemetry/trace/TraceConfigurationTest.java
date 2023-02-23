@@ -25,7 +25,10 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.trace.v2.TraceServiceClient;
+import com.google.cloud.trace.v2.TraceServiceSettings;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
+import com.google.devtools.cloudtrace.v2.ProjectName;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
@@ -36,6 +39,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link TraceConfiguration}. */
 @RunWith(JUnit4.class)
@@ -96,22 +100,31 @@ public class TraceConfigurationTest {
 
   @Test
   public void allowToUseDefaultProjectId() {
+    // some test providers might not have project IDs set up - so we use mocks
     try (MockedStatic<ServiceOptions> mockedServiceOptions =
-        Mockito.mockStatic(ServiceOptions.class)) {
-      String defaultProjectId = ServiceOptions.getDefaultProjectId();
-      // some test providers might not have project IDs set up
-      if (defaultProjectId != null) {
-        TraceConfiguration configuration = TraceConfiguration.builder().build();
-
-        SpanExporter exporter =
-            TraceExporter.createWithConfiguration(
-                TraceConfiguration.builder().setProjectId(PROJECT_ID).build());
-        // export triggers the lazy initialization
-        exporter.export(Collections.emptyList());
-        // verify that there was an attempt to retrieve the default project ID
-        mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId);
-        assertEquals(defaultProjectId, configuration.getProjectId());
-      }
+            Mockito.mockStatic(ServiceOptions.class);
+        MockedStatic<TraceServiceClient> mockedTraceServiceClient =
+            Mockito.mockStatic(TraceServiceClient.class)) {
+      TraceServiceClient mockedTraceServiceClientObject = Mockito.mock(TraceServiceClient.class);
+      mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn(PROJECT_ID);
+      mockedTraceServiceClient
+          .when(() -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()))
+          .thenReturn(mockedTraceServiceClientObject);
+      SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
+      // export triggers the lazy initialization
+      exporter.export(Collections.emptyList());
+      // verify that there was an attempt to retrieve the default project ID
+      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
+      // verify that the default project ID was indeed used when exporting spans
+      Mockito.doAnswer(
+              (Answer<Void>)
+                  invocation -> {
+                    Object[] args = invocation.getArguments();
+                    assertEquals(ProjectName.of(PROJECT_ID).toString(), args[0].toString());
+                    return null;
+                  })
+          .when(mockedTraceServiceClientObject)
+          .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
     }
   }
 

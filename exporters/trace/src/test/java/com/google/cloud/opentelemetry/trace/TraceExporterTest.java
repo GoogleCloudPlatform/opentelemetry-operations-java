@@ -17,49 +17,78 @@ package com.google.cloud.opentelemetry.trace;
 
 import static org.junit.Assert.assertNotNull;
 
+import com.google.cloud.trace.v2.TraceServiceClient;
+import com.google.cloud.trace.v2.TraceServiceSettings;
+import com.google.cloud.trace.v2.stub.TraceServiceStub;
+import com.google.devtools.cloudtrace.v2.ProjectName;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TraceExporterTest {
 
-  private static final String PROJECT_ID = "test";
+  private static final String PROJECT_ID = "test-id";
+  @Mock private TraceServiceClient mockedTraceServiceClient;
+  @Mock private TraceServiceStub mockedTraceServiceStub;
 
   @After
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  public void createWithBuiltConfiguration() {
-    TraceConfiguration configuration =
-        TraceConfiguration.builder().setProjectId(PROJECT_ID).build();
-    SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
-    assertNotNull(exporter);
-    generateOpenTelemetryUsingTraceExporter(exporter);
-  }
+  public void createWithConfiguration() {
+    try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
+        Mockito.mockStatic(TraceServiceClient.class)) {
+      mockedTraceServiceClient
+          .when(() -> TraceServiceClient.create(Mockito.eq(mockedTraceServiceStub)))
+          .thenReturn(this.mockedTraceServiceClient);
 
-  @Test
-  public void createWithConfigurationBuilder() {
-    SpanExporter exporter =
-        TraceExporter.createWithConfiguration(
-            TraceConfiguration.builder().setProjectId(PROJECT_ID).build());
-    assertNotNull(exporter);
-    generateOpenTelemetryUsingTraceExporter(exporter);
+      TraceConfiguration configuration =
+          TraceConfiguration.builder()
+              .setTraceServiceStub(mockedTraceServiceStub)
+              .setProjectId(PROJECT_ID)
+              .build();
+      SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
+      assertNotNull(exporter);
+      generateOpenTelemetryUsingTraceExporter(exporter);
+      simulateExport(exporter);
+
+      mockedTraceServiceClient.verify(
+          () -> TraceServiceClient.create(Mockito.eq(mockedTraceServiceStub)));
+      Mockito.verify(this.mockedTraceServiceClient)
+          .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
+    }
   }
 
   @Test
   public void createWithConfigurationBuilderDefaultProjectId() {
-    SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
-    assertNotNull(exporter);
-    generateOpenTelemetryUsingTraceExporter(exporter);
+    try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
+        Mockito.mockStatic(TraceServiceClient.class)) {
+      mockedTraceServiceClient
+          .when(() -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()))
+          .thenReturn(this.mockedTraceServiceClient);
+
+      SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
+      assertNotNull(exporter);
+      generateOpenTelemetryUsingTraceExporter(exporter);
+      simulateExport(exporter);
+
+      Mockito.verify(this.mockedTraceServiceClient)
+          .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
+    }
   }
 
   private void generateOpenTelemetryUsingTraceExporter(SpanExporter traceExporter) {
@@ -69,5 +98,9 @@ public class TraceExporterTest {
             .build();
 
     OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
+  }
+
+  private void simulateExport(SpanExporter exporter) {
+    exporter.export(Collections.emptyList());
   }
 }
