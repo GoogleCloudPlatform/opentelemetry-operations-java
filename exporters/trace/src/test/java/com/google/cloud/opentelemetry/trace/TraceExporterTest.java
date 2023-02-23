@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.trace;
 
 import static org.junit.Assert.assertNotNull;
 
+import com.google.cloud.ServiceOptions;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.TraceServiceSettings;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
@@ -76,7 +77,10 @@ public class TraceExporterTest {
   @Test
   public void createWithConfigurationBuilderDefaultProjectId() {
     try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
-        Mockito.mockStatic(TraceServiceClient.class)) {
+            Mockito.mockStatic(TraceServiceClient.class);
+        MockedStatic<ServiceOptions> mockedServiceOptions =
+            Mockito.mockStatic(ServiceOptions.class)) {
+      mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn(PROJECT_ID);
       mockedTraceServiceClient
           .when(() -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()))
           .thenReturn(this.mockedTraceServiceClient);
@@ -86,6 +90,7 @@ public class TraceExporterTest {
       generateOpenTelemetryUsingTraceExporter(exporter);
       simulateExport(exporter);
 
+      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
       Mockito.verify(this.mockedTraceServiceClient)
           .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
     }
