@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.trace;
 
 import static org.junit.Assert.assertNotNull;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.TraceServiceSettings;
@@ -75,14 +76,19 @@ public class TraceExporterTest {
   }
 
   @Test
-  public void createWithConfigurationBuilderDefaultProjectId() {
+  public void createWithDefaultConfiguration() {
     try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
             Mockito.mockStatic(TraceServiceClient.class);
         MockedStatic<ServiceOptions> mockedServiceOptions =
-            Mockito.mockStatic(ServiceOptions.class)) {
+            Mockito.mockStatic(ServiceOptions.class);
+        MockedStatic<GoogleCredentials> mockedGoogleCredentials =
+            Mockito.mockStatic(GoogleCredentials.class)) {
       mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn(PROJECT_ID);
+      mockedGoogleCredentials
+          .when(GoogleCredentials::getApplicationDefault)
+          .thenReturn(Mockito.mock(GoogleCredentials.class));
       mockedTraceServiceClient
-          .when(() -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()))
+          .when(() -> TraceServiceClient.create(Mockito.any(TraceServiceSettings.class)))
           .thenReturn(this.mockedTraceServiceClient);
 
       SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
@@ -90,6 +96,8 @@ public class TraceExporterTest {
       generateOpenTelemetryUsingTraceExporter(exporter);
       simulateExport(exporter);
 
+      mockedTraceServiceClient.verify(
+          Mockito.times(1), () -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()));
       mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
       Mockito.verify(this.mockedTraceServiceClient)
           .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
