@@ -29,6 +29,8 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -56,6 +58,16 @@ public abstract class TraceConfiguration {
           .put("exception.message", "/error/message")
           .put("thread.id", "/tid")
           .build();
+
+  private Supplier<String> projectIdProvider;
+
+  Supplier<String> getProjectIdProvider() {
+    return projectIdProvider;
+  }
+
+  private void setProjectIdProvider(@Nonnull Supplier<String> supplier) {
+    projectIdProvider = supplier;
+  }
 
   TraceConfiguration() {}
 
@@ -124,6 +136,7 @@ public abstract class TraceConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_TraceConfiguration.Builder()
+        .setProjectId("")
         .setFixedAttributes(Collections.emptyMap())
         .setDeadline(DEFAULT_DEADLINE)
         .setTraceServiceEndpoint(TraceServiceStubSettings.getDefaultEndpoint())
@@ -227,27 +240,44 @@ public abstract class TraceConfiguration {
      * @return a {@code TraceConfiguration}.
      */
     public TraceConfiguration build() {
-      // If project ID is not set, attempt to get the Default Project ID
+      Supplier<String> projectIdProvider = generateProjectIdProvider();
+      // Make a defensive copy of fixed attributes.
+      setFixedAttributes(Collections.unmodifiableMap(new LinkedHashMap<>(getFixedAttributes())));
+      for (Map.Entry<String, AttributeValue> fixedAttribute : getFixedAttributes().entrySet()) {
+        Preconditions.checkNotNull(fixedAttribute.getKey(), "attribute key");
+        Preconditions.checkNotNull(fixedAttribute.getValue(), "attribute value");
+      }
+      Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
+      TraceConfiguration builtTraceConfiguration = autoBuild();
+      builtTraceConfiguration.setProjectIdProvider(projectIdProvider);
+      return builtTraceConfiguration;
+    }
+
+    @Nonnull
+    private Supplier<String> generateProjectIdProvider() {
+      String userProvidedProjectId = getUserProvidedProjectId();
+      if (Strings.isNullOrEmpty(userProvidedProjectId)) {
+        return () -> {
+          String defaultProjectId = ServiceOptions.getDefaultProjectId();
+          Preconditions.checkArgument(
+              !Strings.isNullOrEmpty(defaultProjectId),
+              "Cannot find a project ID from either configurations or application default.");
+          return defaultProjectId;
+        }; // memoize this
+      } else {
+        return () -> userProvidedProjectId;
+      }
+    }
+
+    @Nullable
+    private String getUserProvidedProjectId() {
       String currentProjectId;
       try {
         currentProjectId = getProjectId();
       } catch (IllegalStateException e) {
         currentProjectId = null;
       }
-      if (Strings.isNullOrEmpty(currentProjectId)) {
-        setProjectId(Strings.nullToEmpty(ServiceOptions.getDefaultProjectId()));
-      }
-      // Make a defensive copy of fixed attributes.
-      setFixedAttributes(Collections.unmodifiableMap(new LinkedHashMap<>(getFixedAttributes())));
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(getProjectId()),
-          "Cannot find a project ID from either configurations or application default.");
-      for (Map.Entry<String, AttributeValue> fixedAttribute : getFixedAttributes().entrySet()) {
-        Preconditions.checkNotNull(fixedAttribute.getKey(), "attribute key");
-        Preconditions.checkNotNull(fixedAttribute.getValue(), "attribute value");
-      }
-      Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
-      return autoBuild();
+      return currentProjectId;
     }
   }
 }

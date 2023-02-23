@@ -67,7 +67,7 @@ class InternalTraceExporter implements SpanExporter {
   }
 
   static SpanExporter createWithConfiguration(TraceConfiguration configuration) throws IOException {
-    String projectId = configuration.getProjectId();
+    String projectId = configuration.getProjectIdProvider().get();
     TraceServiceStub stub = configuration.getTraceServiceStub();
 
     // TODO: Remove stub - tracked in issue #198

@@ -30,23 +30,23 @@ import javax.annotation.Nonnull;
 public class TraceExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(TraceExporter.class.getName());
+  private static final TraceConfiguration DEFAULT_CONFIGURATION =
+      TraceConfiguration.builder().build();
 
-  private final TraceConfiguration.Builder customTraceConfigurationBuilder;
+  private final TraceConfiguration customTraceConfiguration;
   private final AtomicReference<SpanExporter> internalTraceExporter;
 
-  private TraceExporter(TraceConfiguration.Builder configurationBuilder) {
-    this.customTraceConfigurationBuilder = configurationBuilder;
+  private TraceExporter(TraceConfiguration configuration) {
+    this.customTraceConfiguration = configuration;
     this.internalTraceExporter = new AtomicReference<>(null);
   }
 
-  private static SpanExporter generateSkeletonTraceExporter(
-      TraceConfiguration.Builder configBuilder) {
-    return new TraceExporter(configBuilder);
+  private static SpanExporter generateSkeletonTraceExporter(TraceConfiguration config) {
+    return new TraceExporter(config);
   }
 
   private SpanExporter createActualTraceExporter() throws IOException {
-    return InternalTraceExporter.createWithConfiguration(
-        this.customTraceConfigurationBuilder.build());
+    return InternalTraceExporter.createWithConfiguration(this.customTraceConfiguration);
   }
 
   /**
@@ -64,40 +64,24 @@ public class TraceExporter implements SpanExporter {
    *     {@link TraceExporter#export(Collection)} is called.
    */
   public static SpanExporter createWithDefaultConfiguration() {
-    return generateSkeletonTraceExporter(TraceConfiguration.builder());
+    return generateSkeletonTraceExporter(DEFAULT_CONFIGURATION);
   }
 
   /**
-   * Method that generates an instance of {@link TraceExporter} using a {@link
-   * TraceConfiguration.Builder} that allows the user to provide preferences.
+   * Method that generates an instance of {@link TraceExporter} using a {@link TraceConfiguration}
+   * that allows the user to provide custom configuration for Traces.
    *
    * <p>This method defers the creation of an actual {@link TraceExporter} to a point when it is
    * actually needed - which is when the spans need to be exported. As a result, while this method
    * does not throw any exception, an exception may still be thrown during the attempt to generate
    * the actual {@link TraceExporter}.
    *
-   * @param configBuilder The {@link TraceConfiguration.Builder} object containing user preferences
-   *     for Trace.
-   * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
-   *     {@link TraceExporter#export(Collection)} is called.
-   */
-  public static SpanExporter createWithConfiguration(TraceConfiguration.Builder configBuilder) {
-    return generateSkeletonTraceExporter(configBuilder);
-  }
-
-  /**
-   * Method to generate an eagerly loaded instance of {@link TraceExporter}.
-   *
    * @param configuration The {@link TraceConfiguration} object that determines the user preferences
    *     for Trace.
    * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
-   * @throws IOException if there is any issue retrieving the application-default Google credentials
-   *     for the project.
    */
-  @Deprecated
-  public static SpanExporter createWithConfiguration(TraceConfiguration configuration)
-      throws IOException {
-    return InternalTraceExporter.createWithConfiguration(configuration);
+  public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
+    return generateSkeletonTraceExporter(configuration);
   }
 
   @Override

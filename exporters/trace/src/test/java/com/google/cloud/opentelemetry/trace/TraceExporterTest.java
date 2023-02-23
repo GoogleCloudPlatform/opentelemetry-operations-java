@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,24 +41,21 @@ public class TraceExporterTest {
   public void createWithBuiltConfiguration() {
     TraceConfiguration configuration =
         TraceConfiguration.builder().setProjectId(PROJECT_ID).build();
-    try {
-      SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
-      assertNotNull(exporter);
-      generateOpenTelemetryUsingTraceExporter(exporter);
-    } catch (IOException ignored) {
-    }
+    SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
+    assertNotNull(exporter);
+    generateOpenTelemetryUsingTraceExporter(exporter);
   }
 
   @Test
   public void createWithConfigurationBuilder() {
     SpanExporter exporter =
         TraceExporter.createWithConfiguration(
-            TraceConfiguration.builder().setProjectId(PROJECT_ID));
+            TraceConfiguration.builder().setProjectId(PROJECT_ID).build());
     assertNotNull(exporter);
     generateOpenTelemetryUsingTraceExporter(exporter);
   }
 
-  @Test // fail
+  @Test
   public void createWithConfigurationBuilderDefaultProjectId() {
     SpanExporter exporter = TraceExporter.createWithDefaultConfiguration();
     assertNotNull(exporter);
