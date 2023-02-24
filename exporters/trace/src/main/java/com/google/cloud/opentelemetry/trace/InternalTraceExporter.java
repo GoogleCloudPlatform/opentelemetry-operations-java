@@ -112,16 +112,6 @@ class InternalTraceExporter implements SpanExporter {
         configuration.getFixedAttributes());
   }
 
-  /**
-   * A noop implementation of {@link TraceExporter}. Should be used when {@link TraceExporter}
-   * cannot be initialized due to some error/exception.
-   *
-   * @return noop implementation of {@link TraceExporter} as a {@link SpanExporter}.
-   */
-  static SpanExporter noop() {
-    return NoopTraceExporter.getNoopTraceExporter();
-  }
-
   InternalTraceExporter(
       String projectId,
       CloudTraceClient cloudTraceClient,

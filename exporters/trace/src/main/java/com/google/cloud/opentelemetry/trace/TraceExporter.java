@@ -41,14 +41,6 @@ public class TraceExporter implements SpanExporter {
     this.internalTraceExporter = new AtomicReference<>(null);
   }
 
-  private static SpanExporter generateSkeletonTraceExporter(TraceConfiguration config) {
-    return new TraceExporter(config);
-  }
-
-  private SpanExporter createActualTraceExporter() throws IOException {
-    return InternalTraceExporter.createWithConfiguration(this.customTraceConfiguration);
-  }
-
   /**
    * Method that generates an instance of {@link TraceExporter} using a minimally configured {@link
    * TraceConfiguration} object that requires no input from the user. Since no project ID is
@@ -64,7 +56,7 @@ public class TraceExporter implements SpanExporter {
    *     {@link TraceExporter#export(Collection)} is called.
    */
   public static SpanExporter createWithDefaultConfiguration() {
-    return generateSkeletonTraceExporter(DEFAULT_CONFIGURATION);
+    return new TraceExporter(DEFAULT_CONFIGURATION);
   }
 
   /**
@@ -81,7 +73,7 @@ public class TraceExporter implements SpanExporter {
    * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
    */
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
-    return generateSkeletonTraceExporter(configuration);
+    return new TraceExporter(configuration);
   }
 
   @Override
@@ -97,14 +89,15 @@ public class TraceExporter implements SpanExporter {
     if (Objects.isNull(internalTraceExporter.get())) {
       synchronized (this) {
         try {
-          internalTraceExporter.compareAndSet(null, createActualTraceExporter());
+          internalTraceExporter.compareAndSet(
+              null, InternalTraceExporter.createWithConfiguration(this.customTraceConfiguration));
         } catch (IOException e) {
           // unable to create actual trace exporter
           logger.log(
               Level.WARNING,
               String.format("Unable to initialize trace exporter. Error %s", e.getMessage()));
           logger.log(Level.INFO, "Setting TraceExporter to noop.");
-          internalTraceExporter.set(InternalTraceExporter.noop());
+          internalTraceExporter.set(new NoopTraceExporter());
         }
       }
     }
