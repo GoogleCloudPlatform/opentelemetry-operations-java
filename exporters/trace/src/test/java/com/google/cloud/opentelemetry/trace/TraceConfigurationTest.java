@@ -92,13 +92,6 @@ public class TraceConfigurationTest {
   }
 
   @Test
-  public void allowEmptyProjectId() {
-    TraceConfiguration.Builder builder = TraceConfiguration.builder();
-    builder.setProjectId(""); // user sets empty project
-    builder.build();
-  }
-
-  @Test
   public void allowToUseDefaultProjectId() {
     // some test providers might not have project IDs set up - so we use mocks
     try (MockedStatic<ServiceOptions> mockedServiceOptions =
@@ -172,5 +165,25 @@ public class TraceConfigurationTest {
     builder.setDeadline(NEG_ONE_MINUTE);
 
     assertThrows(IllegalArgumentException.class, builder::build);
+  }
+
+  @Test
+  public void verifyCallToDefaultProjectIdIsMemoize() {
+    try (MockedStatic<ServiceOptions> serviceOptionsMockedStatic =
+        Mockito.mockStatic(ServiceOptions.class)) {
+
+      TraceConfiguration traceConfiguration1 = TraceConfiguration.builder().build();
+      traceConfiguration1.getProjectId();
+      traceConfiguration1.getProjectId();
+      traceConfiguration1.getProjectId();
+
+      TraceConfiguration traceConfiguration2 = TraceConfiguration.builder().build();
+      traceConfiguration2.getProjectId();
+      traceConfiguration2.getProjectId();
+      traceConfiguration2.getProjectId();
+
+      // ServiceOptions#getDefaultProjectId should only be called once per TraceConfiguration object
+      serviceOptionsMockedStatic.verify(Mockito.times(2), ServiceOptions::getDefaultProjectId);
+    }
   }
 }

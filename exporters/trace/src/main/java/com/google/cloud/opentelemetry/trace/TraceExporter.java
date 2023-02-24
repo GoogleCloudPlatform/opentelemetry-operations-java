@@ -21,17 +21,14 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TraceExporter implements SpanExporter {
 
-  private static final Logger logger = Logger.getLogger(TraceExporter.class.getName());
-  private static final TraceConfiguration DEFAULT_CONFIGURATION =
-      TraceConfiguration.builder().build();
+  private static final Logger logger = LoggerFactory.getLogger(TraceExporter.class);
 
   private final TraceConfiguration customTraceConfiguration;
   private final AtomicReference<SpanExporter> internalTraceExporter;
@@ -56,7 +53,7 @@ public class TraceExporter implements SpanExporter {
    *     {@link TraceExporter#export(Collection)} is called.
    */
   public static SpanExporter createWithDefaultConfiguration() {
-    return new TraceExporter(DEFAULT_CONFIGURATION);
+    return new TraceExporter(TraceConfiguration.builder().build());
   }
 
   /**
@@ -78,36 +75,31 @@ public class TraceExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode flush() {
-    if (internalTraceExporter.get() == null) {
-      return CompletableResultCode.ofFailure();
-    }
-    return internalTraceExporter.get().flush();
+    // We do no exporter buffering of spans, so we're always flushed.
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public CompletableResultCode export(@Nonnull Collection<SpanData> spanDataList) {
-    if (Objects.isNull(internalTraceExporter.get())) {
-      synchronized (this) {
-        try {
-          internalTraceExporter.compareAndSet(
-              null, InternalTraceExporter.createWithConfiguration(this.customTraceConfiguration));
-        } catch (IOException e) {
-          // unable to create actual trace exporter
-          logger.log(
-              Level.WARNING,
-              String.format("Unable to initialize trace exporter. Error %s", e.getMessage()));
-          logger.log(Level.INFO, "Setting TraceExporter to noop.");
-          internalTraceExporter.set(new NoopTraceExporter());
-        }
+    SpanExporter currentExporter = internalTraceExporter.get();
+    if (currentExporter == null) {
+      try {
+        internalTraceExporter.compareAndSet(
+            null, InternalTraceExporter.createWithConfiguration(this.customTraceConfiguration));
+        currentExporter = internalTraceExporter.get();
+      } catch (IOException e) {
+        logger.warn("Unable to initialize TraceExporter. Export operation failed.", e);
+        return CompletableResultCode.ofFailure();
       }
     }
-    return internalTraceExporter.get().export(spanDataList);
+    return currentExporter.export(spanDataList);
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    if (internalTraceExporter.get() != null) {
-      return internalTraceExporter.get().shutdown();
+    SpanExporter currentExporter = internalTraceExporter.get();
+    if (currentExporter != null) {
+      return currentExporter.shutdown();
     } else {
       return CompletableResultCode.ofFailure();
     }

@@ -20,12 +20,13 @@ description = 'Cloud Trace Exporter for OpenTelemetry'
 
 dependencies {
 	api(libraries.auto_value_annotations)
-	annotationProcessor(libraries.auto_value)
+	api(libraries.slf4j)
 	api(libraries.opentelemetry_api)
 	api(libraries.opentelemetry_sdk)
 	api(libraries.google_cloud_core)
 	api(libraries.google_cloud_trace)
 	api(libraries.google_cloud_trace_grpc)
+	annotationProcessor(libraries.auto_value)
 	implementation(libraries.opentelemetry_semconv)
 	implementation(project(':shared-resourcemapping'))
 	testImplementation(testLibraries.junit)
