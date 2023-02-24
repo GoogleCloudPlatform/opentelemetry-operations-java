@@ -25,15 +25,15 @@ import javax.annotation.Nonnull;
  * A noop implementation of a {@link SpanExporter}. This class is implemented as a singleton and
  * return a successful result on all public methods without performing any action.
  */
-class NoopTraceExporter implements SpanExporter {
+class NoopSpanExporter implements SpanExporter {
 
-  NoopTraceExporter() {
+  NoopSpanExporter() {
     // prevent explicit public call to default constructor
   }
 
   @Override
   public CompletableResultCode export(@Nonnull Collection<SpanData> spans) {
-    return CompletableResultCode.ofSuccess();
+    return CompletableResultCode.ofFailure();
   }
 
   @Override
