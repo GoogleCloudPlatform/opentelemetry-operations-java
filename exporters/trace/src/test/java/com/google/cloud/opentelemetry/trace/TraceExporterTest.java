@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -25,9 +26,12 @@ import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.IOException;
 import java.util.Collections;
 import org.junit.After;
 import org.junit.Test;
@@ -101,6 +105,26 @@ public class TraceExporterTest {
       mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
       Mockito.verify(this.mockedTraceServiceClient)
           .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
+    }
+  }
+
+  @Test
+  public void createNoopSpanExporterIfExceptionThrown() {
+    try (MockedStatic<InternalTraceExporter> mockedInternalTraceExporter =
+        Mockito.mockStatic(InternalTraceExporter.class)) {
+      mockedInternalTraceExporter
+          .when(() -> InternalTraceExporter.createWithConfiguration(Mockito.any()))
+          .thenThrow(IOException.class);
+
+      SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
+      assertNotNull(traceExporter);
+
+      SpanData mockSpanData = Mockito.mock(SpanData.class);
+      assertEquals(
+          CompletableResultCode.ofFailure(),
+          traceExporter.export(Collections.singleton(mockSpanData)));
+      assertEquals(CompletableResultCode.ofSuccess(), traceExporter.flush());
+      assertEquals(CompletableResultCode.ofSuccess(), traceExporter.shutdown());
     }
   }
 

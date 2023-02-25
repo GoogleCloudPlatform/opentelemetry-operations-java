@@ -40,7 +40,9 @@ public class TraceExporter implements SpanExporter {
               try {
                 return InternalTraceExporter.createWithConfiguration(configuration);
               } catch (IOException e) {
-                logger.warn("Unable to initialize TraceExporter. Export operation failed.", e);
+                logger.warn(
+                    "Unable to initialize TraceExporter. Export operation failed, switching to NoopSpanExporter",
+                    e);
                 return new NoopSpanExporter();
               }
             });
