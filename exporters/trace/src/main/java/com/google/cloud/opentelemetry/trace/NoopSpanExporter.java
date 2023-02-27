@@ -18,9 +18,8 @@ package com.google.cloud.opentelemetry.trace;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-
-import javax.annotation.Nonnull;
 import java.util.Collection;
+import javax.annotation.Nonnull;
 
 /** A noop implementation of a {@link SpanExporter}. */
 final class NoopSpanExporter implements SpanExporter {

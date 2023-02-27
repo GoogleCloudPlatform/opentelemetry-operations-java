@@ -85,10 +85,11 @@ public class TraceConfigurationTest {
   }
 
   @Test
-  public void disallowNullProjectId() {
+  public void disallowNullOrEmptyProjectId() {
     TraceConfiguration.Builder builder = TraceConfiguration.builder();
 
-    assertThrows(NullPointerException.class, () -> builder.setProjectId(null));
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(null));
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(""));
   }
 
   @Test

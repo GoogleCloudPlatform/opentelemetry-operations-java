@@ -180,9 +180,8 @@ public abstract class TraceConfiguration {
      * @return this.
      */
     public final Builder setProjectId(String projectId) {
-      if (Strings.isNullOrEmpty(projectId)) {
-        throw new NullPointerException("Project ID cannot be null or empty");
-      }
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(projectId), "Project ID cannot be null or empty.");
       setProjectIdSupplier(() -> projectId);
       return this;
     }
