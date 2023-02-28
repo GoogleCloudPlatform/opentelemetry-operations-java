@@ -143,7 +143,10 @@ public class GoogleCloudMetricExporterTest {
                     .setValueType(ValueType.STRING)
                     .build())
             .addLabels(
-                LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL).build())
+                LabelDescriptor.newBuilder()
+                    .setKey("label2")
+                    .setValueType(ValueType.STRING)
+                    .build())
             .setMetricKind(MetricKind.CUMULATIVE)
             .setValueType(MetricDescriptor.ValueType.INT64)
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)

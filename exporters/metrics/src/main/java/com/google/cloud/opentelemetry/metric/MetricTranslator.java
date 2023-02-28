@@ -51,6 +51,7 @@ public final class MetricTranslator {
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
   private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
+  static final String CUSTOM_PREFIX = "custom.googleapis.com";
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;
@@ -71,7 +72,9 @@ public final class MetricTranslator {
             .setDescription(metric.getDescription())
             .setType(mapMetricType(metric.getName(), prefix))
             .setUnit(metric.getUnit());
-    metricPoint.getAttributes().forEach((key, value) -> builder.addLabels(mapAttribute(key)));
+    metricPoint
+        .getAttributes()
+        .forEach((key, value) -> builder.addLabels(mapAttribute(key, prefix)));
 
     MetricDataType metricType = metric.getType();
     switch (metricType) {
@@ -150,20 +153,26 @@ public final class MetricTranslator {
   }
 
   @VisibleForTesting
-  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key) {
+  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, String descriptorTypePrefix) {
     LabelDescriptor.Builder builder =
         LabelDescriptor.newBuilder().setKey(cleanAttributeKey(key.getKey()));
-    switch (key.getType()) {
-      case BOOLEAN:
-        builder.setValueType(LabelDescriptor.ValueType.BOOL);
-        break;
-      case LONG:
-        builder.setValueType(LabelDescriptor.ValueType.INT64);
-        break;
-      default:
-        // All other attribute types will be toString'd
-        builder.setValueType(LabelDescriptor.ValueType.STRING);
-        break;
+    // Only CUSTOM_PREFIX allows for a descriptor type other than String.
+    if (descriptorTypePrefix.equals(CUSTOM_PREFIX)) {
+      switch (key.getType()) {
+        case BOOLEAN:
+          builder.setValueType(LabelDescriptor.ValueType.BOOL);
+          break;
+        case LONG:
+          builder.setValueType(LabelDescriptor.ValueType.INT64);
+          break;
+        default:
+          // All other attribute types will be converted to String
+          builder.setValueType(LabelDescriptor.ValueType.STRING);
+          break;
+      }
+    } else {
+      // all other descriptor types only allow String Label descriptors.
+      builder.setValueType(LabelDescriptor.ValueType.STRING);
     }
     return builder.build();
   }

@@ -23,6 +23,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.CUSTOM_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
@@ -54,7 +55,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class MetricTranslatorTest {
-  static final String customPrefix = "custom.googleapis.com";
 
   @Test
   public void testMapMetricSucceeds() {
@@ -87,7 +87,7 @@ public class MetricTranslatorTest {
             .setDisplayName(aMetricData.getName())
             .setType(DEFAULT_PREFIX + "/" + aMetricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
-            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.STRING))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
             .setDescription(aMetricData.getDescription())
             .setMetricKind(MetricKind.CUMULATIVE)
@@ -103,7 +103,7 @@ public class MetricTranslatorTest {
     MetricDescriptor.Builder expectedDescriptor =
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
-            .setType(customPrefix + "/" + aMetricData.getName())
+            .setType(CUSTOM_PREFIX + "/" + aMetricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
@@ -112,7 +112,7 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.INT64);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(customPrefix, aMetricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(CUSTOM_PREFIX, aMetricData, aLongPoint);
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -135,7 +135,7 @@ public class MetricTranslatorTest {
             .setDisplayName(metricData.getName())
             .setType(DEFAULT_PREFIX + "/" + metricData.getName())
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
-            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
+            .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.STRING))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
             .setDescription(metricData.getDescription())
             .setMetricKind(MetricKind.GAUGE)
@@ -216,7 +216,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapConstantLabelWithStringValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(stringKey("label1"));
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(stringKey("label1"), CUSTOM_PREFIX);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING).build();
     assertEquals(expectedLabel, actualLabel);
@@ -224,18 +224,20 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapConstantLabelWithBooleanValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(booleanKey("label1"));
+    LabelDescriptor actualLabel =
+        MetricTranslator.mapAttribute(booleanKey("label1"), CUSTOM_PREFIX);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.BOOL).build();
     assertEquals(expectedLabel, actualLabel);
 
-    LabelDescriptor actualLabel2 = MetricTranslator.mapAttribute(booleanKey("label1"));
+    LabelDescriptor actualLabel2 =
+        MetricTranslator.mapAttribute(booleanKey("label1"), CUSTOM_PREFIX);
     assertEquals(expectedLabel, actualLabel2);
   }
 
   @Test
   public void testMapConstantLabelWithLongValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label1"));
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label1"), CUSTOM_PREFIX);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
@@ -243,7 +245,8 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapLabelWithPeriodInNameSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label.test"));
+    LabelDescriptor actualLabel =
+        MetricTranslator.mapAttribute(longKey("label.test"), CUSTOM_PREFIX);
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label_test").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
