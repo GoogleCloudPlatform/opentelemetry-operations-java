@@ -71,9 +71,7 @@ public final class MetricTranslator {
             .setDescription(metric.getDescription())
             .setType(mapMetricType(metric.getName(), prefix))
             .setUnit(metric.getUnit());
-    metricPoint
-        .getAttributes()
-        .forEach((key, value) -> builder.addLabels(mapAttribute(key, value)));
+    metricPoint.getAttributes().forEach((key, value) -> builder.addLabels(mapAttribute(key)));
 
     MetricDataType metricType = metric.getType();
     switch (metricType) {
@@ -152,7 +150,7 @@ public final class MetricTranslator {
   }
 
   @VisibleForTesting
-  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
+  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key) {
     LabelDescriptor.Builder builder =
         LabelDescriptor.newBuilder().setKey(cleanAttributeKey(key.getKey()));
     switch (key.getType()) {

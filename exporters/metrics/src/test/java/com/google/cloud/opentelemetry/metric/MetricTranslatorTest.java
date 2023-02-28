@@ -216,7 +216,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapConstantLabelWithStringValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(stringKey("label1"), "value1");
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(stringKey("label1"));
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING).build();
     assertEquals(expectedLabel, actualLabel);
@@ -224,19 +224,18 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapConstantLabelWithBooleanValueSucceeds() {
-    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(booleanKey("label1"), true);
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(booleanKey("label1"));
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.BOOL).build();
     assertEquals(expectedLabel, actualLabel);
 
-    LabelDescriptor actualLabel2 = MetricTranslator.mapAttribute(booleanKey("label1"), false);
+    LabelDescriptor actualLabel2 = MetricTranslator.mapAttribute(booleanKey("label1"));
     assertEquals(expectedLabel, actualLabel2);
   }
 
   @Test
   public void testMapConstantLabelWithLongValueSucceeds() {
-    LabelDescriptor actualLabel =
-        MetricTranslator.mapAttribute(longKey("label1"), 123928374982123L);
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label1"));
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
@@ -244,8 +243,7 @@ public class MetricTranslatorTest {
 
   @Test
   public void testMapLabelWithPeriodInNameSucceeds() {
-    LabelDescriptor actualLabel =
-        MetricTranslator.mapAttribute(longKey("label.test"), 123928374982123L);
+    LabelDescriptor actualLabel = MetricTranslator.mapAttribute(longKey("label.test"));
     LabelDescriptor expectedLabel =
         LabelDescriptor.newBuilder().setKey("label_test").setValueType(ValueType.INT64).build();
     assertEquals(expectedLabel, actualLabel);
