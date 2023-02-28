@@ -55,7 +55,7 @@ public class TraceExporterTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  public void createWithConfiguration() {
+  public void verifyExporterWorksWithConfiguration() {
     try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
         Mockito.mockStatic(TraceServiceClient.class)) {
       mockedTraceServiceClient
@@ -80,7 +80,7 @@ public class TraceExporterTest {
   }
 
   @Test
-  public void createWithDefaultConfiguration() {
+  public void verifyExporterWorksWithDefaultConfiguration() {
     try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
             Mockito.mockStatic(TraceServiceClient.class);
         MockedStatic<ServiceOptions> mockedServiceOptions =
@@ -109,7 +109,7 @@ public class TraceExporterTest {
   }
 
   @Test
-  public void createNoopSpanExporterIfExceptionThrown() {
+  public void verifyExporterCreationErrorDoesNotBreakTraceExporter() {
     try (MockedStatic<InternalTraceExporter> mockedInternalTraceExporter =
         Mockito.mockStatic(InternalTraceExporter.class)) {
       mockedInternalTraceExporter
@@ -120,6 +120,7 @@ public class TraceExporterTest {
       assertNotNull(traceExporter);
 
       SpanData mockSpanData = Mockito.mock(SpanData.class);
+      // verify trace exporter still works without any additional exceptions
       assertEquals(
           CompletableResultCode.ofFailure(),
           traceExporter.export(Collections.singleton(mockSpanData)));

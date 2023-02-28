@@ -41,7 +41,7 @@ public class TraceExporter implements SpanExporter {
                 return InternalTraceExporter.createWithConfiguration(configuration);
               } catch (IOException e) {
                 logger.warn(
-                    "Unable to initialize TraceExporter. Export operation failed, switching to NoopSpanExporter",
+                    "Unable to initialize Google Cloud TraceExporter. Export operation failed, switching to NoopSpanExporter.",
                     e);
                 return new NoopSpanExporter();
               }
