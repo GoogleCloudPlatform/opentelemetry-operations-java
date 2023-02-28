@@ -21,6 +21,7 @@ import com.google.api.Distribution.BucketOptions.Explicit;
 import com.google.api.LabelDescriptor;
 import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.SpanContext;
@@ -48,24 +49,18 @@ import org.slf4j.LoggerFactory;
 public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);
+  private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   static final Set<String> KNOWN_DOMAINS =
       ImmutableSet.of("googleapis.com", "kubernetes.io", "istio.io", "knative.dev");
   static final long NANO_PER_SECOND = (long) 1e9;
   static final String METRIC_DESCRIPTOR_TIME_UNIT = "ns";
-  private static final int MIN_TIMESTAMP_INTERVAL_NANOS = 1000000;
 
   static Metric mapMetric(Attributes attributes, String type) {
     Metric.Builder metricBuilder = Metric.newBuilder().setType(type);
     attributes.forEach(
         (key, value) -> metricBuilder.putLabels(cleanAttributeKey(key.getKey()), value.toString()));
     return metricBuilder.build();
-  }
-
-  static String cleanAttributeKey(String key) {
-    // . is commonly used in OTel but disallowed in GCM label names,
-    // https://cloud.google.com/monitoring/api/ref_v3/rest/v3/LabelDescriptor#:~:text=Matches%20the%20following%20regular%20expression%3A
-    return key.replace('.', '_');
   }
 
   static MetricDescriptor mapMetricDescriptor(
@@ -106,6 +101,88 @@ public final class MetricTranslator {
     return null;
   }
 
+  /** Returns true if the metric should be treated as a Gauge by cloud monitoring. */
+  static boolean isGauge(MetricData metric) {
+    switch (metric.getType()) {
+      case LONG_GAUGE:
+      case DOUBLE_GAUGE:
+        return true;
+      case LONG_SUM:
+        return !metric.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return !metric.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
+  }
+
+  static TimeInterval mapInterval(
+      io.opentelemetry.sdk.metrics.data.PointData point, MetricData metric) {
+    Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
+    Timestamp endTime = mapTimestamp(point.getEpochNanos());
+    if (isGauge(metric)) {
+      // The start time must be equal to the end time for the gauge metric
+      startTime = endTime;
+    } else if (TimeUnit.SECONDS.toNanos(startTime.getSeconds()) + startTime.getNanos()
+        == TimeUnit.SECONDS.toNanos(endTime.getSeconds()) + endTime.getNanos()) {
+      // The end time of a new interval must be at least a millisecond after the end time of the
+      // previous interval, for all non-gauge types.
+      // https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#timeinterval
+      endTime =
+          Timestamp.newBuilder()
+              .setSeconds(endTime.getSeconds())
+              .setNanos(endTime.getNanos() + MIN_TIMESTAMP_INTERVAL_NANOS)
+              .build();
+    }
+    return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
+  }
+
+  static Distribution.Builder mapDistribution(HistogramPointData point, String projectId) {
+    return Distribution.newBuilder()
+        .setCount(point.getCount())
+        .setMean(point.getSum() / point.getCount())
+        .setBucketOptions(
+            BucketOptions.newBuilder()
+                .setExplicitBuckets(Explicit.newBuilder().addAllBounds(point.getBoundaries())))
+        .addAllBucketCounts(point.getCounts())
+        .addAllExemplars(
+            point.getExemplars().stream()
+                .map(e -> mapExemplar(e, projectId))
+                .collect(Collectors.toList()));
+  }
+
+  @VisibleForTesting
+  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
+    LabelDescriptor.Builder builder =
+        LabelDescriptor.newBuilder().setKey(cleanAttributeKey(key.getKey()));
+    switch (key.getType()) {
+      case BOOLEAN:
+        builder.setValueType(LabelDescriptor.ValueType.BOOL);
+        break;
+      case LONG:
+        builder.setValueType(LabelDescriptor.ValueType.INT64);
+        break;
+      default:
+        // All other attribute types will be toString'd
+        builder.setValueType(LabelDescriptor.ValueType.STRING);
+        break;
+    }
+    return builder.build();
+  }
+
+  private static String cleanAttributeKey(String key) {
+    // . is commonly used in OTel but disallowed in GCM label names,
+    // https://cloud.google.com/monitoring/api/ref_v3/rest/v3/LabelDescriptor#:~:text=Matches%20the%20following%20regular%20expression%3A
+    return key.replace('.', '_');
+  }
+
+  private static Timestamp mapTimestamp(long epochNanos) {
+    return Timestamp.newBuilder()
+        .setSeconds(epochNanos / NANO_PER_SECOND)
+        .setNanos((int) (epochNanos % NANO_PER_SECOND))
+        .build();
+  }
+
   private static MetricDescriptor fillHistogramType(
       HistogramData histogram, MetricDescriptor.Builder builder) {
     builder.setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
@@ -143,81 +220,6 @@ public final class MetricTranslator {
       }
     }
     return Paths.get(prefix, instrumentName).toString();
-  }
-
-  static <T> LabelDescriptor mapAttribute(AttributeKey<T> key, Object value) {
-    LabelDescriptor.Builder builder =
-        LabelDescriptor.newBuilder().setKey(cleanAttributeKey(key.getKey()));
-    switch (key.getType()) {
-      case BOOLEAN:
-        builder.setValueType(LabelDescriptor.ValueType.BOOL);
-        break;
-      case LONG:
-        builder.setValueType(LabelDescriptor.ValueType.INT64);
-        break;
-      default:
-        // All other attribute types will be toString'd
-        builder.setValueType(LabelDescriptor.ValueType.STRING);
-        break;
-    }
-    return builder.build();
-  }
-
-  /** Returns true if the metric should be treated as a Gauge by cloud monitoring. */
-  static boolean isGauge(MetricData metric) {
-    switch (metric.getType()) {
-      case LONG_GAUGE:
-      case DOUBLE_GAUGE:
-        return true;
-      case LONG_SUM:
-        return !metric.getLongSumData().isMonotonic();
-      case DOUBLE_SUM:
-        return !metric.getDoubleSumData().isMonotonic();
-      default:
-        return false;
-    }
-  }
-
-  static TimeInterval mapInterval(
-      io.opentelemetry.sdk.metrics.data.PointData point, MetricData metric) {
-    Timestamp startTime = mapTimestamp(point.getStartEpochNanos());
-    Timestamp endTime = mapTimestamp(point.getEpochNanos());
-    if (isGauge(metric)) {
-      // The start time must be equal to the end time for the gauge metric
-      startTime = endTime;
-    } else if (TimeUnit.SECONDS.toNanos(startTime.getSeconds()) + startTime.getNanos()
-        == TimeUnit.SECONDS.toNanos(endTime.getSeconds()) + endTime.getNanos()) {
-      // The end time of a new interval must be at least a millisecond after the end time of the
-      // previous interval, for all non-gauge types.
-      // https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#timeinterval
-      endTime =
-          Timestamp.newBuilder()
-              .setSeconds(endTime.getSeconds())
-              .setNanos(endTime.getNanos() + MIN_TIMESTAMP_INTERVAL_NANOS)
-              .build();
-    }
-    return TimeInterval.newBuilder().setStartTime(startTime).setEndTime(endTime).build();
-  }
-
-  private static Timestamp mapTimestamp(long epochNanos) {
-    return Timestamp.newBuilder()
-        .setSeconds(epochNanos / NANO_PER_SECOND)
-        .setNanos((int) (epochNanos % NANO_PER_SECOND))
-        .build();
-  }
-
-  static Distribution.Builder mapDistribution(HistogramPointData point, String projectId) {
-    return Distribution.newBuilder()
-        .setCount(point.getCount())
-        .setMean(point.getSum() / point.getCount())
-        .setBucketOptions(
-            BucketOptions.newBuilder()
-                .setExplicitBuckets(Explicit.newBuilder().addAllBounds(point.getBoundaries())))
-        .addAllBucketCounts(point.getCounts())
-        .addAllExemplars(
-            point.getExemplars().stream()
-                .map(e -> mapExemplar(e, projectId))
-                .collect(Collectors.toList()));
   }
 
   private static Distribution.Exemplar mapExemplar(ExemplarData exemplar, String projectId) {
