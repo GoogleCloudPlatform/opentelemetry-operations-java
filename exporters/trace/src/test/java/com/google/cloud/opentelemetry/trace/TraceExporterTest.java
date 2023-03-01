@@ -122,7 +122,7 @@ public class TraceExporterTest {
       SpanData mockSpanData = Mockito.mock(SpanData.class);
       // verify trace exporter still works without any additional exceptions
       assertEquals(
-          CompletableResultCode.ofFailure(),
+          CompletableResultCode.ofSuccess(),
           traceExporter.export(Collections.singleton(mockSpanData)));
       assertEquals(CompletableResultCode.ofSuccess(), traceExporter.flush());
       assertEquals(CompletableResultCode.ofSuccess(), traceExporter.shutdown());

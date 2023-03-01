@@ -32,11 +32,11 @@ final class NoopSpanExporter implements SpanExporter {
    * Noop implementation for exporting spans.
    *
    * @param spans The {@link Collection} of {@link SpanData} that need to be exported.
-   * @return a failure result code indicated via {@link CompletableResultCode#ofFailure()}.
+   * @return a success result code indicated via {@link CompletableResultCode#ofSuccess()}.
    */
   @Override
   public CompletableResultCode export(@Nonnull Collection<SpanData> spans) {
-    return CompletableResultCode.ofFailure();
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
