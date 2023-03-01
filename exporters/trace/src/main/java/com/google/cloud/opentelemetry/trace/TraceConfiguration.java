@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
+import com.google.api.client.util.Strings;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
@@ -22,13 +23,14 @@ import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.cloud.trace.v2.stub.TraceServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -36,9 +38,6 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class TraceConfiguration {
-
-  private static final String DEFAULT_PROJECT_ID =
-      Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
 
   @VisibleForTesting static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
 
@@ -63,6 +62,17 @@ public abstract class TraceConfiguration {
   TraceConfiguration() {}
 
   /**
+   * Package private method to get a {@link Supplier} for the project ID. The value supplied depends
+   * on the user-provided value via {@link TraceConfiguration.Builder#setProjectId(String)}. If user
+   * does not provide a project ID via {@link TraceConfiguration.Builder#setProjectId(String)}, this
+   * supplier returns a {@link Supplier} that supplies the default Project ID.
+   *
+   * @see ServiceOptions#getDefaultProjectId()
+   * @return a {@link Supplier} for the project ID to be used.
+   */
+  abstract Supplier<String> getProjectIdSupplier();
+
+  /**
    * Returns the {@link Credentials}.
    *
    * @return the {@code Credentials}.
@@ -75,7 +85,9 @@ public abstract class TraceConfiguration {
    *
    * @return the cloud project id.
    */
-  public abstract String getProjectId();
+  public final String getProjectId() {
+    return getProjectIdSupplier().get();
+  }
 
   /**
    * Returns a TraceServiceStub instance used to make RPC calls.
@@ -127,7 +139,7 @@ public abstract class TraceConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_TraceConfiguration.Builder()
-        .setProjectId(DEFAULT_PROJECT_ID)
+        .setProjectIdSupplier(Suppliers.memoize(ServiceOptions::getDefaultProjectId))
         .setFixedAttributes(Collections.emptyMap())
         .setDeadline(DEFAULT_DEADLINE)
         .setTraceServiceEndpoint(TraceServiceStubSettings.getDefaultEndpoint())
@@ -144,6 +156,16 @@ public abstract class TraceConfiguration {
     Builder() {}
 
     /**
+     * Package private method to set the {@link Supplier} that supplies the project ID. The project
+     * ID value that is supplied depends on the value set using {@link
+     * TraceConfiguration.Builder#setProjectId(String)}}.
+     *
+     * @param projectIdSupplier the cloud project id supplier.
+     * @return this.
+     */
+    abstract Builder setProjectIdSupplier(Supplier<String> projectIdSupplier);
+
+    /**
      * Sets the {@link Credentials} used to authenticate API calls.
      *
      * @param credentials the {@code Credentials}.
@@ -152,12 +174,17 @@ public abstract class TraceConfiguration {
     public abstract Builder setCredentials(Credentials credentials);
 
     /**
-     * Sets the cloud project id.
+     * Sets the cloud project id. The project ID should be a valid, non-null and non-empty String.
      *
      * @param projectId the cloud project id.
      * @return this.
      */
-    public abstract Builder setProjectId(String projectId);
+    public final Builder setProjectId(String projectId) {
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(projectId), "Project ID cannot be null or empty.");
+      setProjectIdSupplier(() -> projectId);
+      return this;
+    }
 
     /**
      * Sets the trace service stub used to send gRPC calls.
@@ -214,8 +241,6 @@ public abstract class TraceConfiguration {
      */
     public abstract Builder setDeadline(Duration deadline);
 
-    abstract String getProjectId();
-
     abstract Map<String, AttributeValue> getFixedAttributes();
 
     abstract Duration getDeadline();
@@ -231,11 +256,7 @@ public abstract class TraceConfiguration {
      * @return a {@code TraceConfiguration}.
      */
     public TraceConfiguration build() {
-      // Make a defensive copy of fixed attributes.
       setFixedAttributes(Collections.unmodifiableMap(new LinkedHashMap<>(getFixedAttributes())));
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(getProjectId()),
-          "Cannot find a project ID from either configurations or application default.");
       for (Map.Entry<String, AttributeValue> fixedAttribute : getFixedAttributes().entrySet()) {
         Preconditions.checkNotNull(fixedAttribute.getKey(), "attribute key");
         Preconditions.checkNotNull(fixedAttribute.getValue(), "attribute value");
