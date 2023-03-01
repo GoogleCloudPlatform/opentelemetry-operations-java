@@ -15,134 +15,86 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
-import static com.google.api.client.util.Preconditions.checkNotNull;
-
-import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
-import com.google.api.gax.rpc.HeaderProvider;
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.trace.v2.TraceServiceClient;
-import com.google.cloud.trace.v2.TraceServiceSettings;
-import com.google.cloud.trace.v2.stub.TraceServiceStub;
-import com.google.common.collect.ImmutableMap;
-import com.google.devtools.cloudtrace.v2.AttributeValue;
-import com.google.devtools.cloudtrace.v2.ProjectName;
-import com.google.devtools.cloudtrace.v2.Span;
-import io.grpc.ManagedChannelBuilder;
+import com.google.cloud.ServiceOptions;
+import com.google.common.base.Suppliers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TraceExporter implements SpanExporter {
 
-  private final CloudTraceClient cloudTraceClient;
-  private final ProjectName projectName;
-  private final String projectId;
-  private final TraceTranslator translator;
+  private static final Logger logger = LoggerFactory.getLogger(TraceExporter.class);
 
-  private static final Map<String, String> HEADERS =
-      Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
-  private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
+  private final Supplier<SpanExporter> internalTraceExporterSupplier;
 
-  public static SpanExporter createWithDefaultConfiguration() throws IOException {
-    TraceConfiguration configuration = TraceConfiguration.builder().build();
-    return TraceExporter.createWithConfiguration(configuration);
+  private TraceExporter(TraceConfiguration configuration) {
+    this.internalTraceExporterSupplier =
+        Suppliers.memoize(
+            () -> {
+              try {
+                return InternalTraceExporter.createWithConfiguration(configuration);
+              } catch (IOException e) {
+                logger.warn(
+                    "Unable to initialize Google Cloud TraceExporter. Export operation failed, switching to NoopSpanExporter.",
+                    e);
+                return new NoopSpanExporter();
+              }
+            });
   }
 
-  public static SpanExporter createWithConfiguration(TraceConfiguration configuration)
-      throws IOException {
-    String projectId = configuration.getProjectId();
-    TraceServiceStub stub = configuration.getTraceServiceStub();
-
-    // TODO: Remove stub.
-    if (stub == null) {
-      TraceServiceSettings.Builder builder = TraceServiceSettings.newBuilder();
-
-      // We only use the batchWriteSpans API in this exporter.
-      builder
-          .batchWriteSpansSettings()
-          .setSimpleTimeoutNoRetries(
-              org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
-      // For testing, we need to hack around our gRPC config.
-      if (configuration.getInsecureEndpoint()) {
-        builder.setCredentialsProvider(NoCredentialsProvider.create());
-        builder.setTransportChannelProvider(
-            FixedTransportChannelProvider.create(
-                GrpcTransportChannel.create(
-                    ManagedChannelBuilder.forTarget(configuration.getTraceServiceEndpoint())
-                        .usePlaintext()
-                        .build())));
-      } else {
-        Credentials credentials =
-            configuration.getCredentials() == null
-                ? GoogleCredentials.getApplicationDefault()
-                : configuration.getCredentials();
-        builder.setCredentialsProvider(
-            FixedCredentialsProvider.create(checkNotNull(credentials, "credentials")));
-        builder.setEndpoint(configuration.getTraceServiceEndpoint());
-        builder.setHeaderProvider(HEADER_PROVIDER);
-      }
-
-      return new TraceExporter(
-          projectId,
-          new CloudTraceClientImpl(TraceServiceClient.create(builder.build())),
-          configuration.getAttributeMapping(),
-          configuration.getFixedAttributes());
-    }
-    return TraceExporter.createWithClient(
-        projectId,
-        new CloudTraceClientImpl(TraceServiceClient.create(stub)),
-        configuration.getAttributeMapping(),
-        configuration.getFixedAttributes());
+  /**
+   * Method that generates an instance of {@link TraceExporter} using a minimally configured {@link
+   * TraceConfiguration} object that requires no input from the user. Since no project ID is
+   * specified, default project ID is used instead. See {@link ServiceOptions#getDefaultProjectId()}
+   * for details.
+   *
+   * <p>This method defers the initialization of an actual {@link TraceExporter} to a point when it
+   * is actually needed - which is when the spans need to be exported. As a result, while this
+   * method does not throw any exception, an exception may still be thrown during the attempt to
+   * generate the actual {@link TraceExporter}.
+   *
+   * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
+   *     {@link TraceExporter#export(Collection)} is called.
+   */
+  public static SpanExporter createWithDefaultConfiguration() {
+    return new TraceExporter(TraceConfiguration.builder().build());
   }
 
-  private static TraceExporter createWithClient(
-      String projectId,
-      CloudTraceClient cloudTraceClient,
-      ImmutableMap<String, String> attributeMappings,
-      Map<String, AttributeValue> fixedAttributes) {
-    return new TraceExporter(projectId, cloudTraceClient, attributeMappings, fixedAttributes);
-  }
-
-  TraceExporter(
-      String projectId,
-      CloudTraceClient cloudTraceClient,
-      ImmutableMap<String, String> attributeMappings,
-      Map<String, AttributeValue> fixedAttributes) {
-    this.projectId = projectId;
-    this.cloudTraceClient = cloudTraceClient;
-    this.projectName = ProjectName.of(projectId);
-    this.translator = new TraceTranslator(attributeMappings, fixedAttributes);
+  /**
+   * Method that generates an instance of {@link TraceExporter} using a {@link TraceConfiguration}
+   * that allows the user to provide custom configuration for Traces.
+   *
+   * <p>This method defers the initialization of an actual {@link TraceExporter} to a point when it
+   * is actually needed - which is when the spans need to be exported. As a result, while this
+   * method does not throw any exception, an exception may still be thrown during the attempt to
+   * generate the actual {@link TraceExporter}.
+   *
+   * @param configuration The {@link TraceConfiguration} object that determines the user preferences
+   *     for Trace.
+   * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
+   */
+  public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
+    return new TraceExporter(configuration);
   }
 
   @Override
   public CompletableResultCode flush() {
-    // We do no exporter buffering of spans, so we're always flushed.
-    return CompletableResultCode.ofSuccess();
+    return internalTraceExporterSupplier.get().flush();
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spanDataList) {
-    List<Span> spans = new ArrayList<>(spanDataList.size());
-    for (SpanData spanData : spanDataList) {
-      spans.add(translator.generateSpan(spanData, projectId));
-    }
-
-    cloudTraceClient.batchWriteSpans(projectName, spans);
-    return CompletableResultCode.ofSuccess();
+  public CompletableResultCode export(@Nonnull Collection<SpanData> spanDataList) {
+    return internalTraceExporterSupplier.get().export(spanDataList);
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    this.cloudTraceClient.shutdown();
-    return CompletableResultCode.ofSuccess();
+    return internalTraceExporterSupplier.get().shutdown();
   }
 }

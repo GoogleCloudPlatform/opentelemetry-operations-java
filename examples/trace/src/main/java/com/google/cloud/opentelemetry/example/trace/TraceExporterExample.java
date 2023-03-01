@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
 
@@ -40,19 +39,14 @@ public class TraceExporterExample {
     TraceConfiguration configuration =
         TraceConfiguration.builder().setDeadline(Duration.ofMillis(30000)).build();
 
-    try {
-      SpanExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
-      // Register the TraceExporter with OpenTelemetry
-      return OpenTelemetrySdk.builder()
-          .setTracerProvider(
-              SdkTracerProvider.builder()
-                  .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-                  .build())
-          .buildAndRegisterGlobal();
-    } catch (IOException e) {
-      System.out.println("Uncaught Exception");
-      return null;
-    }
+    SpanExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
+    // Register the TraceExporter with OpenTelemetry
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                .build())
+        .buildAndRegisterGlobal();
   }
 
   private static void myUseCase(String description) {

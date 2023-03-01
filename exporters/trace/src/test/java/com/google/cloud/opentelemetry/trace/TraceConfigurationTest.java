@@ -33,6 +33,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link TraceConfiguration}. */
 @RunWith(JUnit4.class)
@@ -78,29 +80,25 @@ public class TraceConfigurationTest {
   }
 
   @Test
-  public void disallowNullProjectId() {
+  public void disallowNullOrEmptyProjectId() {
     TraceConfiguration.Builder builder = TraceConfiguration.builder();
 
-    assertThrows(NullPointerException.class, () -> builder.setProjectId(null));
-  }
-
-  @Test
-  public void disallowEmptyProjectId() {
-    TraceConfiguration.Builder builder = TraceConfiguration.builder();
-
-    builder.setProjectId("");
-
-    assertThrows(IllegalArgumentException.class, builder::build);
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(null));
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(""));
   }
 
   @Test
   public void allowToUseDefaultProjectId() {
-    String defaultProjectId = ServiceOptions.getDefaultProjectId();
-    // some test providers might not have project IDs set up
-    if (defaultProjectId != null) {
-      TraceConfiguration configuration = TraceConfiguration.builder().build();
+    // some test providers might not have project IDs set up - so we use mocks
+    try (MockedStatic<ServiceOptions> mockedServiceOptions =
+        Mockito.mockStatic(ServiceOptions.class)) {
+      mockedServiceOptions.when(ServiceOptions::getDefaultProjectId).thenReturn(PROJECT_ID);
 
-      assertEquals(defaultProjectId, configuration.getProjectId());
+      // default configuration should get default project ID
+      TraceConfiguration traceConfiguration = TraceConfiguration.builder().build();
+      assertEquals(PROJECT_ID, traceConfiguration.getProjectId());
+
+      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
     }
   }
 
@@ -148,5 +146,25 @@ public class TraceConfigurationTest {
     builder.setDeadline(NEG_ONE_MINUTE);
 
     assertThrows(IllegalArgumentException.class, builder::build);
+  }
+
+  @Test
+  public void verifyCallToDefaultProjectIdIsMemoize() {
+    try (MockedStatic<ServiceOptions> serviceOptionsMockedStatic =
+        Mockito.mockStatic(ServiceOptions.class)) {
+
+      TraceConfiguration traceConfiguration1 = TraceConfiguration.builder().build();
+      traceConfiguration1.getProjectId();
+      traceConfiguration1.getProjectId();
+      traceConfiguration1.getProjectId();
+
+      TraceConfiguration traceConfiguration2 = TraceConfiguration.builder().build();
+      traceConfiguration2.getProjectId();
+      traceConfiguration2.getProjectId();
+      traceConfiguration2.getProjectId();
+
+      // ServiceOptions#getDefaultProjectId should only be called once per TraceConfiguration object
+      serviceOptionsMockedStatic.verify(Mockito.times(2), ServiceOptions::getDefaultProjectId);
+    }
   }
 }
