@@ -26,14 +26,27 @@ jib {
 	containerizingMode = 'packaged'
 }
 
+// gradle run
 mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
+
+// gradle runMetricExporterWithOtel
+task runMetricExporterWithOtel(type: JavaExec) {
+	group = "Execution"
+	description = "Run metrics exporter example with OpenTelemetry"
+	classpath = sourceSets.main.runtimeClasspath
+	mainClassName = getMainClass().set('com.google.cloud.opentelemetry.example.metrics.MetricsExporterOpenTelemetryExample')
+}
 
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
 	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_sdk_metrics)
 	implementation(libraries.google_cloud_monitoring)
 	implementation project(':exporter-metrics')
 	runtimeOnly project(':detector-resources')
+	// These dependencies are required to verify that inclusion of opencensus does not cause failures
+	implementation 'io.opentelemetry:opentelemetry-opencensus-shim:1.4.0-alpha'
+	implementation 'io.opencensus:opencensus-api:0.31.1'
 }
