@@ -19,12 +19,13 @@ import com.google.auto.service.AutoService;
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 
 @AutoService(ConfigurableMetricExporterProvider.class)
 public class GoogleCloudMetricExporterFactory implements ConfigurableMetricExporterProvider {
   @Override
-  public GoogleCloudMetricExporter createExporter(ConfigProperties config) {
+  public MetricExporter createExporter(ConfigProperties config) {
     try {
       return GoogleCloudMetricExporter.createWithDefaultConfiguration();
     } catch (IOException ex) {

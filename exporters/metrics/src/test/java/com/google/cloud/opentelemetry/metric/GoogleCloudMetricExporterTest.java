@@ -63,6 +63,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import java.io.IOException;
@@ -102,8 +103,7 @@ public class GoogleCloudMetricExporterTest {
             .setProjectId(aProjectId)
             .setCredentials(aFakeCredential)
             .build();
-    GoogleCloudMetricExporter exporter =
-        GoogleCloudMetricExporter.createWithConfiguration(configuration);
+    MetricExporter exporter = GoogleCloudMetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
   }
 

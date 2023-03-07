@@ -19,9 +19,8 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-
-import java.io.IOException;
 import java.util.Random;
 
 public class MetricsExporterExample {
@@ -31,25 +30,20 @@ public class MetricsExporterExample {
   private static final Random RANDOM = new Random();
 
   private static void setupMetricExporter() {
-    try {
-      GoogleCloudMetricExporter metricExporter =
-          GoogleCloudMetricExporter.createWithDefaultConfiguration();
-      METER_PROVIDER =
-          SdkMeterProvider.builder()
-              .registerMetricReader(
-                  PeriodicMetricReader.builder(metricExporter)
-                      .setInterval(java.time.Duration.ofSeconds(30))
-                      .build())
-              .build();
+    MetricExporter metricExporter = GoogleCloudMetricExporter.createWithDefaultConfiguration();
+    METER_PROVIDER =
+        SdkMeterProvider.builder()
+            .registerMetricReader(
+                PeriodicMetricReader.builder(metricExporter)
+                    .setInterval(java.time.Duration.ofSeconds(30))
+                    .build())
+            .build();
 
-      METER =
-          METER_PROVIDER
-              .meterBuilder("instrumentation-library-name")
-              .setInstrumentationVersion("semver:1.0.0")
-              .build();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    METER =
+        METER_PROVIDER
+            .meterBuilder("instrumentation-library-name")
+            .setInstrumentationVersion("semver:1.0.0")
+            .build();
   }
 
   private static void myUseCase() {
