@@ -15,20 +15,18 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GoogleCloudMetricExporter implements MetricExporter {
   private static final Logger logger = LoggerFactory.getLogger(GoogleCloudMetricExporter.class);
@@ -36,16 +34,18 @@ public class GoogleCloudMetricExporter implements MetricExporter {
   private final Supplier<MetricExporter> internalMetricExporterSupplier;
 
   private GoogleCloudMetricExporter(MetricConfiguration configuration) {
-    this.internalMetricExporterSupplier = Suppliers.memoize(() -> {
-      try {
-        return InternalMetricExporter.createWithConfiguration(configuration);
-      } catch (IOException e) {
-        logger.warn(
-                "Unable to initialize GoogleCloudMetricExporter. Export operation failed, switching to NoopMetricExporter.",
-                e);
-        return new NoopMetricExporter();
-      }
-    });
+    this.internalMetricExporterSupplier =
+        Suppliers.memoize(
+            () -> {
+              try {
+                return InternalMetricExporter.createWithConfiguration(configuration);
+              } catch (IOException e) {
+                logger.warn(
+                    "Unable to initialize GoogleCloudMetricExporter. Export operation failed, switching to NoopMetricExporter.",
+                    e);
+                return new NoopMetricExporter();
+              }
+            });
   }
 
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {

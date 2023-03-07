@@ -109,8 +109,8 @@ public class GoogleCloudMetricExporterTest {
 
   @Test
   public void testExportSendsAllDescriptorsOnce() {
-    GoogleCloudMetricExporter exporter =
-        GoogleCloudMetricExporter.createWithClient(
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
             aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.SEND_ONCE);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
@@ -194,8 +194,8 @@ public class GoogleCloudMetricExporterTest {
             .build();
     ProjectName expectedProjectName = ProjectName.of(aProjectId);
 
-    GoogleCloudMetricExporter exporter =
-        GoogleCloudMetricExporter.createWithClient(
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
             aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
@@ -291,8 +291,8 @@ public class GoogleCloudMetricExporterTest {
                     .putLabels("zone", aCloudZone)
                     .build())
             .build();
-    GoogleCloudMetricExporter exporter =
-        GoogleCloudMetricExporter.createWithClient(
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
             aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -307,8 +307,8 @@ public class GoogleCloudMetricExporterTest {
 
   @Test
   public void testExportWithNonSupportedMetricTypeReturnsFailure() {
-    GoogleCloudMetricExporter exporter =
-        GoogleCloudMetricExporter.createWithClient(
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
             aProjectId, DEFAULT_PREFIX, mockClient, MetricDescriptorStrategy.ALWAYS_SEND);
 
     MetricData metricData =
