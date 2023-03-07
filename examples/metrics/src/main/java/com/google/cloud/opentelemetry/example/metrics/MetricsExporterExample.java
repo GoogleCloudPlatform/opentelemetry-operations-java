@@ -20,6 +20,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+
 import java.io.IOException;
 import java.util.Random;
 
@@ -77,10 +78,10 @@ public class MetricsExporterExample {
     setupMetricExporter();
     try {
       int i = 0;
-      while (true) {
+      while (i < 2) {
         System.out.println("Running example use case: #" + i);
         myUseCase();
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         i++;
       }
     } finally {
