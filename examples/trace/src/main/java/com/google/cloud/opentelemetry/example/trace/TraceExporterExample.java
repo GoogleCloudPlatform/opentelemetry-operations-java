@@ -29,7 +29,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class TraceExporterExample {
-  private static final String INSTRUMENTATION_SCOPE_NAME = TraceExporter.class.getName();
+  private static final String INSTRUMENTATION_SCOPE_NAME = TraceExporterExample.class.getName();
   private static final Random random = new Random();
 
   private static OpenTelemetrySdk openTelemetrySdk;
