@@ -17,22 +17,22 @@ package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class TraceExporterExample {
-  // TODO: Update this to NON-global OpenTelemetry.  Only APIs/Frameworks should be using global.
-  private static final Tracer tracer =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.example.TraceExporterExample");
+  private static final String INSTRUMENTATION_SCOPE_NAME = TraceExporterExample.class.getName();
   private static final Random random = new Random();
+
+  private static OpenTelemetrySdk openTelemetrySdk;
 
   private static OpenTelemetrySdk setupTraceExporter() {
     // Using default project ID and Credentials
@@ -51,7 +51,8 @@ public class TraceExporterExample {
 
   private static void myUseCase(String description) {
     // Generate a span
-    Span span = tracer.spanBuilder(description).startSpan();
+    Span span =
+        openTelemetrySdk.getTracer(INSTRUMENTATION_SCOPE_NAME).spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       span.addEvent("Event A");
       // Do some work for the use case
@@ -68,7 +69,8 @@ public class TraceExporterExample {
 
   private static void doWork(String description) {
     // Child span
-    Span span = tracer.spanBuilder(description).startSpan();
+    Span span =
+        openTelemetrySdk.getTracer(INSTRUMENTATION_SCOPE_NAME).spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       // Simulate work: this could be simulating a network request or an expensive disk operation
       Thread.sleep(100 + random.nextInt(5) * 100);
@@ -81,13 +83,16 @@ public class TraceExporterExample {
 
   public static void main(String[] args) {
     // Configure the OpenTelemetry pipeline with CloudTrace exporter
-    OpenTelemetrySdk otel = setupTraceExporter();
+    openTelemetrySdk = setupTraceExporter();
 
     // Application-specific logic
     myUseCase("One");
     myUseCase("Two");
 
     // Flush all buffered traces
-    otel.getSdkTracerProvider().shutdown();
+    CompletableResultCode completableResultCode =
+        openTelemetrySdk.getSdkTracerProvider().shutdown();
+    // wait till export finishes
+    completableResultCode.join(10000, TimeUnit.MILLISECONDS);
   }
 }
