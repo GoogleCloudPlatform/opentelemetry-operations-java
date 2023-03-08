@@ -36,8 +36,7 @@ public class MetricsExporterOpenTelemetryExample {
 
   private static OpenTelemetrySdk setupOpenTelemetryWithMetricsExporter() {
     MetricExporter metricExporter =
-        GoogleCloudMetricExporter.createWithConfiguration(
-            MetricConfiguration.builder().setPrefix("custom.googleapis.com").build());
+        GoogleCloudMetricExporter.createWithConfiguration(MetricConfiguration.builder().build());
     SdkMeterProvider sdkMeterProvider =
         SdkMeterProvider.builder()
             .registerMetricReader(
@@ -74,6 +73,7 @@ public class MetricsExporterOpenTelemetryExample {
     doWork(counter);
   }
 
+  // To run this from command line, execute `gradle runMetricExporterWithOtel`
   public static void main(String[] args) {
     System.out.println("Starting the metrics-otel-example application");
     OpenTelemetrySdk openTelemetrySdk = setupOpenTelemetryWithMetricsExporter();

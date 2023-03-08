@@ -47,6 +47,5 @@ dependencies {
 	implementation project(':exporter-metrics')
 	runtimeOnly project(':detector-resources')
 	// These dependencies are required to verify that inclusion of opencensus does not cause failures
-	implementation 'io.opentelemetry:opentelemetry-opencensus-shim:1.4.0-alpha'
-	implementation 'io.opencensus:opencensus-api:0.31.1'
+	testImplementation(testLibraries.opencensus_shim)
 }

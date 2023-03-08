@@ -42,7 +42,7 @@ public class MetricsExporterExample {
     METER =
         METER_PROVIDER
             .meterBuilder("instrumentation-library-name")
-            .setInstrumentationVersion("semver:1.0.0")
+            .setInstrumentationVersion("server:1.0.0")
             .build();
   }
 
@@ -67,6 +67,7 @@ public class MetricsExporterExample {
     }
   }
 
+  // to run this from command line, execute `gradle run`
   public static void main(String[] args) throws InterruptedException {
     System.out.println("Starting the metrics-example application");
     setupMetricExporter();
