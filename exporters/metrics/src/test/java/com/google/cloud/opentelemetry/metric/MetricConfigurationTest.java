@@ -68,10 +68,13 @@ public class MetricConfigurationTest {
 
   @Test
   public void testConfigurationWithDefaultProjectIdSucceeds() {
-    String defaultProjectId = ServiceOptions.getDefaultProjectId();
-    if (defaultProjectId != null) {
+    try (MockedStatic<ServiceOptions> serviceOptionsMockedStatic =
+        Mockito.mockStatic(ServiceOptions.class)) {
+      serviceOptionsMockedStatic.when(ServiceOptions::getDefaultProjectId).thenReturn(PROJECT_ID);
+
       MetricConfiguration configuration = MetricConfiguration.builder().build();
-      assertEquals(defaultProjectId, configuration.getProjectId());
+      assertEquals(PROJECT_ID, configuration.getProjectId());
+      serviceOptionsMockedStatic.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
     }
   }
 
