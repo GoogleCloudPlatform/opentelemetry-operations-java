@@ -42,7 +42,7 @@ public class MetricsExporterExample {
     METER =
         METER_PROVIDER
             .meterBuilder("instrumentation-library-name")
-            .setInstrumentationVersion("server:1.0.0")
+            .setInstrumentationVersion("semver:1.0.0")
             .build();
   }
 
