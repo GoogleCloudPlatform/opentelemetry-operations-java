@@ -45,6 +45,16 @@ public abstract class MetricConfiguration {
 
   MetricConfiguration() {}
 
+  /**
+   * Package private method to get a {@link Supplier} for the project ID. The value supplied depends
+   * on the user-provided value via {@link MetricConfiguration.Builder#setProjectId(String)}. If
+   * user does not provide a project ID via {@link
+   * MetricConfiguration.Builder#setProjectId(String)}, this supplier returns a {@link Supplier}
+   * that supplies the default Project ID.
+   *
+   * @see ServiceOptions#getDefaultProjectId()
+   * @return a {@link Supplier} for the project ID to be used.
+   */
   abstract Supplier<String> getProjectIdSupplier();
 
   /**
@@ -136,9 +146,23 @@ public abstract class MetricConfiguration {
 
     abstract Duration getDeadline();
 
+    /**
+     * Package private method to set the {@link Supplier} that supplies the project ID. The project
+     * ID value that is supplied depends on the value set using {@link
+     * MetricConfiguration.Builder#setProjectId(String)}}.
+     *
+     * @param projectIdSupplier the cloud project id supplier.
+     * @return this.
+     */
     abstract Builder setProjectIdSupplier(Supplier<String> projectIdSupplier);
 
-    /** Set the GCP project where metrics should be writtten. */
+    /**
+     * Sets the GCP project id where the metrics should be written. The project ID should be a
+     * valid, non-null and non-empty String.
+     *
+     * @param projectId the cloud project id.
+     * @return this.
+     */
     public final Builder setProjectId(String projectId) {
       Preconditions.checkArgument(
           !Strings.isNullOrEmpty(projectId), "Project ID cannot be null or empty.");

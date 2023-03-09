@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import com.google.cloud.ServiceOptions;
 import com.google.common.base.Suppliers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -48,12 +49,40 @@ public class GoogleCloudMetricExporter implements MetricExporter {
             });
   }
 
-  public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {
-    return new GoogleCloudMetricExporter(configuration);
-  }
-
+  /**
+   * Method that generates an instance of {@link GoogleCloudMetricExporter} using a minimally
+   * configured {@link MetricConfiguration} object that requires no input from the user. Since no
+   * project ID is specified, default project ID is used instead. See {@link
+   * ServiceOptions#getDefaultProjectId()} for details.
+   *
+   * <p>This method defers the initialization of an actual {@link GoogleCloudMetricExporter} to a
+   * point when it is actually needed - which is when the metrics need to be exported. As a result,
+   * while this method does not throw any exception, an exception may still be thrown during the
+   * attempt to generate the actual {@link GoogleCloudMetricExporter}.
+   *
+   * @return A configured instance of {@link GoogleCloudMetricExporter} as a {@link MetricExporter}
+   *     which gets initialized lazily once {@link GoogleCloudMetricExporter#export(Collection)} is
+   *     called.
+   */
   public static MetricExporter createWithDefaultConfiguration() {
     return new GoogleCloudMetricExporter(MetricConfiguration.builder().build());
+  }
+
+  /**
+   * Method that generates an instance of {@link GoogleCloudMetricExporter} using a {@link
+   * MetricConfiguration} that allows the user to provide custom configuration for Traces.
+   *
+   * <p>This method defers the initialization of an actual {@link GoogleCloudMetricExporter} to a
+   * point when it is actually needed - which is when the metrics need to be exported. As a result,
+   * while this method does not throw any exception, an exception may still be thrown during the
+   * attempt to generate the actual {@link GoogleCloudMetricExporter}.
+   *
+   * @param configuration The {@link MetricConfiguration} object that determines the user
+   *     preferences for Trace.
+   * @return An instance of {@link GoogleCloudMetricExporter} as a {@link MetricExporter} object.
+   */
+  public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {
+    return new GoogleCloudMetricExporter(configuration);
   }
 
   @Override
