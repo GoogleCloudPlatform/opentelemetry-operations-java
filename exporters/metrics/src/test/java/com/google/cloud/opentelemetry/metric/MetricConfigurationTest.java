@@ -28,6 +28,8 @@ import java.util.Date;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
 public class MetricConfigurationTest {
@@ -58,16 +60,10 @@ public class MetricConfigurationTest {
   }
 
   @Test
-  public void testConfigurationWithNullProjectIdFails() {
-    Builder builder = MetricConfiguration.builder();
-    assertThrows(NullPointerException.class, () -> builder.setProjectId(null));
-  }
-
-  @Test
   public void testConfigurationWithEmptyProjectIdFails() {
     Builder builder = MetricConfiguration.builder();
-    builder.setProjectId("");
-    assertThrows(IllegalArgumentException.class, builder::build);
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(""));
+    assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(null));
   }
 
   @Test
@@ -76,6 +72,26 @@ public class MetricConfigurationTest {
     if (defaultProjectId != null) {
       MetricConfiguration configuration = MetricConfiguration.builder().build();
       assertEquals(defaultProjectId, configuration.getProjectId());
+    }
+  }
+
+  @Test
+  public void verifyCallToDefaultProjectIdIsMemoized() {
+    try (MockedStatic<ServiceOptions> serviceOptionsMockedStatic =
+        Mockito.mockStatic(ServiceOptions.class)) {
+
+      MetricConfiguration metricConfiguration1 = MetricConfiguration.builder().build();
+      metricConfiguration1.getProjectId();
+      metricConfiguration1.getProjectId();
+      metricConfiguration1.getProjectId();
+
+      MetricConfiguration metricConfiguration2 = MetricConfiguration.builder().build();
+      metricConfiguration2.getProjectId();
+      metricConfiguration2.getProjectId();
+      metricConfiguration2.getProjectId();
+
+      // ServiceOptions#getDefaultProjectId should only be called once per TraceConfiguration object
+      serviceOptionsMockedStatic.verify(Mockito.times(2), ServiceOptions::getDefaultProjectId);
     }
   }
 }

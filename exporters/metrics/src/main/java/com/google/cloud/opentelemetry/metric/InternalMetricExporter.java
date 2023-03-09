@@ -76,11 +76,6 @@ class InternalMetricExporter implements MetricExporter {
     this.metricDescriptorStrategy = descriptorStrategy;
   }
 
-  static InternalMetricExporter createWithDefaultConfiguration() throws IOException {
-    MetricConfiguration configuration = MetricConfiguration.builder().build();
-    return InternalMetricExporter.createWithConfiguration(configuration);
-  }
-
   static InternalMetricExporter createWithConfiguration(MetricConfiguration configuration)
       throws IOException {
     String projectId = configuration.getProjectId();
