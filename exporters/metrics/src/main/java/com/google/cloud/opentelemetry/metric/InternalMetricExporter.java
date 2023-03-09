@@ -49,9 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates internal implementation details for exporting metrics for applications
- * running in Google Cloud environment. This class should not be exposed to the end user for direct
- * usage.
+ * This class encapsulates internal implementation details for exporting metrics to Google Cloud
+ * Platform. This class should not be exposed to the end user for direct usage.
  */
 class InternalMetricExporter implements MetricExporter {
 

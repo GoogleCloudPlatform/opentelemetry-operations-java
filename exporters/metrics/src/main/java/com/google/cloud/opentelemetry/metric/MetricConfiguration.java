@@ -49,11 +49,11 @@ public abstract class MetricConfiguration {
    * Package private method to get a {@link Supplier} for the project ID. The value supplied depends
    * on the user-provided value via {@link MetricConfiguration.Builder#setProjectId(String)}. If
    * user does not provide a project ID via {@link
-   * MetricConfiguration.Builder#setProjectId(String)}, this supplier returns a {@link Supplier}
-   * that supplies the default Project ID.
+   * MetricConfiguration.Builder#setProjectId(String)}, this method returns a {@link Supplier} that
+   * supplies the default Project ID.
    *
    * @see ServiceOptions#getDefaultProjectId()
-   * @return a {@link Supplier} for the project ID to be used.
+   * @return a {@link Supplier} for the GCP project ID.
    */
   abstract Supplier<String> getProjectIdSupplier();
 

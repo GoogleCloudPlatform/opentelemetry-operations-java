@@ -78,7 +78,7 @@ public class GoogleCloudMetricExporter implements MetricExporter {
    * attempt to generate the actual {@link GoogleCloudMetricExporter}.
    *
    * @param configuration The {@link MetricConfiguration} object that determines the user
-   *     preferences for Trace.
+   *     preferences for metrics.
    * @return An instance of {@link GoogleCloudMetricExporter} as a {@link MetricExporter} object.
    */
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {
