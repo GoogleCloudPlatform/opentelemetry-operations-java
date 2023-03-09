@@ -24,7 +24,9 @@ import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import java.time.Duration;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,12 +40,22 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MetricConfiguration {
   static final String DEFAULT_PREFIX = "workload.googleapis.com";
 
-  private static final String DEFAULT_PROJECT_ID =
-      Strings.nullToEmpty(ServiceOptions.getDefaultProjectId());
   private static final Duration DEFAULT_DEADLINE =
       Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
 
   MetricConfiguration() {}
+
+  /**
+   * Package private method to get a {@link Supplier} for the project ID. The value supplied depends
+   * on the user-provided value via {@link MetricConfiguration.Builder#setProjectId(String)}. If
+   * user does not provide a project ID via {@link
+   * MetricConfiguration.Builder#setProjectId(String)}, this method returns a {@link Supplier} that
+   * supplies the default Project ID.
+   *
+   * @see ServiceOptions#getDefaultProjectId()
+   * @return a {@link Supplier} for the GCP project ID.
+   */
+  abstract Supplier<String> getProjectIdSupplier();
 
   /**
    * Returns the {@link Credentials}.
@@ -60,7 +72,9 @@ public abstract class MetricConfiguration {
    *
    * @return the cloud project id.
    */
-  public abstract String getProjectId();
+  public final String getProjectId() {
+    return getProjectIdSupplier().get();
+  }
 
   /**
    * Returns the prefix prepended to metric names.
@@ -102,7 +116,7 @@ public abstract class MetricConfiguration {
   abstract boolean getInsecureEndpoint();
 
   /**
-   * Constructs a {@link MetricConfiguration.Builder} with default values.
+   * Constructs a {@link Builder} with default values.
    *
    * <p>This will construct a builder with the following default configuration:
    *
@@ -116,7 +130,7 @@ public abstract class MetricConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_MetricConfiguration.Builder()
-        .setProjectId(DEFAULT_PROJECT_ID)
+        .setProjectIdSupplier(Suppliers.memoize(ServiceOptions::getDefaultProjectId))
         .setPrefix(DEFAULT_PREFIX)
         .setDeadline(DEFAULT_DEADLINE)
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
@@ -130,12 +144,31 @@ public abstract class MetricConfiguration {
 
     Builder() {}
 
-    abstract String getProjectId();
-
     abstract Duration getDeadline();
 
-    /** Set the GCP project where metrics should be writtten. */
-    public abstract Builder setProjectId(String projectId);
+    /**
+     * Package private method to set the {@link Supplier} that supplies the project ID. The project
+     * ID value that is supplied depends on the value set using {@link
+     * MetricConfiguration.Builder#setProjectId(String)}}.
+     *
+     * @param projectIdSupplier the cloud project id supplier.
+     * @return this.
+     */
+    abstract Builder setProjectIdSupplier(Supplier<String> projectIdSupplier);
+
+    /**
+     * Sets the GCP project id where the metrics should be written. The project ID should be a
+     * valid, non-null and non-empty String.
+     *
+     * @param projectId the cloud project id.
+     * @return this.
+     */
+    public final Builder setProjectId(String projectId) {
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(projectId), "Project ID cannot be null or empty.");
+      setProjectIdSupplier(() -> projectId);
+      return this;
+    }
 
     /** Set the prefix prepended to metric names. */
     public abstract Builder setPrefix(String prefix);
@@ -163,9 +196,6 @@ public abstract class MetricConfiguration {
      * @return a {@code MetricsConfiguration}.
      */
     public MetricConfiguration build() {
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(getProjectId()),
-          "Cannot find a project ID from either configurations or application default.");
       Preconditions.checkArgument(getDeadline().compareTo(ZERO) > 0, "Deadline must be positive.");
       return autoBuild();
     }

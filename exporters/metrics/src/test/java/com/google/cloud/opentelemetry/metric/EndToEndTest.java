@@ -20,6 +20,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.junit.Rule;
@@ -32,7 +33,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 @RunWith(JUnit4.class)
 public class EndToEndTest {
-  private GoogleCloudMetricExporter exporter;
+  private MetricExporter exporter;
 
   /** A test-container instance that loads the Cloud-Ops-Mock server container. */
   private static class CloudOperationsMockContainer
