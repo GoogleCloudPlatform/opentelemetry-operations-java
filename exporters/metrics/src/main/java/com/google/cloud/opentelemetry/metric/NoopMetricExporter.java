@@ -42,6 +42,6 @@ final class NoopMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(@Nonnull InstrumentType instrumentType) {
-    return AggregationTemporality.DELTA;
+    return AggregationTemporality.CUMULATIVE;
   }
 }
