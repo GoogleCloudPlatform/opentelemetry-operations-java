@@ -26,10 +26,8 @@ jib {
 	containerizingMode = 'packaged'
 }
 
-// gradle run
 mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
 
-// gradle runMetricExporterWithOtel
 task runMetricExporterWithOtel(type: JavaExec) {
 	group = "Execution"
 	description = "Run metrics exporter example with OpenTelemetry"
