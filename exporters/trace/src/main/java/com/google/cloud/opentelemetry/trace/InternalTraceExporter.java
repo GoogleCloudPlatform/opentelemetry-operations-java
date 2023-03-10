@@ -42,9 +42,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class encapsulates internal implementation details for exporting spans for applications
- * running on Google cloud environment. This class should not be exposed to the end user for direct
- * usage.
+ * This class encapsulates internal implementation details for exporting spans to Google Cloud
+ * Platform. This class should not be exposed to the end user for direct usage.
  */
 class InternalTraceExporter implements SpanExporter {
 

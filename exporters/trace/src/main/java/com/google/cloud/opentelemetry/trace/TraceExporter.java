@@ -76,7 +76,7 @@ public class TraceExporter implements SpanExporter {
    * generate the actual {@link TraceExporter}.
    *
    * @param configuration The {@link TraceConfiguration} object that determines the user preferences
-   *     for Trace.
+   *     for trace.
    * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
    */
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
