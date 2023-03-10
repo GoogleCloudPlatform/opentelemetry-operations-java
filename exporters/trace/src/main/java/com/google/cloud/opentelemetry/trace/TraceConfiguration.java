@@ -65,10 +65,10 @@ public abstract class TraceConfiguration {
    * Package private method to get a {@link Supplier} for the project ID. The value supplied depends
    * on the user-provided value via {@link TraceConfiguration.Builder#setProjectId(String)}. If user
    * does not provide a project ID via {@link TraceConfiguration.Builder#setProjectId(String)}, this
-   * supplier returns a {@link Supplier} that supplies the default Project ID.
+   * method returns a {@link Supplier} that supplies the default Project ID.
    *
    * @see ServiceOptions#getDefaultProjectId()
-   * @return a {@link Supplier} for the project ID to be used.
+   * @return a {@link Supplier} for the GCP project ID to be used.
    */
   abstract Supplier<String> getProjectIdSupplier();
 
