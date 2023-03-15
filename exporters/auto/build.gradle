@@ -41,10 +41,17 @@ dependencies {
 	}
 }
 
-
 shadowJar {
+	// gradle warns since explicit or implicit dependency on this shadowJar is not declared
+	dependsOn ':shared-resourcemapping:shadowJar'
 	archiveClassifier.set('shaded')
 	mergeServiceFiles()
+}
+
+// Auto relocation for dependencies
+tasks.named('shadowJar') {
+	enableRelocation true
+	relocationPrefix 'shadow'
 }
 
 publishing {

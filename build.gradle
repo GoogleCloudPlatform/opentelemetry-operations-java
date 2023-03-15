@@ -88,7 +88,7 @@ subprojects {
 		groovyGradle {
 			target '*.gradle' // default target of groovyGradle
 			greclipse()
-			licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(plugins|description)'
+			licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(import|plugins|description)'
 		}
 	}
 
