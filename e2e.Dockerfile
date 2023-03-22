@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Build relative to root of repository i.e. `docker build --file e2e.Dockerfile --tag=$tag ..`
-FROM gradle:7.5.1-jdk11 as builder
+FROM gradle:8.0.2-jdk11 as builder
 
 COPY --chown=gradle:gradle . /app/src
 WORKDIR /app/src
