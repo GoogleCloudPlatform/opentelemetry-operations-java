@@ -42,8 +42,8 @@ dependencies {
 }
 
 
-shadowJar{
-	classifier = null
+shadowJar {
+	archiveClassifier.set('shaded')
 	mergeServiceFiles()
 }
 

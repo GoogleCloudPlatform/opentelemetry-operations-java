@@ -14,7 +14,7 @@
 
 steps:
   # Generate shadowJar for the instrumented test server
-  - name: "gradle:7.5.1-jdk11"
+  - name: "gradle:8.0.2-jdk11"
     id: generate-jar
     entrypoint: "gradle"
     timeout: 4m
