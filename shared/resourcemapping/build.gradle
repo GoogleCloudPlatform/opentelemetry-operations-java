@@ -32,7 +32,7 @@ dependencies {
 }
 
 shadowJar{
-	classifier = null
+	archiveClassifier.set('')
 	relocate 'io.opentelemetry.semconv', 'com.google.cloud.opentelemetry.shadow.semconv'
 	dependencies {
 		exclude(dependency(libraries.opentelemetry_api))
