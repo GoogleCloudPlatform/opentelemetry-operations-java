@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import com.github.jengelman.gradle.plugins.shadow.relocation.SimpleRelocator
 plugins {
 	id "maven-publish"
 	id "com.github.johnrengelman.shadow"
@@ -48,8 +49,13 @@ shadowJar {
 	mergeServiceFiles()
 }
 
-// Auto relocation for dependencies
+// Auto relocation for all dependencies
 tasks.named('shadowJar') {
+	// Prevent 'conscrypt' from being relocated.
+	// See https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/161#issuecomment-1478831626 for details
+	// Relocating it back to its original location excludes the package from being automatically relocated to the specified prefix
+	relocate new SimpleRelocator("org.conscrypt", "org.conscrypt", new ArrayList<String>(), new ArrayList<String>())
+
 	enableRelocation true
 	relocationPrefix 'shadow'
 }
