@@ -18,7 +18,7 @@ steps:
     id: generate-jar
     entrypoint: "gradle"
     timeout: 4m
-    args: ["shadowJar"]
+    args: [":e2e-test-server:build"]
 
   # Zip the generated JAR file
   - name: ubuntu
