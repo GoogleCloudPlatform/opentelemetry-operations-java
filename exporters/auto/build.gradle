@@ -46,7 +46,11 @@ shadowJar {
 	// gradle warns since explicit or implicit dependency on this shadowJar is not declared
 	dependsOn ':shared-resourcemapping:shadowJar'
 	archiveClassifier.set('shaded')
-	mergeServiceFiles()
+	// since we relocate source classes back to their original package, we do not want the SPIs to be re-written for relocated package
+	mergeServiceFiles {
+		exclude "META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider"
+		exclude "META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider"
+	}
 }
 
 // Auto relocation for all dependencies
@@ -55,6 +59,7 @@ tasks.named('shadowJar') {
 	// See https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/issues/161#issuecomment-1478831626 for details
 	// Relocating it back to its original location excludes the package from being automatically relocated to the specified prefix
 	relocate new SimpleRelocator("org.conscrypt", "org.conscrypt", new ArrayList<String>(), new ArrayList<String>())
+	relocate new SimpleRelocator("com.google.cloud.opentelemetry.auto", "com.google.cloud.opentelemetry.auto", new ArrayList<String>(), new ArrayList<String>())
 
 	enableRelocation true
 	relocationPrefix 'shadow'
