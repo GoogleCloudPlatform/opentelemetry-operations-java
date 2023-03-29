@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
 public class GCPResourceTest {
@@ -56,10 +57,11 @@ public class GCPResourceTest {
 
   @Test
   public void testGCPComputeResourceNotGCP() {
-    GCPResource testResource = new GCPResource();
+    GCPMetadataConfig mockMetadataConfig = Mockito.mock(GCPMetadataConfig.class);
+    Mockito.when(mockMetadataConfig.isRunningOnGcp()).thenReturn(false);
 
-    // The default metadata url is unreachable through testing so getAttributes should not detect a
-    // GCP environment, hence returning empty attributes.
+    GCPResource testResource = new GCPResource(mockMetadataConfig, EnvVars.DEFAULT_INSTANCE);
+    // If GCPMetadataConfig determines that its not running on GCP, then attributes should be empty
     assertThat(testResource.getAttributes()).isEmpty();
   }
 
