@@ -23,5 +23,6 @@ dependencies {
 	testImplementation(testLibraries.assertj)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.wiremock)
+	testImplementation(testLibraries.mockito)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
 }
