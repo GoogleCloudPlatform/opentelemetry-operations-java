@@ -1,0 +1,50 @@
+/*
+ * Copyright 2023 Google
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'java'
+	id 'application'
+	id 'org.springframework.boot' version '2.7.10'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.google'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+application {
+	mainClass = "com.google.example.Main"
+	applicationDefaultJvmArgs = [
+		'-javaagent:/usr/local/google/home/sharmapranav/Desktop/otel-autoinstrument/otel-autoinstrument/libs/opentelemetry-javaagent.jar',
+		'-Dotel.javaagent.experimental.extensions=/usr/local/google/home/sharmapranav/Projects/opentelemetry-operations-java/exporters/auto/build/libs/exporter-auto-0.1.0-SNAPSHOT-shaded.jar',
+		// Configure auto instrumentation.
+		'-Dotel.traces.exporter=google_cloud_trace',
+		'-Dotel.metrics.exporter=google_cloud_monitoring',
+	]
+}
+
+description = 'Example using auto-instrumentation in a Kubernetes cluster running locally'
+
+dependencies {
+	testImplementation(testLibraries.junit)
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation(libraries.spring_boot_starter_web)
+}

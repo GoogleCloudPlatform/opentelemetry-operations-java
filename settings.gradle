@@ -31,6 +31,7 @@ include ":examples-metrics"
 include ":exporter-auto"
 include ":examples-autoconf"
 include ":examples-autoinstrument"
+include ":examples-autoinstrument-docker"
 include ":examples-resource"
 include ":detector-resources"
 include ":e2e-test-server"
@@ -67,6 +68,9 @@ project(':examples-spring').projectDir =
 
 project(':examples-autoinstrument').projectDir =
 		"$rootDir/examples/autoinstrument" as File
+
+project(':examples-autoinstrument-docker').projectDir =
+		"$rootDir/examples/autoinstrument-docker" as File
 
 project(':examples-autoconf').projectDir =
 		"$rootDir/examples/autoconf" as File
