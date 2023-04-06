@@ -18,7 +18,7 @@ description = 'Google Cloud resource provider for OpenTelemetry'
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
-	implementation(libraries.opentelemetry_autoconfigure)
+	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_semconv)
 	implementation platform(libraries.opentelemetry_bom)
 	testImplementation(testLibraries.assertj)

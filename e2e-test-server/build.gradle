@@ -30,7 +30,7 @@ shadowJar {
 }
 
 dependencies {
-	implementation(libraries.opentelemetry_autoconfigure)
+	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.google_cloud_trace)

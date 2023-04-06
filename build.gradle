@@ -131,12 +131,12 @@ subprojects {
 			auto_value_annotations           : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
 			auto_value                       : "com.google.auto.value:auto-value:${autoValueVersion}",
 			cloudevents_core                 : "io.cloudevents:cloudevents-core:${cloudEventsCoreVersion}",
-			google_cloud_core                : "com.google.cloud:google-cloud-core:${googleCloudVersion}", // constrained by google-cloud-bom
+			google_cloud_core                : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
 			google_cloud_trace               : "com.google.cloud:google-cloud-trace:${googleTraceVersion}",
 			google_cloud_trace_grpc          : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleTraceVersion}",
 			google_cloud_monitoring          : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
 			google_cloud_monitoring_grpc     : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
-			google_cloud_pubsub              : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}", // constrained by google-cloud-bom
+			google_cloud_pubsub              : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
 			google_cloud_functions_framework : "com.google.cloud.functions:functions-framework-api:${cloudFunctionsFrameworkApiVersion}",
 			google_cloud_bom                 : "com.google.cloud:libraries-bom:${googleCloudBom}",
 			slf4j                            : "org.slf4j:slf4j-api:${slf4jVersion}",
@@ -146,7 +146,6 @@ subprojects {
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
 			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
-			opentelemetry_autoconfigure      : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
 			opentelemetry_semconv            : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_metrics        : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}",
 			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",

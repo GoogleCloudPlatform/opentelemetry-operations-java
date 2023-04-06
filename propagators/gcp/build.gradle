@@ -24,5 +24,5 @@ dependencies {
 	testImplementation(testLibraries.assertj)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
-	testImplementation(libraries.opentelemetry_autoconfigure)
+	testImplementation(libraries.opentelemetry_sdk_autoconf)
 }
