@@ -24,6 +24,7 @@ dependencies {
 	api(libraries.opentelemetry_sdk_metrics)
 	annotationProcessor(libraries.auto_value)
 	implementation(platform(libraries.google_cloud_bom))
+	implementation(platform(libraries.opentelemetry_bom))
 	implementation(project(':shared-resourcemapping'))
 	testImplementation(libraries.opentelemetry_semconv)
 	testImplementation(testLibraries.junit)

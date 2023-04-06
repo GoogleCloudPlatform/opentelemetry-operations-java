@@ -126,7 +126,9 @@ public class FakeData {
           1,
           Attributes.builder().put("test", "one").build(),
           3d,
+          true,
           1d, // min
+          true,
           2d, // max
           Arrays.asList(1.0),
           Arrays.asList(1L, 2L),

@@ -38,6 +38,7 @@ dependencies {
 	implementation(libraries.google_cloud_functions_framework)
 	implementation(libraries.cloudevents_core)
 	implementation platform(libraries.google_cloud_bom)
+	implementation platform(libraries.opentelemetry_bom)
 	implementation project(':exporter-trace')
 	implementation project(':propagators-gcp')
 	runtimeOnly project(':detector-resources')
