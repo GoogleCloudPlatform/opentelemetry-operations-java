@@ -102,17 +102,18 @@ subprojects {
 
 	ext {
 		assertjVersion = '3.22.0'
-		autoServiceVersion = '1.0-rc7'
+		autoServiceVersion = '1.0.1'
 		autoValueVersion = '1.10.1'
-		slf4jVersion = '1.7.30'
-		googleCloudVersion = '2.8.28'
-		googleTraceVersion = '2.1.12'
-		cloudMonitoringVersion = '3.0.0'
+		slf4jVersion = '2.0.7'
+		googleCloudVersion = '2.14.0'
+		googleTraceVersion = '2.14.0'
+		googleCloudBom = '26.11.0'
+		cloudMonitoringVersion = '3.15.0'
 		openTelemetryVersion = '1.15.0'
 		openTelemetryInstrumentationVersion = '1.14.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
-		pubSubVersion = '1.111.2'
+		pubSubVersion = '1.123.7'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.27.2'
 		springWebVersion = '2.4.5'
@@ -128,13 +129,14 @@ subprojects {
 			auto_value_annotations       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
 			auto_value                   : "com.google.auto.value:auto-value:${autoValueVersion}",
 			cloudevents_core : "io.cloudevents:cloudevents-core:${cloudEventsCoreVersion}",
-			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}",
+			google_cloud_core            : "com.google.cloud:google-cloud-core:${googleCloudVersion}", // constrained by google-cloud-bom
 			google_cloud_trace           : "com.google.cloud:google-cloud-trace:${googleTraceVersion}",
 			google_cloud_trace_grpc      : "com.google.api.grpc:grpc-google-cloud-trace-v2:${googleTraceVersion}",
 			google_cloud_monitoring      : "com.google.cloud:google-cloud-monitoring:${cloudMonitoringVersion}",
 			google_cloud_monitoring_grpc : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
-			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
+			google_cloud_pubsub          : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}", // constrained by google-cloud-bom
 			google_cloud_functions_framework : "com.google.cloud.functions:functions-framework-api:${cloudFunctionsFrameworkApiVersion}",
+			google_cloud_bom : "com.google.cloud:libraries-bom:${googleCloudBom}",
 			slf4j                        : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api            : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_context        : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",

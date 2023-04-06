@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 
@@ -50,15 +51,16 @@ public class PubSubPullServer implements PubSubServer {
     this.subscriber =
         Subscriber.newBuilder(
                 Constants.getRequestSubscription(),
-                (message, consumer) -> {
-                  PubSubMessageHandler.PubSubMessageResponse response =
-                      pubSubMessageHandler.handlePubSubMessage(message);
-                  if (response == PubSubMessageHandler.PubSubMessageResponse.ACK) {
-                    consumer.ack();
-                  } else {
-                    consumer.nack();
-                  }
-                })
+                (MessageReceiver)
+                    (message, consumer) -> {
+                      PubSubMessageHandler.PubSubMessageResponse response =
+                          pubSubMessageHandler.handlePubSubMessage(message);
+                      if (response == PubSubMessageHandler.PubSubMessageResponse.ACK) {
+                        consumer.ack();
+                      } else {
+                        consumer.nack();
+                      }
+                    })
             .build();
     this.subscriber.addListener(
         new Subscriber.Listener() {
