@@ -24,6 +24,8 @@ dependencies {
 	api(libraries.google_cloud_trace)
 	api(libraries.google_cloud_trace_grpc)
 	annotationProcessor(libraries.auto_value)
+	implementation platform(libraries.google_cloud_bom)
+	implementation platform(libraries.opentelemetry_bom)
 	implementation(libraries.opentelemetry_semconv)
 	implementation(project(':shared-resourcemapping'))
 	testImplementation(testLibraries.junit)

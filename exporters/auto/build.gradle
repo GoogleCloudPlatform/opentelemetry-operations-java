@@ -40,6 +40,8 @@ dependencies {
 	implementation(project(':propagators-gcp')) {
 		exclude group: 'io.opentelemetry'
 	}
+	implementation platform(libraries.google_cloud_bom)
+	implementation platform(libraries.opentelemetry_bom)
 }
 
 shadowJar {

@@ -20,8 +20,9 @@ dependencies {
 	annotationProcessor(libraries.auto_service)
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_autoconfigure_spi)
+	implementation platform(libraries.opentelemetry_bom)
 	testImplementation(testLibraries.assertj)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
-	testImplementation(libraries.opentelemetry_autoconfigure)
+	testImplementation(libraries.opentelemetry_sdk_autoconf)
 }
