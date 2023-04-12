@@ -11,6 +11,16 @@ spec:
       containers:
         - name: hello-autoconfigure-java
           image: gcr.io/%GOOGLE_CLOUD_PROJECT%/hello-autoconfigure-java:latest
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONTAINER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
       # Do not restart containers after they exit
       restartPolicy: Never
   # of retries before marking as failed.
