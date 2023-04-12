@@ -43,6 +43,10 @@ spotless {
 		greclipse()
 		licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(import|pluginManagement)'
 	}
+	yaml {
+		target "*.yaml"
+		licenseHeaderFile rootProject.file('buildscripts/spotless.license.yaml'), '([a-zA-Z]*:)'
+	}
 }
 
 // Configure release mechanism.
@@ -105,6 +109,10 @@ subprojects {
 			target '*.gradle' // default target of groovyGradle
 			greclipse()
 			licenseHeaderFile rootProject.file('buildscripts/spotless.license.gradle'), '(import|plugins|description)'
+		}
+		yaml {
+			target "*.yaml"
+			licenseHeaderFile rootProject.file('buildscripts/spotless.license.yaml'), '([a-zA-Z]*:)'
 		}
 	}
 
