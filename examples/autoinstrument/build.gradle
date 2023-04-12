@@ -51,8 +51,6 @@ jib {
 	from.image = 'gcr.io/distroless/java-debian10:11'
 	containerizingMode = 'packaged'
 	container.ports = ["8080"]
-	// required for resource detection in GKE environment
-	container.environment = ["NAMESPACE": "default", "CONTAINER_NAME": "autoinstrument-example"]
 	extraDirectories {
 		paths {
 			path {

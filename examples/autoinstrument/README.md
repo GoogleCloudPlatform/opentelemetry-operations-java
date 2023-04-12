@@ -8,8 +8,8 @@ export GOOGLE_CLOUD_PROJECT={your-project}
 
 ./gradlew :examples-autoinstrument:jib --image="gcr.io/$GOOGLE_CLOUD_PROJECT/hello-autoinstrument-java"
 
-kubectl create deployment hello-autoinstrument-java \
-  --image=gcr.io/$GOOGLE_CLOUD_PROJECT/hello-autoinstrument-java
+sed s/%GOOGLE_CLOUD_PROJECT%/$GOOGLE_CLOUD_PROJECT/g \
+ examples/autoinstrument/deployment.yaml | kubectl apply -f -
 
 kubectl expose deployment  hello-autoinstrument-java --type LoadBalancer --port 80 --target-port 8080
 ```
