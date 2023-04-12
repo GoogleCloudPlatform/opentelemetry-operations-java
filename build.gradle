@@ -116,7 +116,7 @@ subprojects {
 		}
 		format 'shell', {
 			target '*.sh'
-			licenseHeaderFile (rootProject.file('buildscripts/spotless.license.sh'), "([a-zA-Z])")
+			licenseHeaderFile (rootProject.file('buildscripts/spotless.license.shell'), "([a-zA-Z])")
 					.skipLinesMatching("#!.+?\$")
 		}
 	}
