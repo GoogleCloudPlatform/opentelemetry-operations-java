@@ -26,6 +26,7 @@ dependencies {
 	implementation project(':detector-resources')
 	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_sdk_resources)
+	implementation(libraries.opentelemetry_otlp_exporter)
 }
 
 mainClassName = 'com.google.cloud.opentelemetry.example.resource.ResourceExample'

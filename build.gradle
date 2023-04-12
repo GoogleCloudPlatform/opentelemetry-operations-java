@@ -151,6 +151,7 @@ subprojects {
 			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
 			opentelemetry_sdk_resources      : "io.opentelemetry:opentelemetry-sdk-extension-resources:${openTelemetrySdkExtensionResourceVersion}",
 			opentelemetry_agent_extension    : "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",
+			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
