@@ -20,6 +20,22 @@ plugins {
 	id 'nebula.release'
 }
 
+// Required with spotless v6+
+// See https://github.com/diffplug/spotless/issues/984 for details
+spotless {
+	predeclareDepsFromBuildscript()
+}
+
+// Need to predeclare every configuration used with spotless
+spotlessPredeclare {
+	java {
+		googleJavaFormat("1.9")
+	}
+	groovyGradle {
+		greclipse()
+	}
+}
+
 // Format the root build too.
 spotless {
 	groovyGradle {
