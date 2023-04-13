@@ -1,4 +1,3 @@
-#!/bin/sh
 #
 # Copyright 2023 Google LLC
 #
@@ -14,15 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-while true; do
-    docker pull $_TEST_SERVER_IMAGE
-    pull_success=$?
-
-    if [ $pull_success -ne 0 ]; then
-        echo "Image couldn't be pulled yet, will continue to retry"
-    else
-        echo "Image pulled successfully, continuing onto test"
-        break
-    fi
-    sleep 5
-done

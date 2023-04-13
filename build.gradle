@@ -114,6 +114,11 @@ subprojects {
 			target "*.yaml"
 			licenseHeaderFile rootProject.file('buildscripts/spotless.license.yaml'), '([a-zA-Z]*:)'
 		}
+		format 'shell', {
+			target '*.sh'
+			licenseHeaderFile (rootProject.file('buildscripts/spotless.license.shell'), "([a-zA-Z])")
+					.skipLinesMatching("#!.+?\$")
+		}
 	}
 
 	// Make sure test failures include exception error messages for correction.
