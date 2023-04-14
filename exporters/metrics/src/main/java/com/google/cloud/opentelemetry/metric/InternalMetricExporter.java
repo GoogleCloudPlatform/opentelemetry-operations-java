@@ -30,10 +30,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
-import com.google.monitoring.v3.SpanContext;
 import com.google.monitoring.v3.TimeSeries;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -216,32 +213,7 @@ class InternalMetricExporter implements MetricExporter {
       ProjectName projectName,
       List<TimeSeries> allTimesSeries) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
-    JsonFormat.TypeRegistry registry =
-        JsonFormat.TypeRegistry.newBuilder().add(SpanContext.getDescriptor()).build();
     for (List<TimeSeries> timeSeries : batches) {
-      timeSeries.forEach(
-          timeSeriesWithMultiplePoints -> {
-            System.out.println(
-                "Got timeSeries with "
-                    + timeSeriesWithMultiplePoints.getPointsList().size()
-                    + " points");
-            //
-            // timeSeriesWithMultiplePoints.getPointsList().forEach(System.out::println);
-            System.out.println("Full TS object: ");
-            try {
-              String log =
-                  JsonFormat.printer()
-                      .usingTypeRegistry(registry)
-                      .omittingInsignificantWhitespace()
-                      .print(timeSeriesWithMultiplePoints);
-              System.out.println(log);
-            } catch (InvalidProtocolBufferException e) {
-              System.out.println(
-                  "Exception occurred while printing protobuf " + e.getLocalizedMessage());
-              e.printStackTrace();
-            }
-            // System.out.println(timeSeriesWithMultiplePoints);
-          });
       metricServiceClient.createTimeSeries(projectName, new ArrayList<>(timeSeries));
     }
   }
