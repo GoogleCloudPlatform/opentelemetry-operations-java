@@ -15,13 +15,8 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
-import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
-
 import com.google.api.MetricDescriptor;
+import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.AttributeKey;
@@ -31,12 +26,20 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
+import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
 
 /**
  * Builds GCM TimeSeries from each OTEL metric point, creating metric descriptors based on the
@@ -58,50 +61,40 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   }
 
   @Override
-  public void recordPoint(MetricData metric, LongPointData point) {
-    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
-    if (descriptor == null) {
-      // Unsupported type.
-      return;
-    }
-    descriptors.putIfAbsent(descriptor.getType(), descriptor);
-    Attributes metricAttributes =
-        attachInstrumentationLibraryLabels(
-            point.getAttributes(), metric.getInstrumentationScopeInfo());
-    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), metricAttributes);
-    // TODO: Check lastExportTime and ensure we don't send too often...
-    pendingTimeSeries
-        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, metricAttributes, descriptor))
-        .addPoints(
-            com.google.monitoring.v3.Point.newBuilder()
-                .setValue(TypedValue.newBuilder().setInt64Value(point.getValue()))
-                .setInterval(mapInterval(point, metric))
-                .build());
+  public void recordPoint(MetricData metricData, LongPointData pointData) {
+    recordPoint(
+        metricData,
+        pointData,
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setInt64Value(pointData.getValue()))
+            .setInterval(mapInterval(pointData, metricData))
+            .build());
   }
 
   @Override
-  public void recordPoint(MetricData metric, DoublePointData point) {
-    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
-    if (descriptor == null) {
-      // Unsupported type.
-      return;
-    }
-    descriptors.putIfAbsent(descriptor.getType(), descriptor);
-    Attributes metricAttributes =
-        attachInstrumentationLibraryLabels(
-            point.getAttributes(), metric.getInstrumentationScopeInfo());
-    MetricWithLabels key = new MetricWithLabels(descriptor.getType(), metricAttributes);
-    // TODO: Check lastExportTime and ensure we don't send too often...
-    pendingTimeSeries
-        .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, metricAttributes, descriptor))
-        .addPoints(
-            com.google.monitoring.v3.Point.newBuilder()
-                .setValue(TypedValue.newBuilder().setDoubleValue(point.getValue()))
-                .setInterval(mapInterval(point, metric)));
+  public void recordPoint(MetricData metricData, DoublePointData pointData) {
+    recordPoint(
+        metricData,
+        pointData,
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setDoubleValue(pointData.getValue()))
+            .setInterval(mapInterval(pointData, metricData))
+            .build());
   }
 
   @Override
-  public void recordPoint(MetricData metric, HistogramPointData point) {
+  public void recordPoint(MetricData metricData, HistogramPointData pointData) {
+    recordPoint(
+        metricData,
+        pointData,
+        Point.newBuilder()
+            .setValue(
+                TypedValue.newBuilder().setDistributionValue(mapDistribution(pointData, projectId)))
+            .setInterval(mapInterval(pointData, metricData))
+            .build());
+  }
+
+  private void recordPoint(MetricData metric, PointData point, Point builtPoint) {
     MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
     if (descriptor == null) {
       // Unsupported type.
@@ -114,11 +107,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), metricAttributes);
     pendingTimeSeries
         .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, metricAttributes, descriptor))
-        .addPoints(
-            com.google.monitoring.v3.Point.newBuilder()
-                .setValue(
-                    TypedValue.newBuilder().setDistributionValue(mapDistribution(point, projectId)))
-                .setInterval(mapInterval(point, metric)));
+        .addPoints(builtPoint);
   }
 
   private TimeSeries.Builder makeTimeSeriesHeader(
