@@ -46,8 +46,8 @@ import java.util.stream.Collectors;
  */
 public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeriesBuilder {
 
-  private static final String INSTRUMENTATION_LIBRARY_NAME = "instrumentation_source";
-  private static final String INSTRUMENTATION_LIBRARY_VERSION = "instrumentation_version";
+  public static final String LABEL_INSTRUMENTATION_LIBRARY_NAME = "instrumentation_source";
+  public static final String LABEL_INSTRUMENTATION_LIBRARY_VERSION = "instrumentation_version";
 
   private final Map<String, MetricDescriptor> descriptors = new HashMap<>();
   private final Map<MetricWithLabels, TimeSeries.Builder> pendingTimeSeries = new HashMap<>();
@@ -121,10 +121,10 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
       Attributes attributes, InstrumentationScopeInfo instrumentationScopeInfo) {
     return attributes.toBuilder()
         .put(
-            AttributeKey.stringKey(INSTRUMENTATION_LIBRARY_NAME),
+            AttributeKey.stringKey(LABEL_INSTRUMENTATION_LIBRARY_NAME),
             instrumentationScopeInfo.getName())
         .put(
-            AttributeKey.stringKey(INSTRUMENTATION_LIBRARY_VERSION),
+            AttributeKey.stringKey(LABEL_INSTRUMENTATION_LIBRARY_VERSION),
             Objects.requireNonNullElse(instrumentationScopeInfo.getVersion(), ""))
         .build();
   }
