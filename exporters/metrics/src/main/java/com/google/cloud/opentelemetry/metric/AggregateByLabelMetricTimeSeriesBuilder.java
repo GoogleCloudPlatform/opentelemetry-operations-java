@@ -46,8 +46,10 @@ import java.util.stream.Collectors;
  */
 public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeriesBuilder {
 
-  public static final String LABEL_INSTRUMENTATION_LIBRARY_NAME = "instrumentation_source";
-  public static final String LABEL_INSTRUMENTATION_LIBRARY_VERSION = "instrumentation_version";
+  public static final String LABEL_INSTRUMENTATION_SOURCE =
+      "instrumentation_source"; // name of the instrumentation source
+  public static final String LABEL_INSTRUMENTATION_VERSION =
+      "instrumentation_version"; // version of the instrumentation source
 
   private final Map<String, MetricDescriptor> descriptors = new HashMap<>();
   private final Map<MetricWithLabels, TimeSeries.Builder> pendingTimeSeries = new HashMap<>();
@@ -61,7 +63,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public void recordPoint(MetricData metricData, LongPointData pointData) {
-    recordPoint(
+    recordPointInTimeSeries(
         metricData,
         pointData,
         Point.newBuilder()
@@ -72,7 +74,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public void recordPoint(MetricData metricData, DoublePointData pointData) {
-    recordPoint(
+    recordPointInTimeSeries(
         metricData,
         pointData,
         Point.newBuilder()
@@ -83,7 +85,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public void recordPoint(MetricData metricData, HistogramPointData pointData) {
-    recordPoint(
+    recordPointInTimeSeries(
         metricData,
         pointData,
         Point.newBuilder()
@@ -93,7 +95,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
             .build());
   }
 
-  private void recordPoint(MetricData metric, PointData point, Point builtPoint) {
+  private void recordPointInTimeSeries(MetricData metric, PointData point, Point builtPoint) {
     MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
     if (descriptor == null) {
       // Unsupported type.
@@ -121,10 +123,10 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
       Attributes attributes, InstrumentationScopeInfo instrumentationScopeInfo) {
     return attributes.toBuilder()
         .put(
-            AttributeKey.stringKey(LABEL_INSTRUMENTATION_LIBRARY_NAME),
+            AttributeKey.stringKey(LABEL_INSTRUMENTATION_SOURCE),
             instrumentationScopeInfo.getName())
         .put(
-            AttributeKey.stringKey(LABEL_INSTRUMENTATION_LIBRARY_VERSION),
+            AttributeKey.stringKey(LABEL_INSTRUMENTATION_VERSION),
             Objects.requireNonNullElse(instrumentationScopeInfo.getVersion(), ""))
         .build();
   }
@@ -136,6 +138,8 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   @Override
   public List<TimeSeries> getTimeSeries() {
-    return pendingTimeSeries.values().stream().map(b -> b.build()).collect(Collectors.toList());
+    return pendingTimeSeries.values().stream()
+        .map(TimeSeries.Builder::build)
+        .collect(Collectors.toList());
   }
 }
