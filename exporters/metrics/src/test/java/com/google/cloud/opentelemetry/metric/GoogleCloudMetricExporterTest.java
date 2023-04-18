@@ -15,6 +15,8 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_LIBRARY_NAME;
+import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_LIBRARY_VERSION;
 import static com.google.cloud.opentelemetry.metric.FakeData.aCloudZone;
 import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
@@ -190,6 +192,8 @@ public class GoogleCloudMetricExporterTest {
                     .setType(expectedDescriptor.getType())
                     .putLabels("label1", "value1")
                     .putLabels("label2", "false")
+                    .putLabels(LABEL_INSTRUMENTATION_LIBRARY_NAME, "instrumentName")
+                    .putLabels(LABEL_INSTRUMENTATION_LIBRARY_VERSION, "0")
                     .build())
             .addPoints(expectedPoint)
             .setMetricKind(expectedDescriptor.getMetricKind())
@@ -294,6 +298,8 @@ public class GoogleCloudMetricExporterTest {
                 Metric.newBuilder()
                     .setType(expectedDescriptor.getType())
                     .putLabels("test", "one")
+                    .putLabels("instrumentation_source", "instrumentName")
+                    .putLabels("instrumentation_version", "0")
                     .build())
             .addPoints(expectedPoint)
             .setMetricKind(expectedDescriptor.getMetricKind())
