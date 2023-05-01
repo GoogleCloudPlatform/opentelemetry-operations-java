@@ -70,6 +70,9 @@ tasks.named('shadowJar') {
 publishing {
 	publications {
 		maven(MavenPublication) { publication ->
+			from components.java
+		}
+		shadow(MavenPublication) { publication ->
 			from project.shadow.component(publication)
 			artifact sourcesJar
 			artifact javadocJar
