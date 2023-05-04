@@ -66,16 +66,3 @@ tasks.named('shadowJar') {
 	enableRelocation true
 	relocationPrefix 'shadow'
 }
-
-publishing {
-	publications {
-		maven(MavenPublication) { publication ->
-			from project.shadow.component(publication)
-			artifact sourcesJar
-			artifact javadocJar
-			components.java.withVariantsFromConfiguration(configurations.runtimeElements) {
-				skip()
-			}
-		}
-	}
-}
