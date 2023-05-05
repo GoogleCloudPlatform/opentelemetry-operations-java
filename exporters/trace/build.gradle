@@ -51,3 +51,5 @@ task generateVersionResource {
 		propertiesFile.write("exporter.version=${project.version}")
 	}
 }
+
+test.dependsOn ':shared-resourcemapping:shadowJar'
