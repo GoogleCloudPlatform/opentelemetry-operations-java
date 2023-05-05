@@ -56,3 +56,6 @@ publishing {
 		}
 	}
 }
+
+// This is to fix the explicit dependency error which comes when publishing via the `candidate` task
+publishMavenPublicationToMavenRepository.dependsOn jar
