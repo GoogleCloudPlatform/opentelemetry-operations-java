@@ -66,3 +66,11 @@ tasks.named('shadowJar') {
 	enableRelocation true
 	relocationPrefix 'shadow'
 }
+
+publishing {
+	publications {
+		shadow(MavenPublication) { publication ->
+			project.shadow.component(publication)
+		}
+	}
+}
