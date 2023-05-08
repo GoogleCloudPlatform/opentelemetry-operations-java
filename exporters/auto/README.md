@@ -6,14 +6,29 @@
 
 OpenTelemetry Java SDK provides an `autoconfigure` module where all configuration can be done entirely through Java system properties or environment variables.
 
-To leverage the GCP extensions to this, simply add the following dependency:
+To leverage the GCP extensions to this, simply add the exporter-auto dependency to your project. 
 
-```
+*We also provide a `shaded` variant of the exporter-auto which is the recommended way for autoconfiguration if you are using the auto-exporter as a java agent extension.*
+
+#### Maven
+```xml
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-auto</artifactId>
-  <version>0.20.0-alpha</version>
+  <version>0.25.1-alpha</version>
+  <!-- Add the classifier if you explicitly wish to use the shaded variant -->
+  <classifier>shaded</classifier>
 </dependency>
+```
+
+#### Gradle
+```groovy
+implementation "com.google.cloud.opentelemetry:exporter-auto:0.25.1-alpha"
+```
+
+To use the shaded variant with Gradle,
+```groovy
+implementation "com.google.cloud.opentelemetry:exporter-auto:0.25.1-alpha:shaded"
 ```
 
 *Note: Make sure to use the latest release [![LatestRelease][maven-image]][maven-url].*
