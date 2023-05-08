@@ -248,6 +248,9 @@ subprojects {
 					groupId = 'com.google.cloud.opentelemetry'
 					afterEvaluate {
 						artifactId = archivesBaseName
+						if (findProperty("shadow.release") != null) {
+							artifactId = artifactId + "-shaded"
+						}
 						if (findProperty("release.qualifier") != null) {
 							String[] versionParts = version.split('-')
 							versionParts[0] = "${versionParts[0]}-${findProperty("release.qualifier")}"
