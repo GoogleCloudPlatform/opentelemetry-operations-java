@@ -254,11 +254,6 @@ subprojects {
 							version = versionParts.join("-")
 						}
 					}
-					versionMapping {
-						allVariants {
-							fromResolutionResult()
-						}
-					}
 					pom {
 						name = 'OpenTelemetry Operations Java'
 						url = 'https://github.com/GoogleCloudPlatform/opentelemetry-operations-java'
