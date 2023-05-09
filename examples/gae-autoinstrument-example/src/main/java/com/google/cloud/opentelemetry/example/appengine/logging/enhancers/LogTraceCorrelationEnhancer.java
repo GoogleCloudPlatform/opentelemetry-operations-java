@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.logging.enhancers;
+package com.google.cloud.opentelemetry.example.appengine.logging.enhancers;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.google.cloud.logging.LogEntry;

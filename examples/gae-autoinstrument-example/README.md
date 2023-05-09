@@ -2,7 +2,7 @@ Google AppEngine Standard with OTel Auto-instrumentation
 ============================
 **This sample app is a Maven project and builds separately from the rest of the rest of the examples.**
 
-This example Java app runs on GAE standard environment and is instrumented using OpenTelemetry's [auto-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) agent.
+This example Java app runs on GAE standard environment **(Gen2 only)** and is instrumented using OpenTelemetry's [auto-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) agent.
 
 See the [Google App Engine standard environment documentation][ae-docs] for more
 detailed instructions.
