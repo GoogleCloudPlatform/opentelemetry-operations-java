@@ -43,16 +43,9 @@ The sample app uses the following -
 The project deploys a GAE standard application to your configured Google Cloud Project. The OpenTelemetry auto-instrumentation agent automatically collects telemetry from the running application which is autoconfigured to be exported to Google Cloud via the [auto-exporter](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/tree/main/exporters/auto).
 The telemetry data from auto-instrumentation contains traces from the application which help gain insight into individual requests made to the application, along with some useful metrics which give an insight into resource utilization and more.
 
-By default, the logging framework used in the example is [JUL](https://docs.oracle.com/javase/8/docs/api/java/util/logging/package-summary.html), but the sample can be used with [Logback](https://logback.qos.ch/) too and has been provided with a logback configuration. To switch to Logback, just modify the Logger initialization to - 
-```java
-import org.slf4j.Logger;
+By default, the logging framework used in the example is [Logback](https://logback.qos.ch/), but Google cloud logging also supports [JUL](https://docs.oracle.com/javase/8/docs/api/java/util/logging/package-summary.html) and a sample configuration file for JUL has been provided - [logging.properties](./src/main/webapp/WEB-INF/logging.properties).
 
-class MyClass {
-  // other members ... 
-  private static final Logger logger = LoggerFactory.getLogger(SampleClass.class.getName());
-  // rest of the code ...
-}
-```
+*Checkout [Cloud Logging Setup for Java](https://cloud.google.com/logging/docs/setup/java) for more details.* 
 
 Metrics and Traces can be viewed in the Google Cloud Console for your project.
 
