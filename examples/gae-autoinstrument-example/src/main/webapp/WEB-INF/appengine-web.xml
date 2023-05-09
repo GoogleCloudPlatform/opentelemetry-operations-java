@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+    <runtime>java11</runtime>
+    <app-engine-apis>true</app-engine-apis>
+    <static-files>
+        <include path="/html/**.html" />
+    </static-files>
+    <!-- Check https://cloud.google.com/appengine/docs/standard/java-gen2/config/appref-xml#syntax for reference -->
+    <!-- Only necssary modifications made to the default entrypoint -->
+    <entrypoint>
+        java
+        -showversion -Xms32M -Xmx819M -XX:+UseG1GC -XX:+ParallelRefProcEnabled
+        -XX:+PrintCommandLineFlags
+        -agentpath:/opt/cdbg/cdbg_java_agent.so=--log_dir=/tmp,--alsologtostderr=true,--cdbg_extra_class_path=/workspace/WEB-INF/classes:/workspace/WEB-INF/lib
+        --add-opens java.base/java.lang=ALL-UNNAMED
+        --add-opens java.base/java.nio.charset=ALL-UNNAMED
+        --add-opens java.logging/java.util.logging=ALL-UNNAMED
+        -javaagent:/workspace/WEB-INF/otelagent/opentelemetry-javaagent.jar
+        -Dotel.javaagent.experimental.extensions=/workspace/WEB-INF/otelagent/google-exporter-auto.jar
+        -Dotel.traces.exporter=google_cloud_trace
+        -Dotel.metrics.exporter=google_cloud_monitoring
+        -Dclasspath.runtimebase=/base/java_runtime
+        -Djava.class.path=/base/java_runtime/runtime-main.jar
+        -Djava.library.path=/base/java_runtime:
+        com/google/apphosting/runtime/JavaRuntimeMainWithDefaults
+        --fixed_application_path=/workspace
+        /base/java_runtime
+    </entrypoint>
+    <system-properties>
+        <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
+    </system-properties>
+    <env-variables>
+        <env-var name="OTEL_PROPAGATORS" value="oneway-gcp" />
+    </env-variables>
+    <instance-class>F2</instance-class>
+</appengine-web-app>
