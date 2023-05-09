@@ -1,0 +1,22 @@
+<configuration>
+  <appender name="CLOUD" class="com.google.cloud.logging.logback.LoggingAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
+    <!-- This enhancer correlates logs with traces -->
+    <loggingEventEnhancer>com.google.cloud.opentelemetry.example.appengine.logging.enhancers.LogTraceCorrelationEnhancer</loggingEventEnhancer>
+    <log>application.log</log> <!-- Optional : default java.log -->
+    <resourceType>gae_app</resourceType> <!-- Optional : default: auto-detected, fallback: global -->
+    <flushLevel>INFO</flushLevel> <!-- Optional : default ERROR -->
+  </appender>
+
+  <!-- Just wrap your logging appender, for example LoggingAppender, with OpenTelemetryAppender -->
+  <appender name="OTEL"
+      class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+    <appender-ref ref="CLOUD"/>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="OTEL" />
+  </root>
+</configuration>
