@@ -1,10 +1,5 @@
 # How to Create a Release of OpenTelemetry Operations Java (for Maintainers Only)
 
-## Build Environments  
-
-The system used for build and deploy must be able to run the [mock
-server](https://github.com/googleinterns/cloud-operations-api-mock).
-
 ## Prerequisites
 
 ### Setup OSSRH and Signing
@@ -43,6 +38,8 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     checkstyle.ignoreFailures=false
     ```
 
+Note: If your key-generation is failing, checkout the [help section](#help-timeout-during-key-generation-process) at the bottom of this document.
+
 ### Using GPG-Agent for artifact signing
 
 If you're running in linux and would like to use the GPG agent to remember your PGP key passwords instead of keeping them in a plain-text file on your home directory,
@@ -54,7 +51,7 @@ you can configure the following in `<your-home-directory>/.gradle/gradle.propert
     signing.secretKeyRingFile=<your-home-directory>/.gnupg/pubring.kbx
     ```
 
-Note: these instructions are for modern linux where `gpg` refers to the 2.0 version.
+Note: these instructions are for modern linux where `gpg` refers to the 2.0 version. This may not work so if after adding this, the `./gradlew candidate` task fails citing 401 errors, try adding back the `ossrhUsername` & `ossrhPassword` fields back.
 
 ### Ensuring you can push tags to Github upstream
 
@@ -70,7 +67,7 @@ If you've followed the above steps, you can release snapshots for consumption us
 $ ./gradlew snapshot
 ```
 
-## Releasing a Candidate
+## Releasing a Candidate (Optional)
 
 After following the above steps, you can release candidates from `main` or `v<major>.<minor>.x` branches.
 
@@ -102,6 +99,8 @@ $ ./gradlew candidate -Prelease.version=0.14.0
 $ git push origin v0.14.0
 ```
 
+*Note: if you do not have a CredentialsProvider registered for GitHub, the `candidate` task may fail to upload tags to the GitHub repository and the overall command will report a failure. In this case, before retrying the command - check if the staging repository is created on the [nexus repository manager](https://oss.sonatype.org/#stagingRepositories). If the repository is already created, manually push the tag on GitHub, and continue with the next steps.*
+
 Next follow [Releasing on Maven Central](#releasing-on-maven-central) to close + publish the
 [repository on OSSRH](https://oss.sonatype.org/#stagingRepositories).
 
@@ -132,6 +131,16 @@ site](http://central.sonatype.org/pages/releasing-the-deployment.html).
 
 Note: This can/will be automated in the future.
 
+### Things to check before 'closing' on Maven Central
+
+Before closing the staging repository, it is important to verify that the contents of all the
+published modules are looking good. Particularly, the version numbers should be what are expected,
+and they include any custom release qualifiers (like 'alpha') which are set. Make sure that:
+ - The generated POM files for the individual module have the correct version number.
+ - The dependencies for an individual module in the POM file are the expected ones & they dependencies have the correct versions.
+ - The module content includes all the artifacts that are expected to be published - for instance, sourcesJar, javadocs, additional variants like a shaded JAR in some cases, etc.
+ - The file sizes for the published artifacts should seem reasonable.
+
 ## Announcement
 
 Once deployment finishes, go to Github [release
@@ -155,3 +164,11 @@ command:
 $ COMMIT=1224f0a # Set the right commit hash.
 $ git cherry-pick -x $COMMIT
 ```
+
+### Help: Timeout during key-generation process
+If you see timeout errors when you run `gpg --gen-key` to generate your keys, it maybe because you are running the command on a server and do not have access to a UI. 
+A common example is - running this command on a remote machine over ssh. 
+
+The issue here is that this command opens up a UI dialog asking for you to set a passphrase, waiting for input for a fixed time.
+
+The easiest way to fix this is to run it on a machine for which you have UI access.
