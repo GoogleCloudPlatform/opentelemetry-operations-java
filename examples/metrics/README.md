@@ -25,12 +25,31 @@ export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.config/gcloud/application_default_c
 export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 ```
 
-#### Run the example
+### Running the example
+
+#### Run the example locally
 
 You can run the example application via gradle. From the project root:
 
 ```shell
 cd examples/metrics/ && gradle run 
+```
+
+#### Run the example as a Cloud Run Job
+
+You can run the example application as a Google Cloud Run Job. A convenience script has been provided for this.
+
+First, export your preferred Google cloud region where you want to create and run the job:
+
+```shell
+# This can be any valid Google Cloud Region
+export GOOGLE_CLOUD_RUN_JOB_REGION="us-central1"
+```
+
+Then, from the project root:
+
+```shell
+cd examples/metrics/ && ./run_as_cloud-run-job.sh
 ```
 
 You should now see the exported metrics in your Google Cloud project.
