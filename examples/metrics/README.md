@@ -52,4 +52,7 @@ Then, from the project root:
 cd examples/metrics/ && ./run_as_cloud-run-job.sh
 ```
 
+*Note: When using the convenience script, it will create a Google Cloud Artifact Registry named `cloud-run-applications` in your
+selected project.*
+
 You should now see the exported metrics in your Google Cloud project.

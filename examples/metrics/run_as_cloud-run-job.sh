@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+CONTAINER_REGISTRY=cloud-run-applications
+REGISTRY_LOCATION=us-central1
+
 if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
   echo "GOOGLE_CLOUD_PROJECT environment variable not set"
   exit 1
@@ -31,13 +34,16 @@ fi
 
 echo "ENVIRONMENT VARIABLES VERIFIED"
 
-echo "BUILDING SAMPLE APP IMAGE"
-gradle clean jib --image "gcr.io/${GOOGLE_CLOUD_PROJECT}/metrics-export-java"
+echo "CREATING CLOUD ARTIFACT REPOSITORY"
+gcloud artifacts repositories create ${CONTAINER_REGISTRY} --repository-format=docker --location=${REGISTRY_LOCATION} --description="Sample applications to run on Google Cloud Run"
+echo "CREATED ${CONTAINER_REGISTRY} in ${REGISTRY_LOCATION}"
 
+echo "BUILDING SAMPLE APP IMAGE"
+gradle clean jib --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/metrics-export-java"
 
 echo "CREATING A CLOUD RUN JOB TO RUN THE CONTAINER"
 gcloud run jobs create job-metrics-export \
-    --image "gcr.io/${GOOGLE_CLOUD_PROJECT}/metrics-export-java" \
+    --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/metrics-export-java" \
     --max-retries 5 \
     --region ${GOOGLE_CLOUD_RUN_JOB_REGION} \
     --project="${GOOGLE_CLOUD_PROJECT}"
