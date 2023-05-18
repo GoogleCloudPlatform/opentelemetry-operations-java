@@ -43,7 +43,7 @@ First, export your preferred Google cloud region where you want to create and ru
 
 ```shell
 # This can be any valid Google Cloud Region
-export GOOGLE_CLOUD_RUN_JOB_REGION="us-central1"
+export GOOGLE_CLOUD_RUN_REGION="us-central1"
 ```
 
 Then, from the project root:

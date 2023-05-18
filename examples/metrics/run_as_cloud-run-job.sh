@@ -27,8 +27,8 @@ if [[ -z "${GOOGLE_APPLICATION_CREDENTIALS}" ]]; then
   exit 1
 fi
 
-if [[ -z "${GOOGLE_CLOUD_RUN_JOB_REGION}" ]]; then
-  echo "GOOGLE_CLOUD_RUN_JOB_REGION environment variable not set"
+if [[ -z "${GOOGLE_CLOUD_RUN_REGION}" ]]; then
+  echo "GOOGLE_CLOUD_RUN_REGION environment variable not set"
   exit 1
 fi
 
@@ -45,11 +45,11 @@ echo "CREATING A CLOUD RUN JOB TO RUN THE CONTAINER"
 gcloud run jobs create job-metrics-export \
     --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/metrics-export-java" \
     --max-retries 5 \
-    --region ${GOOGLE_CLOUD_RUN_JOB_REGION} \
+    --region ${GOOGLE_CLOUD_RUN_REGION} \
     --project="${GOOGLE_CLOUD_PROJECT}"
 
 echo "SETTING CLOUD RUN JOB REGION"
-gcloud config set run/region "${GOOGLE_CLOUD_RUN_JOB_REGION}"
+gcloud config set run/region "${GOOGLE_CLOUD_RUN_REGION}"
 
 echo "RUNNING THE CREATED JOB"
 gcloud run jobs execute job-metrics-export
