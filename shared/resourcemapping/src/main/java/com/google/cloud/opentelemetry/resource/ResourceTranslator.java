@@ -93,6 +93,7 @@ public class ResourceTranslator {
           AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION),
           AttributeMapping.create("service_name", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("configuration_name", ResourceAttributes.FAAS_NAME),
+          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_ID),
           AttributeMapping.create("revision_name", ResourceAttributes.FAAS_VERSION));
   private static List<AttributeMapping> GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS =
       java.util.Arrays.asList(
