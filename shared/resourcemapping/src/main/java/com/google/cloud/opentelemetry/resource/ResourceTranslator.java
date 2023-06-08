@@ -89,10 +89,6 @@ public class ResourceTranslator {
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID),
           AttributeMapping.create("region", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("aws_account", ResourceAttributes.CLOUD_ACCOUNT_ID));
-  private static List<AttributeMapping> GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS =
-      Arrays.asList(
-          AttributeMapping.create("region", ResourceAttributes.CLOUD_REGION),
-          AttributeMapping.create("function_name", ResourceAttributes.FAAS_NAME));
   private static List<AttributeMapping> GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("module_id", ResourceAttributes.FAAS_NAME),
@@ -126,8 +122,6 @@ public class ResourceTranslator {
         return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
       case ResourceAttributes.CloudPlatformValues.AWS_EC2:
         return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS:
-        return mapBase(resource, "cloud_function", GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
         return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
