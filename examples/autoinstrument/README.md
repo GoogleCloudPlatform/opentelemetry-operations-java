@@ -74,20 +74,18 @@ This will deploy the containerized application to Cloud Run and you will be pres
 Service URL: https://hello-autoinstrument-cloud-run-m43qtxry5q-uc.a.run.app
 ```
 
-Once you have the service URL to the application, you can make **authenticated** requests to it. Authenticated requests can be made from the command line by passing an auth token in a cURL request - 
+Once the Cloud Run service is deployed, run:
 
 ```shell
-# Make sure to replace the SERVICE_URL with the one that was generated for your deployment
-
-# Making a request to /
-curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" ${SERVICE_URL}/
-
-# Making a request to /greeting
-curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" ${SERVICE_URL}/greeting
+gcloud beta run services proxy hello-autoinstrument-cloud-run --port=8080
 ```
 
-You can also allow public access to your cloud-run service, details for which can be found [here](https://cloud.google.com/run/docs/authenticating/public#console-ui).
-With public access enabled, you would no longer need to provide the auth token within your requests.
+This will allow you to call the service from your browser via localhost -
+
+```text
+http://localhost:8080/
+http://localhost:8080/greeting
+```
 
 ## Running locally in a docker container
 
