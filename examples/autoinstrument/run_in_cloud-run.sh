@@ -16,6 +16,7 @@
 #
 CONTAINER_REGISTRY=cloud-run-applications
 REGISTRY_LOCATION=us-central1
+IMAGE_NAME="${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/hello-autoinstrument-java"
 
 if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
   echo "GOOGLE_CLOUD_PROJECT environment variable not set"
@@ -39,9 +40,9 @@ gcloud artifacts repositories create ${CONTAINER_REGISTRY} --repository-format=d
 echo "CREATED ${CONTAINER_REGISTRY} in ${REGISTRY_LOCATION}"
 
 echo "BUILDING SAMPLE APP IMAGE"
-gradle clean jib --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/hello-autoinstrument-java"
+gradle clean jib --image "${IMAGE_NAME}"
 
 echo "RUNNING SAMPLE APP ON PORT 8080"
 gcloud run deploy hello-autoinstrument-cloud-run \
-        --image="${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/hello-autoinstrument-java" \
+        --image="${IMAGE_NAME}" \
         --region="${GOOGLE_CLOUD_RUN_REGION}"
