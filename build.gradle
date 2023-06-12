@@ -47,6 +47,10 @@ spotless {
 		target "*.yaml"
 		licenseHeaderFile rootProject.file('buildscripts/spotless.license.yaml'), '([a-zA-Z]*:)'
 	}
+	format 'misc', {
+		target '*Dockerfile'
+		licenseHeaderFile rootProject.file('buildscripts/spotless.license.dockerfile'), '(\\s+|FROM)'
+	}
 }
 
 // Configure release mechanism.
