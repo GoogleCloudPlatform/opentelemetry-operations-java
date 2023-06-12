@@ -47,7 +47,7 @@ spotless {
 		target "*.yaml"
 		licenseHeaderFile rootProject.file('buildscripts/spotless.license.yaml'), '([a-zA-Z]*:)'
 	}
-	format 'misc', {
+	format 'dockerfile', {
 		target '*Dockerfile'
 		licenseHeaderFile rootProject.file('buildscripts/spotless.license.dockerfile'), '(\\s+|FROM)'
 	}
