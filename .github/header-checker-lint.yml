@@ -4,5 +4,6 @@ sourceFileExtensions:
   - gradle
   - java
   - sh
+  - Dockerfile
 allowedCopyrightHolders:
   - Google LLC
