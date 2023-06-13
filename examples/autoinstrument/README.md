@@ -53,6 +53,59 @@ Or, if you'd like to synthesize a parent trace:
 curl -H "traceparent:  00-ff000000000000000000000000000041-ff00000000000041-01" ${cluster_ip}
 ```
 
+## Running in Google Cloud Run
+
+To run this example in Google Cloud Run, you need to run the convenience script provided. After following the prerequisites, 
+
+First, export the Google Cloud Region for cloud run to `GOOGLE_CLOUD_RUN_REGION` environment variable:
+
+```shell
+# This can be any supported Google cloud region
+export GOOGLE_CLOUD_RUN_REGION=us-central1
+```
+
+Then, from the root of the repository,
+```shell
+cd examples/autoinstrument && ./run_in_cloud-run.sh
+```
+This will deploy the containerized application to Cloud Run and you will be presented with a service URL which would look something like - 
+
+```text
+Service URL: https://hello-autoinstrument-cloud-run-m43qtxry5q-uc.a.run.app
+```
+
+#### Calling the service from browser
+
+Once the Cloud Run service is deployed, run:
+
+```shell
+gcloud beta run services proxy hello-autoinstrument-cloud-run --port=8080
+```
+
+This will allow you to call the service from your browser via localhost -
+
+```text
+http://localhost:8080/
+http://localhost:8080/greeting
+```
+
+#### Calling the service from command line
+
+You can also make **authenticated** requests to the service from command line via cURL using the service URL to the application.
+
+```shell
+# Make sure to replace the SERVICE_URL with the one that was generated for your deployment
+
+# Making a request to /
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" ${SERVICE_URL}/
+
+# Making a request to /greeting
+curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" ${SERVICE_URL}/greeting
+```
+
+You can also allow public access to your cloud-run service, details for which can be found [here](https://cloud.google.com/run/docs/authenticating/public#console-ui).
+With public access enabled, you would no longer need to provide the auth token within your requests.
+
 ## Running locally in a docker container
 
 In case you do not want to spin up your own GKE cluster, but still want telemetry to be published to Google Cloud, you can run the example in a docker container. 
