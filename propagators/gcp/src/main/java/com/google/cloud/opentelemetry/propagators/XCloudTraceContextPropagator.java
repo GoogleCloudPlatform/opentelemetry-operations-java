@@ -44,7 +44,7 @@ public final class XCloudTraceContextPropagator implements TextMapPropagator {
   private static final Pattern VALUE_PATTERN =
       Pattern.compile("(?<traceid>[0-9a-f]{32})\\/(?<spanid>[\\d]{1,20});o=(?<sampled>\\d+)");
   private static final Logger LOGGER =
-      Logger.getLogger(XCloudTraceContextPropagator.class.getSimpleName());
+      Logger.getLogger(XCloudTraceContextPropagator.class.getCanonicalName());
 
   private final boolean oneway;
 
