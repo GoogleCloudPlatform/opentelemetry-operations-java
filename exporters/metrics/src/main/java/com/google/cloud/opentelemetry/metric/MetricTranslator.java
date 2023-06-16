@@ -38,7 +38,6 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SumData;
-import java.nio.file.Paths;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -226,7 +225,7 @@ public final class MetricTranslator {
         return instrumentName;
       }
     }
-    return Paths.get(prefix, instrumentName).toString();
+    return String.join("/", prefix, instrumentName);
   }
 
   private static Distribution.Exemplar mapExemplar(ExemplarData exemplar, String projectId) {
