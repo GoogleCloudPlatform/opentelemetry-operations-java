@@ -106,7 +106,8 @@ public class ResourceTranslator {
           AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME, ""),
           AttributeMapping.create(
               "task_id",
-              Arrays.asList(ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_INSTANCE),
+              Arrays.asList(
+                  ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_INSTANCE),
               ""));
 
   /** Converts a Java OpenTelemetry SDK resource into a GCP resource. */
