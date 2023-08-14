@@ -184,7 +184,7 @@ public class GCPResourceTest {
         .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("K_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("K_REVISION"))
-        .containsEntry(ResourceAttributes.FAAS_ID, "GCF-instance-id");
+        .containsEntry(ResourceAttributes.FAAS_INSTANCE, "GCF-instance-id");
   }
 
   /** Google App Engine Tests * */
@@ -212,7 +212,7 @@ public class GCPResourceTest {
         .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
-        .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));
+        .containsEntry(ResourceAttributes.FAAS_INSTANCE, envVars.get("GAE_INSTANCE"));
   }
 
   @Test
@@ -241,7 +241,7 @@ public class GCPResourceTest {
         .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
         .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
         .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
-        .containsEntry(ResourceAttributes.FAAS_ID, envVars.get("GAE_INSTANCE"));
+        .containsEntry(ResourceAttributes.FAAS_INSTANCE, envVars.get("GAE_INSTANCE"));
   }
 
   // Helper method to help stub endpoints

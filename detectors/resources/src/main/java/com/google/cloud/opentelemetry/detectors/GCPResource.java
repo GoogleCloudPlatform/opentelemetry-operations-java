@@ -286,7 +286,7 @@ public class GCPResource implements ResourceProvider {
 
       String appInstanceId = envVars.get("GAE_INSTANCE");
       if (appInstanceId != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_ID, appInstanceId);
+        attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, appInstanceId);
       }
       updateAttributesWithRegion(attrBuilder);
       AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);

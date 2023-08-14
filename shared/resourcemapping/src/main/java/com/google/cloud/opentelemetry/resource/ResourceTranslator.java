@@ -93,7 +93,7 @@ public class ResourceTranslator {
       Arrays.asList(
           AttributeMapping.create("module_id", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("version_id", ResourceAttributes.FAAS_VERSION),
-          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_ID),
+          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_INSTANCE),
           AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION));
   private static List<AttributeMapping> GENERIC_TASK_LABELS =
       Arrays.asList(
@@ -106,7 +106,7 @@ public class ResourceTranslator {
           AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME, ""),
           AttributeMapping.create(
               "task_id",
-              Arrays.asList(ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_ID),
+              Arrays.asList(ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_INSTANCE),
               ""));
 
   /** Converts a Java OpenTelemetry SDK resource into a GCP resource. */
