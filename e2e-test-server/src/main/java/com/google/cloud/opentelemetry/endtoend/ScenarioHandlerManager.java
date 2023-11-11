@@ -28,7 +28,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -84,15 +85,10 @@ public class ScenarioHandlerManager {
   /** Test where we include resource detection */
   private Response detectResource(Request request) {
     LOGGER.info("Running detectResource test, request: " + request);
-    // TODO - this may fail to just pull the resource.
     Resource resource =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .addPropertiesSupplier(
-                () -> Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none"))
-            .registerShutdownHook(false)
-            .build()
-            .getResource();
+        ResourceConfiguration.createEnvironmentResource(
+            DefaultConfigProperties.create(
+                Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none")));
     return withTemporaryOtel(
         resource,
         (sdk) -> {

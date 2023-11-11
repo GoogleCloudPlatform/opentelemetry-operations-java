@@ -61,8 +61,7 @@ public class AutoConfigureTest {
   private static ContextPropagators findsWithAutoConfigure(String propagator) {
     AutoConfiguredOpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .registerShutdownHook(false)
+            .disableShutdownHook()
             .addPropertiesSupplier(
                 () ->
                     Map.of(
@@ -71,6 +70,8 @@ public class AutoConfigureTest {
                         "otel.traces.exporter",
                         "none",
                         "otel.metrics.exporter",
+                        "none",
+                        "otel.logs.exporter",
                         "none"))
             .build();
     return sdk.getOpenTelemetrySdk().getPropagators();
