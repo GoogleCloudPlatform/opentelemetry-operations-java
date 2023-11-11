@@ -16,7 +16,7 @@
 package com.google.cloud.opentelemetry.detectors;
 
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 
 /**
  * A utility class that contains method that facilitate extraction of attributes from environment

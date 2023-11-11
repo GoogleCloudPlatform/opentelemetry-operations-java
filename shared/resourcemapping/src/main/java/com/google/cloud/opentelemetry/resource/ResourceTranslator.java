@@ -17,7 +17,7 @@ package com.google.cloud.opentelemetry.resource;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
