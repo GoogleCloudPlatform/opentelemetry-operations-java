@@ -135,29 +135,33 @@ subprojects {
 
 	ext {
 		assertjVersion = '3.22.0'
-		autoServiceVersion = '1.0.1'
-		autoValueVersion = '1.10.1'
-		slf4jVersion = '2.0.7'
-		googleCloudVersion = '2.14.0'
-		googleTraceVersion = '2.14.0'
-		googleCloudBom = '26.11.0'
-		cloudMonitoringVersion = '3.15.0'
-		openTelemetryBom = '1.24.0'
-		openTelemetryVersion = '1.24.0'
-		openTelemetryInstrumentationVersion = '1.24.0'
+		autoServiceVersion = '1.1.1'
+		autoValueVersion = '1.10.4'
+		slf4jVersion = '2.0.9'
+		googleCloudVersion = '2.27.0'
+		googleTraceVersion = '2.30.0'
+		googleCloudBom = '26.26.0'
+		cloudMonitoringVersion = '3.31.0'
+		openTelemetryBom = '1.31.0'
+		openTelemetryVersion = '1.31.0'
+		openTelemetryInstrumentationVersion = '1.31.0'
 		openTelemetrySdkExtensionResourceVersion = '1.19.0'
+		openTelemetrySemconvVersion = '1.22.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
-		pubSubVersion = '1.123.7'
+		pubSubVersion = '1.125.11'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.27.2'
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
-		cloudEventsCoreVersion = '2.4.0'
+		cloudEventsCoreVersion = '2.5.0'
 		cloudFunctionsFrameworkApiVersion = '1.0.4'
 		opencensusShimVersion = '1.23.1'
 
+		agentLibraries = [
+			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
+		]
 		libraries = [
 			auto_service_annotations         : "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
 			auto_service                     : "com.google.auto.service:auto-service:${autoServiceVersion}",
@@ -179,18 +183,15 @@ subprojects {
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
 			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
-			opentelemetry_semconv            : "io.opentelemetry:opentelemetry-semconv:${openTelemetryVersion}-alpha",
+			opentelemetry_semconv            : "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}-alpha",
 			opentelemetry_sdk_metrics        : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}",
-			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}-alpha",
+			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}",
 			opentelemetry_sdk_resources      : "io.opentelemetry:opentelemetry-sdk-extension-resources:${openTelemetrySdkExtensionResourceVersion}",
 			opentelemetry_agent_extension    : "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
-		]
-		agentLibraries = [
-			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
 		]
 		testLibraries = [
 			assertj : "org.assertj:assertj-core:${assertjVersion}",
