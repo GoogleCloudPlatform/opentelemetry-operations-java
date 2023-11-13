@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
+import com.google.cloud.opentelemetry.detectors.GCPResource;
 import com.google.cloud.opentelemetry.propagators.XCloudTraceContextPropagator;
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -66,7 +68,7 @@ public class ScenarioHandlerManager {
 
   /** Basic trace test. */
   private Response basicTrace(Request request) {
-    LOGGER.info("Running basicTrace test, request: " + request);
+    LOGGER.info("Running basicTrace test, request: " + request.toString());
     return withTemporaryTracer(
         (tracer) -> {
           Span span =
@@ -75,6 +77,7 @@ public class ScenarioHandlerManager {
                   .setAttribute(Constants.TEST_ID, request.testId())
                   .startSpan();
           try {
+            LOGGER.info("Sending trace with ID: " + span.getSpanContext().getTraceId());
             return Response.ok(Map.of(Constants.TRACE_ID, span.getSpanContext().getTraceId()));
           } finally {
             span.end();
@@ -84,11 +87,17 @@ public class ScenarioHandlerManager {
 
   /** Test where we include resource detection */
   private Response detectResource(Request request) {
-    LOGGER.info("Running detectResource test, request: " + request);
+    LOGGER.info("Running detectResource test, request: " + request.toString());
+    Resource gcpResource =
+        new GCPResource()
+            .createResource(
+                DefaultConfigProperties.create(
+                    Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none")));
     Resource resource =
-        ResourceConfiguration.createEnvironmentResource(
-            DefaultConfigProperties.create(
-                Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none")));
+        Resource.getDefault()
+            .merge(gcpResource)
+            .merge(ResourceConfiguration.createEnvironmentResource());
+
     return withTemporaryOtel(
         resource,
         (sdk) -> {
@@ -210,7 +219,7 @@ public class ScenarioHandlerManager {
     TraceConfiguration configuration =
         TraceConfiguration.builder()
             .setDeadline(Duration.ofMillis(30000))
-            .setProjectId(Constants.PROJECT_ID != "" ? Constants.PROJECT_ID : null)
+            .setProjectId(!Objects.equals(Constants.PROJECT_ID, "") ? Constants.PROJECT_ID : null)
             .build();
 
     SpanExporter traceExporter = TraceExporter.createWithConfiguration(configuration);
