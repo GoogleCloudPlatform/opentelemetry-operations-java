@@ -114,7 +114,7 @@ public class AttributesExtractorUtil {
    *
    * <ul>
    *   <li>If the instance ID cannot be found, calling this method has no effect.
-   *   <li>Calling this method will update {@link ResourceAttributes#FAAS_INSTANCE} attribute.
+   *   <li>Calling this method will update {@link ResourceAttributes#FAAS_ID} attribute.
    * </ul>
    *
    * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
@@ -126,7 +126,7 @@ public class AttributesExtractorUtil {
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String instanceId = metadataConfig.getInstanceId();
     if (instanceId != null) {
-      attributesBuilder.put(ResourceAttributes.FAAS_INSTANCE, instanceId);
+      attributesBuilder.put(ResourceAttributes.FAAS_ID, instanceId);
     }
   }
 }
