@@ -41,7 +41,7 @@ dependencies {
 	implementation platform(libraries.opentelemetry_bom)
 	implementation project(':exporter-trace')
 	implementation project(':propagators-gcp')
-	runtimeOnly project(':detector-resources')
+	implementation project(':detector-resources')
 }
 
 tasks.build.dependsOn tasks.shadowJar

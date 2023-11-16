@@ -25,7 +25,6 @@ description = 'Examples for showing resource detection in various GCP environmen
 dependencies {
 	implementation project(':detector-resources')
 	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.opentelemetry_sdk_resources)
 	implementation(libraries.opentelemetry_otlp_exporter)
 }
 
