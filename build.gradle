@@ -29,7 +29,7 @@ spotless {
 // Need to predeclare every configuration used with spotless
 spotlessPredeclare {
 	java {
-		googleJavaFormat("1.9")
+		googleJavaFormat("1.10.0")
 	}
 	groovyGradle {
 		greclipse()
@@ -106,7 +106,7 @@ subprojects {
 	// Include license check and auto-format support.
 	spotless {
 		java {
-			googleJavaFormat("1.9")
+			googleJavaFormat("1.10.0")
 			licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
 		}
 		groovyGradle {
