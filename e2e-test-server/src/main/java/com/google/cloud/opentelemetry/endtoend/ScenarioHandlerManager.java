@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.time.Duration;
@@ -228,7 +228,7 @@ public class ScenarioHandlerManager {
                     new XCloudTraceContextPropagator(true))))
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(traceExporter))
                 .setResource(resource)
                 .build())
         .build();
