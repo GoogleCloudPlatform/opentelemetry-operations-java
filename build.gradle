@@ -145,7 +145,6 @@ subprojects {
 		openTelemetryBom = '1.31.0'
 		openTelemetryVersion = '1.31.0'
 		openTelemetryInstrumentationVersion = '1.31.0'
-		openTelemetrySdkExtensionResourceVersion = '1.19.0'
 		openTelemetrySemconvVersion = '1.22.0'
 		junitVersion = '4.13'
 		mockitoVersion = '3.5.10'
@@ -182,11 +181,10 @@ subprojects {
 			opentelemetry_context            : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
-			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
 			opentelemetry_semconv            : "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}-alpha",
 			opentelemetry_sdk_metrics        : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}",
 			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}",
-			opentelemetry_sdk_resources      : "io.opentelemetry:opentelemetry-sdk-extension-resources:${openTelemetrySdkExtensionResourceVersion}",
+			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
 			opentelemetry_agent_extension    : "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
