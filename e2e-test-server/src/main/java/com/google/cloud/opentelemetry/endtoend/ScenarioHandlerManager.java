@@ -15,7 +15,7 @@
  */
 package com.google.cloud.opentelemetry.endtoend;
 
-import com.google.cloud.opentelemetry.detectors.GCPResource;
+import com.google.cloud.opentelemetry.detectors.GCPResourceDetector;
 import com.google.cloud.opentelemetry.propagators.XCloudTraceContextPropagator;
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
@@ -89,7 +89,7 @@ public class ScenarioHandlerManager {
   private Response detectResource(Request request) {
     LOGGER.info("Running detectResource test, request: " + request.toString());
     Resource gcpResource =
-        new GCPResource()
+        new GCPResourceDetector()
             .createResource(
                 DefaultConfigProperties.create(
                     Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none")));

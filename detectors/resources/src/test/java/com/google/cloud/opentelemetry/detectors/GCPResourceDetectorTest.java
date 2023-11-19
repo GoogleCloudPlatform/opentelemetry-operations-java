@@ -36,7 +36,7 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
-public class GCPResourceTest {
+public class GCPResourceDetectorTest {
   @Rule public final WireMockRule wireMockRule = new WireMockRule(8089);
   private final GCPMetadataConfig metadataConfig = new GCPMetadataConfig("http://localhost:8089/");
   private static final Map<String, String> envVars = new HashMap<>();
@@ -52,7 +52,7 @@ public class GCPResourceTest {
         ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
     assertTrue(
         "Could not load GCP Resource detector using serviceloader, found: " + services,
-        services.stream().anyMatch(provider -> provider.type().equals(GCPResource.class)));
+        services.stream().anyMatch(provider -> provider.type().equals(GCPResourceDetector.class)));
   }
 
   @Test
@@ -60,7 +60,8 @@ public class GCPResourceTest {
     GCPMetadataConfig mockMetadataConfig = Mockito.mock(GCPMetadataConfig.class);
     Mockito.when(mockMetadataConfig.isRunningOnGcp()).thenReturn(false);
 
-    GCPResource testResource = new GCPResource(mockMetadataConfig, EnvVars.DEFAULT_INSTANCE);
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(mockMetadataConfig, EnvVars.DEFAULT_INSTANCE);
     // If GCPMetadataConfig determines that its not running on GCP, then attributes should be empty
     assertThat(testResource.getAttributes()).isEmpty();
   }
@@ -72,7 +73,8 @@ public class GCPResourceTest {
     stubFor(
         get(urlEqualTo("/project/project-id"))
             .willReturn(aResponse().withBody("nonGCPendpointTest")));
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes()).isEmpty();
   }
 
@@ -85,7 +87,8 @@ public class GCPResourceTest {
     stubEndpoint("/instance/name", "GCE-instance-name");
     stubEndpoint("/instance/machine-type", "GCE-instance-type");
 
-    final GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    final GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
         .hasSize(8)
         .containsEntry(
@@ -118,7 +121,8 @@ public class GCPResourceTest {
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
     stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
 
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
         .hasSize(8)
         .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
@@ -147,7 +151,8 @@ public class GCPResourceTest {
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
     stubEndpoint("/instance/attributes/cluster-location", "country-region");
 
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
         .hasSize(8)
         .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
@@ -172,7 +177,8 @@ public class GCPResourceTest {
     stubEndpoint("/instance/zone", "country-region-zone");
     stubEndpoint("/instance/id", "GCF-instance-id");
 
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
         .hasSize(7)
         .containsEntry(
@@ -200,7 +206,8 @@ public class GCPResourceTest {
     stubEndpoint("/instance/region", "country-region1");
     stubEndpoint("/instance/id", "GAE-instance-id");
 
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(envVars));
     assertThat(testResource.getAttributes())
         .hasSize(7)
         .containsEntry(
@@ -229,7 +236,8 @@ public class GCPResourceTest {
 
     Map<String, String> updatedEnvVars = new HashMap<>(envVars);
     updatedEnvVars.put("GAE_ENV", "standard");
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(updatedEnvVars));
+    GCPResourceDetector testResource =
+        new GCPResourceDetector(metadataConfig, new EnvVarMock(updatedEnvVars));
     assertThat(testResource.getAttributes())
         .hasSize(7)
         .containsEntry(
