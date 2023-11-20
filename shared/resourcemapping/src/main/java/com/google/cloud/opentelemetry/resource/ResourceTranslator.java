@@ -21,10 +21,14 @@ import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /** Translates from OpenTelemetry Resource into Google Cloud's notion of resource. */
 public class ResourceTranslator {
+
+  private static String UNKNOWN_SERVICE_PREFIX = "unknown_service";
+
   private ResourceTranslator() {}
 
   @com.google.auto.value.AutoValue
@@ -40,9 +44,23 @@ public class ResourceTranslator {
       for (AttributeKey<?> key : getOtelKeys()) {
         Object value = resource.getAttribute(key);
         if (value != null) {
-          builder.addResourceLabels(getLabelName(), value.toString());
+          String stringValue = value.toString();
+          // for monitored resource types that have service.name, ignore it
+          // if its unknown_service in favor of a valid value in faas.name.
+          // if faas.name is also empty/unset use the ignored value from before.
+          if (key.equals(ResourceAttributes.SERVICE_NAME)
+              && stringValue.startsWith(UNKNOWN_SERVICE_PREFIX)) {
+            continue;
+          }
+          builder.addResourceLabels(getLabelName(), stringValue);
           return;
         }
+      }
+      if (getOtelKeys().contains(ResourceAttributes.SERVICE_NAME)
+          && Objects.nonNull(resource.getAttribute(ResourceAttributes.SERVICE_NAME))) {
+        builder.addResourceLabels(
+            getLabelName(), resource.getAttribute(ResourceAttributes.SERVICE_NAME));
+        return;
       }
       fallbackLiteral().ifPresent(value -> builder.addResourceLabels(getLabelName(), value));
     }
