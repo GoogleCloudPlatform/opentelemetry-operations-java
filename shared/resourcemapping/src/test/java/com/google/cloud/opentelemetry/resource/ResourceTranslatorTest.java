@@ -169,6 +169,44 @@ public class ResourceTranslatorTest {
   }
 
   @Test
+  public void testMapResourcesWithGenericTaskFallbackFAAS() {
+    Map<AttributeKey<String>, String> testAttributes =
+        java.util.stream.Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.FAAS_NAME, "my-service-name"},
+                  {ResourceAttributes.SERVICE_NAMESPACE, "prod"},
+                  {ResourceAttributes.FAAS_INSTANCE, "1234"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    GcpResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_task", monitoredResource.getResourceType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
+    assertEquals(4, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"job", "my-service-name"},
+                  {"namespace", "prod"},
+                  {"task_id", "1234"},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
+
+  @Test
   public void testMapResourcesWithGlobal() {
     Map<AttributeKey<String>, String> testAttributes =
         java.util.stream.Stream.of(
@@ -180,10 +218,7 @@ public class ResourceTranslatorTest {
             .collect(
                 Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
-    testAttributes.forEach(
-        (key, value) -> {
-          attrBuilder.put(key, value);
-        });
+    testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
 
     GcpResource monitoredResource =

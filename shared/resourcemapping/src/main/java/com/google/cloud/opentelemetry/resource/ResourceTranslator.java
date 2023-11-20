@@ -103,7 +103,10 @@ public class ResourceTranslator {
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION),
               "global"),
           AttributeMapping.create("namespace", ResourceAttributes.SERVICE_NAMESPACE, ""),
-          AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME, ""),
+          AttributeMapping.create(
+              "job",
+              Arrays.asList(ResourceAttributes.SERVICE_NAME, ResourceAttributes.FAAS_NAME),
+              ""),
           AttributeMapping.create(
               "task_id",
               Arrays.asList(
