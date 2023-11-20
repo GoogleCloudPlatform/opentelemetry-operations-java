@@ -251,17 +251,16 @@ public class ResourceTranslatorTest {
     GcpResource monitoredResource =
         ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
 
-    assertEquals("generic_task", monitoredResource.getResourceType());
+    assertEquals("generic_node", monitoredResource.getResourceType());
 
     Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
-    assertEquals(4, monitoredResourceMap.size());
+    assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
-                  {"job", ""},
                   {"namespace", ""},
-                  {"task_id", ""},
+                  {"node_id", ""},
                   {"location", "global"},
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
