@@ -21,7 +21,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.logging.Logger;
 
 /**
@@ -286,7 +286,7 @@ public class GCPResource implements ResourceProvider {
 
       String appInstanceId = envVars.get("GAE_INSTANCE");
       if (appInstanceId != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_ID, appInstanceId);
+        attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, appInstanceId);
       }
       updateAttributesWithRegion(attrBuilder);
       AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);

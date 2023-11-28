@@ -39,11 +39,12 @@ import java.util.regex.Pattern;
  */
 public final class XCloudTraceContextPropagator implements TextMapPropagator {
 
-  private static String FIELD = "x-cloud-trace-context";
-  private static Collection<String> FIELDS = Collections.singletonList(FIELD);
-  private static Pattern VALUE_PATTERN =
+  private static final String FIELD = "x-cloud-trace-context";
+  private static final Collection<String> FIELDS = Collections.singletonList(FIELD);
+  private static final Pattern VALUE_PATTERN =
       Pattern.compile("(?<traceid>[0-9a-f]{32})\\/(?<spanid>[\\d]{1,20});o=(?<sampled>\\d+)");
-  private static Logger LOGGER = Logger.getLogger("XCloudTraceContextPropogator");
+  private static final Logger LOGGER =
+      Logger.getLogger(XCloudTraceContextPropagator.class.getCanonicalName());
 
   private final boolean oneway;
 

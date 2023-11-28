@@ -60,7 +60,7 @@ MeterProvider provider = SdkMeterProvider.builder()
     // See https://cloud.google.com/monitoring/quotas#custom_metrics_quotas
     // Rate at which data can be written to a single time series: one point each 10
     // seconds.
-    PeriodicMetricReader.builder(metricExporter)
+    PeriodicMetricReader.builder(cloudMonitoringExporter)
     .setInterval(java.time.Duration.ofSeconds(20))
     .build())
   .build();

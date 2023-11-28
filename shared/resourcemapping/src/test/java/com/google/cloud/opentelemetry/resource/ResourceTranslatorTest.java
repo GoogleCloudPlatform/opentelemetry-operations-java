@@ -21,7 +21,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -169,6 +169,122 @@ public class ResourceTranslatorTest {
   }
 
   @Test
+  public void testMapResourcesWithGenericTaskFallback_FAASIgnored() {
+    Map<AttributeKey<String>, String> testAttributes =
+        java.util.stream.Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.SERVICE_NAME, "my-service-prevailed"},
+                  {ResourceAttributes.FAAS_NAME, "my-service-ignored"},
+                  {ResourceAttributes.SERVICE_NAMESPACE, "prod"},
+                  {ResourceAttributes.FAAS_INSTANCE, "1234"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    GcpResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_task", monitoredResource.getResourceType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
+    assertEquals(4, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"job", "my-service-prevailed"},
+                  {"namespace", "prod"},
+                  {"task_id", "1234"},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
+
+  @Test
+  public void testMapResourcesWithGenericTaskFallback_FAASPrevailed() {
+    Map<AttributeKey<String>, String> testAttributes =
+        java.util.stream.Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.SERVICE_NAME, "unknown_service_foo"},
+                  {ResourceAttributes.FAAS_NAME, "my-service-faas"},
+                  {ResourceAttributes.SERVICE_NAMESPACE, "prod"},
+                  {ResourceAttributes.FAAS_INSTANCE, "1234"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    GcpResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_task", monitoredResource.getResourceType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
+    assertEquals(4, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"job", "my-service-faas"},
+                  {"namespace", "prod"},
+                  {"task_id", "1234"},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
+
+  @Test
+  public void testMapResourcesWithGenericTaskFallback_UnknownService() {
+    Map<AttributeKey<String>, String> testAttributes =
+        java.util.stream.Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.SERVICE_NAME, "unknown_service_foo"},
+                  {ResourceAttributes.SERVICE_NAMESPACE, "prod"},
+                  {ResourceAttributes.FAAS_INSTANCE, "1234"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    GcpResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_task", monitoredResource.getResourceType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
+    assertEquals(4, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"job", "unknown_service_foo"},
+                  {"namespace", "prod"},
+                  {"task_id", "1234"},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
+
+  @Test
   public void testMapResourcesWithGlobal() {
     Map<AttributeKey<String>, String> testAttributes =
         java.util.stream.Stream.of(
@@ -180,10 +296,7 @@ public class ResourceTranslatorTest {
             .collect(
                 Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
-    testAttributes.forEach(
-        (key, value) -> {
-          attrBuilder.put(key, value);
-        });
+    testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
 
     GcpResource monitoredResource =
@@ -210,23 +323,58 @@ public class ResourceTranslatorTest {
   }
 
   @Test
+  public void testMapResourcesFallbackServiceNameOnly() {
+    Map<AttributeKey<String>, String> testAttributes =
+        java.util.stream.Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.SERVICE_NAME, "unknown_service"},
+                  {ResourceAttributes.SERVICE_NAMESPACE, "prod"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+    AttributesBuilder attrBuilder = Attributes.builder();
+    testAttributes.forEach(attrBuilder::put);
+    Attributes attributes = attrBuilder.build();
+
+    GcpResource monitoredResource =
+        ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
+
+    assertEquals("generic_node", monitoredResource.getResourceType());
+
+    Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
+    assertEquals(3, monitoredResourceMap.size());
+
+    Map<String, String> expectedMappings =
+        Stream.of(
+                new Object[][] {
+                  {"namespace", "prod"},
+                  {"node_id", ""},
+                  {"location", "global"},
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+    expectedMappings.forEach(
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
+  }
+
+  @Test
   public void testMapResourcesFallback() {
     Attributes attributes = Attributes.builder().build();
 
     GcpResource monitoredResource =
         ResourceTranslator.mapResource(io.opentelemetry.sdk.resources.Resource.create(attributes));
 
-    assertEquals("generic_task", monitoredResource.getResourceType());
+    assertEquals("generic_node", monitoredResource.getResourceType());
 
     Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
-    assertEquals(4, monitoredResourceMap.size());
+    assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
-                  {"job", ""},
                   {"namespace", ""},
-                  {"task_id", ""},
+                  {"node_id", ""},
                   {"location", "global"},
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));

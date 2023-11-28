@@ -17,12 +17,18 @@ package com.google.cloud.opentelemetry.resource;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /** Translates from OpenTelemetry Resource into Google Cloud's notion of resource. */
 public class ResourceTranslator {
+
+  private static String UNKNOWN_SERVICE_PREFIX = "unknown_service";
+
   private ResourceTranslator() {}
 
   @com.google.auto.value.AutoValue
@@ -38,9 +44,23 @@ public class ResourceTranslator {
       for (AttributeKey<?> key : getOtelKeys()) {
         Object value = resource.getAttribute(key);
         if (value != null) {
-          builder.addResourceLabels(getLabelName(), value.toString());
+          String stringValue = value.toString();
+          // for monitored resource types that have service.name, ignore it
+          // if its unknown_service in favor of a valid value in faas.name.
+          // if faas.name is also empty/unset use the ignored value from before.
+          if (key.equals(ResourceAttributes.SERVICE_NAME)
+              && stringValue.startsWith(UNKNOWN_SERVICE_PREFIX)) {
+            continue;
+          }
+          builder.addResourceLabels(getLabelName(), stringValue);
           return;
         }
+      }
+      if (getOtelKeys().contains(ResourceAttributes.SERVICE_NAME)
+          && Objects.nonNull(resource.getAttribute(ResourceAttributes.SERVICE_NAME))) {
+        builder.addResourceLabels(
+            getLabelName(), resource.getAttribute(ResourceAttributes.SERVICE_NAME));
+        return;
       }
       fallbackLiteral().ifPresent(value -> builder.addResourceLabels(getLabelName(), value));
     }
@@ -70,56 +90,65 @@ public class ResourceTranslator {
   }
 
   private static List<AttributeMapping> GCE_INSTANCE_LABELS =
-      java.util.Arrays.asList(
+      Arrays.asList(
           AttributeMapping.create("zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID));
   private static List<AttributeMapping> K8S_CONTAINER_LABELS =
-      java.util.Arrays.asList(
+      Arrays.asList(
           AttributeMapping.create(
               "location",
-              java.util.Arrays.asList(
+              Arrays.asList(
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
   private static List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
-      java.util.Arrays.asList(
+      Arrays.asList(
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID),
           AttributeMapping.create("region", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("aws_account", ResourceAttributes.CLOUD_ACCOUNT_ID));
-  private static List<AttributeMapping> GOOGLE_CLOUD_RUN_INSTANCE_LABELS =
-      java.util.Arrays.asList(
-          AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION),
-          AttributeMapping.create("service_name", ResourceAttributes.FAAS_NAME),
-          AttributeMapping.create("configuration_name", ResourceAttributes.FAAS_NAME),
-          AttributeMapping.create("revision_name", ResourceAttributes.FAAS_VERSION));
-  private static List<AttributeMapping> GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS =
-      java.util.Arrays.asList(
-          AttributeMapping.create("region", ResourceAttributes.CLOUD_REGION),
-          AttributeMapping.create("function_name", ResourceAttributes.FAAS_NAME));
   private static List<AttributeMapping> GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS =
-      java.util.Arrays.asList(
+      Arrays.asList(
           AttributeMapping.create("module_id", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("version_id", ResourceAttributes.FAAS_VERSION),
-          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_ID),
+          AttributeMapping.create("instance_id", ResourceAttributes.FAAS_INSTANCE),
           AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION));
   private static List<AttributeMapping> GENERIC_TASK_LABELS =
-      java.util.Arrays.asList(
+      Arrays.asList(
           AttributeMapping.create(
               "location",
-              java.util.Arrays.asList(
+              Arrays.asList(
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION),
               "global"),
           AttributeMapping.create("namespace", ResourceAttributes.SERVICE_NAMESPACE, ""),
-          AttributeMapping.create("job", ResourceAttributes.SERVICE_NAME, ""),
-          AttributeMapping.create("task_id", ResourceAttributes.SERVICE_INSTANCE_ID, ""));
+          AttributeMapping.create(
+              "job",
+              Arrays.asList(ResourceAttributes.SERVICE_NAME, ResourceAttributes.FAAS_NAME),
+              ""),
+          AttributeMapping.create(
+              "task_id",
+              Arrays.asList(
+                  ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_INSTANCE),
+              ""));
+  private static List<AttributeMapping> GENERIC_NODE_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION),
+              "global"),
+          AttributeMapping.create("namespace", ResourceAttributes.SERVICE_NAMESPACE, ""),
+          AttributeMapping.create(
+              "node_id",
+              Arrays.asList(ResourceAttributes.HOST_ID, ResourceAttributes.HOST_NAME),
+              ""));
 
   /** Converts a Java OpenTelemetry SDK resource into a GCP resource. */
   public static GcpResource mapResource(Resource resource) {
     String platform = resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM);
     if (platform == null) {
-      return mapBase(resource, "generic_task", GENERIC_TASK_LABELS);
+      return genericTaskOrNode(resource);
     }
     switch (platform) {
       case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
@@ -128,14 +157,22 @@ public class ResourceTranslator {
         return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
       case ResourceAttributes.CloudPlatformValues.AWS_EC2:
         return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN:
-        return mapBase(resource, "cloud_run_revision", GOOGLE_CLOUD_RUN_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS:
-        return mapBase(resource, "cloud_function", GOOGLE_CLOUD_FUNCTION_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
         return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
-        return mapBase(resource, "generic_task", GENERIC_TASK_LABELS);
+        return genericTaskOrNode(resource);
+    }
+  }
+
+  private static GcpResource genericTaskOrNode(Resource resource) {
+    Map<AttributeKey<?>, Object> attrMap = resource.getAttributes().asMap();
+    if ((attrMap.containsKey(ResourceAttributes.SERVICE_NAME)
+            || attrMap.containsKey(ResourceAttributes.FAAS_NAME))
+        && (attrMap.containsKey(ResourceAttributes.SERVICE_INSTANCE_ID)
+            || attrMap.containsKey(ResourceAttributes.FAAS_INSTANCE))) {
+      return mapBase(resource, "generic_task", GENERIC_TASK_LABELS);
+    } else {
+      return mapBase(resource, "generic_node", GENERIC_NODE_LABELS);
     }
   }
 

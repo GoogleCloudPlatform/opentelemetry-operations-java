@@ -11,15 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Build relative to root of repository i.e. `docker build --file e2e.Dockerfile --tag=$tag ..`
-FROM gradle:8.0.2-jdk11 as builder
-
-COPY --chown=gradle:gradle . /app/src
-WORKDIR /app/src
-RUN gradle :e2e-test-server:build
-
-FROM openjdk:11-jre-slim
-COPY --from=builder /app/src/e2e-test-server/build/libs/*-all.jar /app/app.jar
-WORKDIR /app
-CMD java -jar app.jar
