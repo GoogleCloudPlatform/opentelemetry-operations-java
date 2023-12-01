@@ -1,0 +1,7 @@
+package com.google.cloud.opentelemetry.detectors;
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello world!");
+    }
+}
