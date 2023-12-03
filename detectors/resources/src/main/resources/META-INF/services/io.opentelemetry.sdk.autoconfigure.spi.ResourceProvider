@@ -1,1 +1,1 @@
-com.google.cloud.opentelemetry.detectors.GCPResource
+com.google.cloud.opentelemetry.detectors.GCPResourceProvider

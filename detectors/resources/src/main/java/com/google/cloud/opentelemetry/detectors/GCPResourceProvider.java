@@ -29,19 +29,19 @@ import java.util.logging.Logger;
  * Google Compute Engine (GCE), Google Kubernetes Engine (GKE), Google Cloud Functions (GCF), Google
  * App Engine (GAE) and Google Cloud Run (GCR).
  */
-public class GCPResource implements ResourceProvider {
+public class GCPResourceProvider implements ResourceProvider {
   private final GCPMetadataConfig metadata;
   private final EnvVars envVars;
 
-  private static final Logger LOGGER = Logger.getLogger(GCPResource.class.getSimpleName());
+  private static final Logger LOGGER = Logger.getLogger(GCPResourceProvider.class.getSimpleName());
 
-  public GCPResource() {
+  public GCPResourceProvider() {
     this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
     this.envVars = EnvVars.DEFAULT_INSTANCE;
   }
 
   // for testing only
-  GCPResource(GCPMetadataConfig metadata, EnvVars envVars) {
+  GCPResourceProvider(GCPMetadataConfig metadata, EnvVars envVars) {
     this.metadata = metadata;
     this.envVars = envVars;
   }
