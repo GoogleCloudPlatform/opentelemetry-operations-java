@@ -27,6 +27,7 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_semconv)
 	implementation platform(libraries.opentelemetry_bom)
+	implementation project(':detector-resources-support')
 	testImplementation(testLibraries.assertj)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.wiremock)

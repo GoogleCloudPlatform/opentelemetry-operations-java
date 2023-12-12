@@ -31,7 +31,7 @@ import java.util.Map;
  * @see <a href="https://cloud.google.com/compute/docs/storing-retrieving-metadata">
  *     https://cloud.google.com/compute/docs/storing-retrieving-metadata</a>
  */
-final class GCPMetadataConfig {
+public final class GCPMetadataConfig {
   private static final String DEFAULT_URL = "http://metadata.google.internal/computeMetadata/v1/";
   public static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig(DEFAULT_URL);
 
@@ -43,18 +43,18 @@ final class GCPMetadataConfig {
     this.url = url;
   }
 
-  boolean isRunningOnGcp() {
+  public boolean isRunningOnGcp() {
     return getProjectId() != null && !getProjectId().isEmpty();
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getProjectId() {
+  public String getProjectId() {
     return getAttribute("project/project-id");
   }
 
   // Example response: projects/640212054955/zones/australia-southeast1-a
   // Returns null on failure to retrieve from metadata server
-  String getZone() {
+  public String getZone() {
     String zone = getAttribute("instance/zone");
     if (zone != null && zone.contains("/")) {
       zone = zone.substring(zone.lastIndexOf('/') + 1);
@@ -66,7 +66,7 @@ final class GCPMetadataConfig {
   // method involve detecting region in GAE standard environment
   // Example response: projects/5689182099321/regions/us-central1
   // Returns null on failure to retrieve from metadata server
-  String getRegion() {
+  public String getRegion() {
     String region = getAttribute("instance/region");
     if (region != null && region.contains("/")) {
       region = region.substring(region.lastIndexOf('/') + 1);
@@ -75,7 +75,7 @@ final class GCPMetadataConfig {
   }
 
   // Example response: projects/640212054955/machineTypes/e2-medium
-  String getMachineType() {
+  public String getMachineType() {
     String machineType = getAttribute("instance/machine-type");
     if (machineType != null && machineType.contains("/")) {
       machineType = machineType.substring(machineType.lastIndexOf('/') + 1);
@@ -84,27 +84,27 @@ final class GCPMetadataConfig {
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getInstanceId() {
+  public String getInstanceId() {
     return getAttribute("instance/id");
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getClusterName() {
+  public String getClusterName() {
     return getAttribute("instance/attributes/cluster-name");
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getClusterLocation() {
+  public String getClusterLocation() {
     return getAttribute("instance/attributes/cluster-location");
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getInstanceHostName() {
+  public String getInstanceHostName() {
     return getAttribute("instance/hostname");
   }
 
   // Returns null on failure to retrieve from metadata server
-  String getInstanceName() {
+  public String getInstanceName() {
     return getAttribute("instance/name");
   }
 
