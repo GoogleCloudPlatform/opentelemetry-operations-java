@@ -15,11 +15,25 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_AVAILABILITY_ZONE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_PROJECT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.ResourceAttributes;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
 public class GCPResourceProviderTest {
@@ -28,6 +42,63 @@ public class GCPResourceProviderTest {
     // Dummy test
     assertThat(true).isEqualTo(true);
   }
+
+  private DetectedPlatform generateMockGCEPlatform() {
+    return new DetectedPlatform() {
+      @Override
+      public GCPPlatformDetector.SupportedPlatform getSupportedPlatform() {
+        return GCPPlatformDetector.SupportedPlatform.GOOGLE_COMPUTE_ENGINE;
+      }
+
+      @Override
+      public Map<String, Optional<String>> getAttributes() {
+        return new HashMap<>() {
+          {
+            put(GCE_PROJECT_ID, Optional.of("test-project-id"));
+            put(GCE_AVAILABILITY_ZONE, Optional.empty());
+            put(GCE_CLOUD_REGION, Optional.of("australia-southeast1"));
+            put(GCE_INSTANCE_ID, Optional.of("random-id"));
+            put(GCE_INSTANCE_NAME, Optional.of("instance-name"));
+            put(GCE_MACHINE_TYPE, Optional.of("gce-m2"));
+          }
+        };
+      }
+    };
+  }
+
+  @Test
+  public void testGCEResourceAttributesMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGCEPlatform();
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResourceProvider(mockDetector).createResource(null);
+
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
+
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_PROJECT_ID).orElse(""),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_ID).orElse(""),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_NAME).orElse(""),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_NAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_MACHINE_TYPE).orElse(""),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_TYPE));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_CLOUD_REGION).orElse(""),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+  }
+
   //  @Rule public final WireMockRule wireMockRule = new WireMockRule(8089);
   //  private final GCPMetadataConfig metadataConfig = new
   // GCPMetadataConfig("http://localhost:8089/", EnvironmentVariables.DEFAULT_INSTANCE);
