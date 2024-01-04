@@ -4,7 +4,7 @@ package com.google.cloud.opentelemetry.detectors;
  * Provides API to fetch environment variables. This is useful in order to create a mock class for
  * testing.
  */
-public interface EnvironmentVariables {
+interface EnvironmentVariables {
   /** Returns the current environment variables of the platform this is running in. */
   EnvironmentVariables DEFAULT_INSTANCE = System::getenv;
 
