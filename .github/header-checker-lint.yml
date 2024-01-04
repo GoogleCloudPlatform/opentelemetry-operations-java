@@ -7,3 +7,5 @@ sourceFileExtensions:
   - Dockerfile
 allowedCopyrightHolders:
   - Google LLC
+ignoreFiles:
+  - buildscripts/*
