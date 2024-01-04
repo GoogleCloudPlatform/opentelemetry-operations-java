@@ -46,12 +46,8 @@ final class GoogleComputeEngine implements DetectedPlatform {
   private Map<String, Optional<String>> prepareAttributes() {
     Map<String, Optional<String>> map = new HashMap<>();
     map.put(GCE_PROJECT_ID, Optional.ofNullable(this.metadataConfig.getProjectId()));
-    map.put(
-        GCE_AVAILABILITY_ZONE,
-        CloudLocationUtil.getAvailabilityZoneFromMetadata(this.metadataConfig));
-    map.put(
-        GCE_CLOUD_REGION,
-        CloudLocationUtil.getCloudRegionFromMetadataUsingZone(this.metadataConfig));
+    map.put(GCE_AVAILABILITY_ZONE, Optional.ofNullable(this.metadataConfig.getZone()));
+    map.put(GCE_CLOUD_REGION, Optional.ofNullable(this.metadataConfig.getRegionFromZone()));
     map.put(GCE_INSTANCE_ID, Optional.ofNullable(this.metadataConfig.getInstanceId()));
     map.put(GCE_INSTANCE_NAME, Optional.ofNullable(this.metadataConfig.getInstanceName()));
     map.put(GCE_MACHINE_TYPE, Optional.ofNullable(this.metadataConfig.getMachineType()));

@@ -49,9 +49,7 @@ final class GoogleAppEngine implements DetectedPlatform {
     map.put(GAE_MODULE_NAME, Optional.ofNullable(this.environmentVariables.get("GAE_SERVICE")));
     map.put(GAE_APP_VERSION, Optional.ofNullable(this.environmentVariables.get("GAE_VERSION")));
     map.put(GAE_INSTANCE_ID, Optional.ofNullable(this.environmentVariables.get("GAE_INSTANCE")));
-    map.put(
-        GAE_AVAILABILITY_ZONE,
-        CloudLocationUtil.getAvailabilityZoneFromMetadata(this.metadataConfig));
+    map.put(GAE_AVAILABILITY_ZONE, Optional.ofNullable(this.metadataConfig.getZone()));
     map.put(GAE_CLOUD_REGION, getCloudRegion());
     return Collections.unmodifiableMap(map);
   }
@@ -59,9 +57,9 @@ final class GoogleAppEngine implements DetectedPlatform {
   private Optional<String> getCloudRegion() {
     if (this.environmentVariables.get("GAE_ENV") != null
         && this.environmentVariables.get("GAE_ENV").equals("standard")) {
-      return CloudLocationUtil.getCloudRegionFromMetadataUsingRegion(this.metadataConfig);
+      return Optional.ofNullable(this.metadataConfig.getRegion());
     } else {
-      return CloudLocationUtil.getCloudRegionFromMetadataUsingZone(this.metadataConfig);
+      return Optional.ofNullable(this.metadataConfig.getRegionFromZone());
     }
   }
 

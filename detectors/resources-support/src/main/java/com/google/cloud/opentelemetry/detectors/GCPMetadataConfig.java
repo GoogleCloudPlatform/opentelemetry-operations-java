@@ -52,8 +52,16 @@ final class GCPMetadataConfig {
     return getAttribute("project/project-id");
   }
 
-  // Example response: projects/640212054955/zones/australia-southeast1-a
-  // Returns null on failure to retrieve from metadata server
+  /**
+   * Method to extract cloud availability zone from the metadata server.
+   *
+   * <p>Example response: projects/640212054955/zones/australia-southeast1-a
+   *
+   * <p>Example zone: australia-southeast1-a
+   *
+   * @return the extracted zone from the metadata server response or null in case of failure to
+   *     retrieve from metadata server.
+   */
   String getZone() {
     String zone = getAttribute("instance/zone");
     if (zone != null && zone.contains("/")) {
@@ -62,14 +70,39 @@ final class GCPMetadataConfig {
     return zone;
   }
 
-  // Use this method only when the region cannot be parsed from the zone. Known use-cases of this
-  // method involve detecting region in GAE standard environment
-  // Example response: projects/5689182099321/regions/us-central1
-  // Returns null on failure to retrieve from metadata server
+  /**
+   * Use this method only when the region cannot be parsed from the zone. Known use-cases of this
+   * method involve detecting region in GAE standard environment.
+   *
+   * <p>Example response: projects/5689182099321/regions/us-central1.
+   *
+   * @return the retrieved region or null in case of failure to retrieve from metadata server
+   */
   String getRegion() {
     String region = getAttribute("instance/region");
     if (region != null && region.contains("/")) {
       region = region.substring(region.lastIndexOf('/') + 1);
+    }
+    return region;
+  }
+
+  /**
+   * Use this method to parse region from zone.
+   *
+   * <p>Example region: australia-southeast1
+   *
+   * @return parsed region from the zone, if zone is not found or is invalid, this method returns
+   *     null.
+   */
+  String getRegionFromZone() {
+    String region = null;
+    String zone = getZone();
+    if (zone != null && !zone.isEmpty()) {
+      // Parsing required to scope up to a region
+      String[] splitArr = zone.split("-");
+      if (splitArr.length > 2) {
+        region = String.join("-", splitArr[0], splitArr[1]);
+      }
     }
     return region;
   }

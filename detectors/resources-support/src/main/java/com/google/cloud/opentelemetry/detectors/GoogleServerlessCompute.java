@@ -52,10 +52,10 @@ abstract class GoogleServerlessCompute implements DetectedPlatform {
         Optional.ofNullable(this.environmentVariables.get("K_REVISION")));
     map.put(
         AttributeKeys.SERVERLESS_COMPUTE_AVAILABILITY_ZONE,
-        CloudLocationUtil.getAvailabilityZoneFromMetadata(this.metadataConfig));
+        Optional.ofNullable(this.metadataConfig.getZone()));
     map.put(
         AttributeKeys.SERVERLESS_COMPUTE_CLOUD_REGION,
-        CloudLocationUtil.getCloudRegionFromMetadataUsingZone(this.metadataConfig));
+        Optional.ofNullable(this.metadataConfig.getRegionFromZone()));
     map.put(
         AttributeKeys.SERVERLESS_COMPUTE_INSTANCE_ID,
         Optional.ofNullable(this.metadataConfig.getInstanceId()));
