@@ -25,11 +25,10 @@ import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_PROJECT
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 final class GoogleComputeEngine implements DetectedPlatform {
   private final GCPMetadataConfig metadataConfig;
-  private final Map<String, Optional<String>> availableAttributes;
+  private final Map<String, String> availableAttributes;
 
   GoogleComputeEngine() {
     this.metadataConfig = GCPMetadataConfig.DEFAULT_INSTANCE;
@@ -37,20 +36,19 @@ final class GoogleComputeEngine implements DetectedPlatform {
   }
 
   // for testing only
-  GoogleComputeEngine(
-      GCPMetadataConfig metadataConfig, Map<String, Optional<String>> availableAttributes) {
+  GoogleComputeEngine(GCPMetadataConfig metadataConfig, Map<String, String> availableAttributes) {
     this.metadataConfig = metadataConfig;
     this.availableAttributes = availableAttributes;
   }
 
-  private Map<String, Optional<String>> prepareAttributes() {
-    Map<String, Optional<String>> map = new HashMap<>();
-    map.put(GCE_PROJECT_ID, Optional.ofNullable(this.metadataConfig.getProjectId()));
-    map.put(GCE_AVAILABILITY_ZONE, Optional.ofNullable(this.metadataConfig.getZone()));
-    map.put(GCE_CLOUD_REGION, Optional.ofNullable(this.metadataConfig.getRegionFromZone()));
-    map.put(GCE_INSTANCE_ID, Optional.ofNullable(this.metadataConfig.getInstanceId()));
-    map.put(GCE_INSTANCE_NAME, Optional.ofNullable(this.metadataConfig.getInstanceName()));
-    map.put(GCE_MACHINE_TYPE, Optional.ofNullable(this.metadataConfig.getMachineType()));
+  private Map<String, String> prepareAttributes() {
+    Map<String, String> map = new HashMap<>();
+    map.put(GCE_PROJECT_ID, this.metadataConfig.getProjectId());
+    map.put(GCE_AVAILABILITY_ZONE, this.metadataConfig.getZone());
+    map.put(GCE_CLOUD_REGION, this.metadataConfig.getRegionFromZone());
+    map.put(GCE_INSTANCE_ID, this.metadataConfig.getInstanceId());
+    map.put(GCE_INSTANCE_NAME, this.metadataConfig.getInstanceName());
+    map.put(GCE_MACHINE_TYPE, this.metadataConfig.getMachineType());
     return Collections.unmodifiableMap(map);
   }
 
@@ -60,7 +58,7 @@ final class GoogleComputeEngine implements DetectedPlatform {
   }
 
   @Override
-  public Map<String, Optional<String>> getAttributes() {
+  public Map<String, String> getAttributes() {
     return this.availableAttributes;
   }
 }

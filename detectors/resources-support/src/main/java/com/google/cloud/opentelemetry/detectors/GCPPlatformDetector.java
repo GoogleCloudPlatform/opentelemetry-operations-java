@@ -15,10 +15,6 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
 public class GCPPlatformDetector {
   public static final GCPPlatformDetector DEFAULT_INSTANCE = new GCPPlatformDetector();
 
@@ -38,42 +34,25 @@ public class GCPPlatformDetector {
 
   // Detects the GCP platform on which the application is running
   public DetectedPlatform detectPlatform() {
-    if (!isRunningOnGcp()) {
-      return generateDetectedPlatform(SupportedPlatform.UNKNOWN_PLATFORM);
-    }
-    Function<EnvironmentVariables, Optional<SupportedPlatform>> detectGKE =
-        environmentVariables ->
-            environmentVariables.get("KUBERNETES_SERVICE_HOST") != null
-                ? Optional.of(SupportedPlatform.GOOGLE_KUBERNETES_ENGINE)
-                : Optional.empty();
-    Function<EnvironmentVariables, Optional<SupportedPlatform>> detectGCR =
-        environmentVariables ->
-            environmentVariables.get("K_CONFIGURATION") != null
-                    && environmentVariables.get("FUNCTION_TARGET") == null
-                ? Optional.of(SupportedPlatform.GOOGLE_CLOUD_RUN)
-                : Optional.empty();
-    Function<EnvironmentVariables, Optional<SupportedPlatform>> detectGCF =
-        environmentVariables ->
-            environmentVariables.get("FUNCTION_TARGET") != null
-                ? Optional.of(SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS)
-                : Optional.empty();
-    Function<EnvironmentVariables, Optional<SupportedPlatform>> detectGAE =
-        environmentVariables ->
-            environmentVariables.get("GAE_SERVICE") != null
-                ? Optional.of(SupportedPlatform.GOOGLE_APP_ENGINE)
-                : Optional.empty();
+    return generateDetectedPlatform(detectSupportedPlatform());
+  }
 
-    // Order of detection functions matters here
-    Stream<Function<EnvironmentVariables, Optional<SupportedPlatform>>> platforms =
-        Stream.of(detectGKE, detectGCR, detectGCF, detectGAE);
-    SupportedPlatform platform =
-        platforms
-            .map(detectionFn -> detectionFn.apply(environmentVariables))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst()
-            .orElse(SupportedPlatform.GOOGLE_COMPUTE_ENGINE); // defaults to GCE
-    return generateDetectedPlatform(platform);
+  private SupportedPlatform detectSupportedPlatform() {
+    if (!isRunningOnGcp()) {
+      return SupportedPlatform.UNKNOWN_PLATFORM;
+    }
+    // Note: Order of detection matters here
+    if (environmentVariables.get("KUBERNETES_SERVICE_HOST") != null) {
+      return SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
+    } else if (environmentVariables.get("K_CONFIGURATION") != null
+        && environmentVariables.get("FUNCTION_TARGET") == null) {
+      return SupportedPlatform.GOOGLE_CLOUD_RUN;
+    } else if (environmentVariables.get("FUNCTION_TARGET") != null) {
+      return SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS;
+    } else if (environmentVariables.get("GAE_SERVICE") != null) {
+      return SupportedPlatform.GOOGLE_APP_ENGINE;
+    }
+    return SupportedPlatform.GOOGLE_COMPUTE_ENGINE; // default to GCE
   }
 
   private boolean isRunningOnGcp() {

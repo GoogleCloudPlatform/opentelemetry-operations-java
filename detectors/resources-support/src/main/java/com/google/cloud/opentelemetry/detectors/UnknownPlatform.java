@@ -17,7 +17,6 @@ package com.google.cloud.opentelemetry.detectors;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 class UnknownPlatform implements DetectedPlatform {
 
@@ -29,7 +28,7 @@ class UnknownPlatform implements DetectedPlatform {
   }
 
   @Override
-  public Map<String, Optional<String>> getAttributes() {
+  public Map<String, String> getAttributes() {
     return Collections.emptyMap();
   }
 }

@@ -18,7 +18,6 @@ package com.google.cloud.opentelemetry.detectors;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Utility class to help add attributes applicable to serverless compute in GCP to a given resource.
@@ -26,7 +25,7 @@ import java.util.Optional;
 abstract class GoogleServerlessCompute implements DetectedPlatform {
   private final EnvironmentVariables environmentVariables;
   private final GCPMetadataConfig metadataConfig;
-  private final Map<String, Optional<String>> availableAttributes;
+  private final Map<String, String> availableAttributes;
 
   GoogleServerlessCompute() {
     this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
@@ -42,28 +41,18 @@ abstract class GoogleServerlessCompute implements DetectedPlatform {
     this.availableAttributes = prepareAttributes();
   }
 
-  private Map<String, Optional<String>> prepareAttributes() {
-    Map<String, Optional<String>> map = new HashMap<>();
-    map.put(
-        AttributeKeys.SERVERLESS_COMPUTE_NAME,
-        Optional.ofNullable(this.environmentVariables.get("K_SERVICE")));
-    map.put(
-        AttributeKeys.SERVERLESS_COMPUTE_REVISION,
-        Optional.ofNullable(this.environmentVariables.get("K_REVISION")));
-    map.put(
-        AttributeKeys.SERVERLESS_COMPUTE_AVAILABILITY_ZONE,
-        Optional.ofNullable(this.metadataConfig.getZone()));
-    map.put(
-        AttributeKeys.SERVERLESS_COMPUTE_CLOUD_REGION,
-        Optional.ofNullable(this.metadataConfig.getRegionFromZone()));
-    map.put(
-        AttributeKeys.SERVERLESS_COMPUTE_INSTANCE_ID,
-        Optional.ofNullable(this.metadataConfig.getInstanceId()));
+  private Map<String, String> prepareAttributes() {
+    Map<String, String> map = new HashMap<>();
+    map.put(AttributeKeys.SERVERLESS_COMPUTE_NAME, this.environmentVariables.get("K_SERVICE"));
+    map.put(AttributeKeys.SERVERLESS_COMPUTE_REVISION, this.environmentVariables.get("K_REVISION"));
+    map.put(AttributeKeys.SERVERLESS_COMPUTE_AVAILABILITY_ZONE, this.metadataConfig.getZone());
+    map.put(AttributeKeys.SERVERLESS_COMPUTE_CLOUD_REGION, this.metadataConfig.getRegionFromZone());
+    map.put(AttributeKeys.SERVERLESS_COMPUTE_INSTANCE_ID, this.metadataConfig.getInstanceId());
     return Collections.unmodifiableMap(map);
   }
 
   @Override
-  public Map<String, Optional<String>> getAttributes() {
+  public Map<String, String> getAttributes() {
     return this.availableAttributes;
   }
 }

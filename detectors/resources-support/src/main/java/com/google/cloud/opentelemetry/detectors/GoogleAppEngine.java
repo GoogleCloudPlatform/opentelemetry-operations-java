@@ -24,12 +24,11 @@ import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GAE_MODULE_
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 final class GoogleAppEngine implements DetectedPlatform {
   private final EnvironmentVariables environmentVariables;
   private final GCPMetadataConfig metadataConfig;
-  private final Map<String, Optional<String>> availableAttributes;
+  private final Map<String, String> availableAttributes;
 
   GoogleAppEngine() {
     this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
@@ -44,22 +43,22 @@ final class GoogleAppEngine implements DetectedPlatform {
     this.availableAttributes = prepareAttributes();
   }
 
-  private Map<String, Optional<String>> prepareAttributes() {
-    Map<String, Optional<String>> map = new HashMap<>();
-    map.put(GAE_MODULE_NAME, Optional.ofNullable(this.environmentVariables.get("GAE_SERVICE")));
-    map.put(GAE_APP_VERSION, Optional.ofNullable(this.environmentVariables.get("GAE_VERSION")));
-    map.put(GAE_INSTANCE_ID, Optional.ofNullable(this.environmentVariables.get("GAE_INSTANCE")));
-    map.put(GAE_AVAILABILITY_ZONE, Optional.ofNullable(this.metadataConfig.getZone()));
+  private Map<String, String> prepareAttributes() {
+    Map<String, String> map = new HashMap<>();
+    map.put(GAE_MODULE_NAME, this.environmentVariables.get("GAE_SERVICE"));
+    map.put(GAE_APP_VERSION, this.environmentVariables.get("GAE_VERSION"));
+    map.put(GAE_INSTANCE_ID, this.environmentVariables.get("GAE_INSTANCE"));
+    map.put(GAE_AVAILABILITY_ZONE, this.metadataConfig.getZone());
     map.put(GAE_CLOUD_REGION, getCloudRegion());
     return Collections.unmodifiableMap(map);
   }
 
-  private Optional<String> getCloudRegion() {
+  private String getCloudRegion() {
     if (this.environmentVariables.get("GAE_ENV") != null
         && this.environmentVariables.get("GAE_ENV").equals("standard")) {
-      return Optional.ofNullable(this.metadataConfig.getRegion());
+      return this.metadataConfig.getRegion();
     } else {
-      return Optional.ofNullable(this.metadataConfig.getRegionFromZone());
+      return this.metadataConfig.getRegionFromZone();
     }
   }
 
@@ -69,7 +68,7 @@ final class GoogleAppEngine implements DetectedPlatform {
   }
 
   @Override
-  public Map<String, Optional<String>> getAttributes() {
+  public Map<String, String> getAttributes() {
     return this.availableAttributes;
   }
 }

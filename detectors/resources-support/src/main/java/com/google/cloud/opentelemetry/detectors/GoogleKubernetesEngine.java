@@ -34,7 +34,7 @@ import java.util.Optional;
 final class GoogleKubernetesEngine implements DetectedPlatform {
   private final EnvironmentVariables environmentVariables;
   private final GCPMetadataConfig metadataConfig;
-  private final Map<String, Optional<String>> availableAttributes;
+  private final Map<String, String> availableAttributes;
 
   GoogleKubernetesEngine() {
     this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
@@ -50,16 +50,15 @@ final class GoogleKubernetesEngine implements DetectedPlatform {
     this.availableAttributes = prepareAttributes();
   }
 
-  private Map<String, Optional<String>> prepareAttributes() {
-    Map<String, Optional<String>> map = new HashMap<>();
-    map.put(GKE_POD_NAME, Optional.ofNullable(getPodName()));
-    map.put(GKE_NAMESPACE, Optional.ofNullable(this.environmentVariables.get("NAMESPACE")));
-    map.put(
-        GKE_CONTAINER_NAME, Optional.ofNullable(this.environmentVariables.get("CONTAINER_NAME")));
-    map.put(GKE_CLUSTER_NAME, Optional.ofNullable(this.metadataConfig.getClusterName()));
-    map.put(GKE_CLUSTER_LOCATION, Optional.of(this.metadataConfig.getClusterLocation()));
-    map.put(GKE_CLUSTER_LOCATION_TYPE, Optional.of(this.getClusterLocationType()));
-    map.put(GKE_HOST_ID, Optional.ofNullable(this.metadataConfig.getInstanceId()));
+  private Map<String, String> prepareAttributes() {
+    Map<String, String> map = new HashMap<>();
+    map.put(GKE_POD_NAME, getPodName());
+    map.put(GKE_NAMESPACE, this.environmentVariables.get("NAMESPACE"));
+    map.put(GKE_CONTAINER_NAME, this.environmentVariables.get("CONTAINER_NAME"));
+    map.put(GKE_CLUSTER_NAME, this.metadataConfig.getClusterName());
+    map.put(GKE_CLUSTER_LOCATION, this.metadataConfig.getClusterLocation());
+    map.put(GKE_CLUSTER_LOCATION_TYPE, this.getClusterLocationType());
+    map.put(GKE_HOST_ID, this.metadataConfig.getInstanceId());
     return Collections.unmodifiableMap(map);
   }
 
@@ -88,7 +87,7 @@ final class GoogleKubernetesEngine implements DetectedPlatform {
   }
 
   @Override
-  public Map<String, Optional<String>> getAttributes() {
+  public Map<String, String> getAttributes() {
     return this.availableAttributes;
   }
 }
