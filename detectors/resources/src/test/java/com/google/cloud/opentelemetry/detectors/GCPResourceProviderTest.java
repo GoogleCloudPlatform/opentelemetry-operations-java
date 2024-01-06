@@ -21,11 +21,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -343,5 +345,14 @@ public class GCPResourceProviderTest {
 
     Resource gotResource = new GCPResourceProvider(mockDetector).createResource(mockConfigProps);
     assertTrue("no attributes for unknown platform", gotResource.getAttributes().isEmpty());
+  }
+
+  @Test
+  public void findsWithServiceLoader() {
+    ServiceLoader<ResourceProvider> services =
+        ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
+    assertTrue(
+        "Could not load GCP Resource detector using serviceloader, found: " + services,
+        services.stream().anyMatch(provider -> provider.type().equals(GCPResourceProvider.class)));
   }
 }
