@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/** Utility class to help add GKE specific attributes to a given resource */
 final class GoogleKubernetesEngine implements DetectedPlatform {
   private final EnvironmentVariables environmentVariables;
   private final GCPMetadataConfig metadataConfig;

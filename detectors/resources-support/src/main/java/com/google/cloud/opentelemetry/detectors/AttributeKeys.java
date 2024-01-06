@@ -15,6 +15,10 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
+/**
+ * Contains constants that act as keys for the known attributes for {@link
+ * com.google.cloud.opentelemetry.detectors.GCPPlatformDetector.SupportedPlatform}s.
+ */
 public final class AttributeKeys {
   // GCE Attributes
   public static final String GCE_PROJECT_ID = AttributeKeys.PROJECT_ID;

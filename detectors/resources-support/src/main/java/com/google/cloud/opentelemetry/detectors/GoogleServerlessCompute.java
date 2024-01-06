@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Utility class to help add attributes applicable to serverless compute in GCP to a given resource.
+ * GoogleServerlessCompute adds attributes applicable to all serverless compute platforms in GCP.
+ * Currently, this includes Google Cloud Functions & Google Cloud Run.
  */
 abstract class GoogleServerlessCompute implements DetectedPlatform {
   private final EnvironmentVariables environmentVariables;

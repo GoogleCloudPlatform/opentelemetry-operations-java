@@ -17,8 +17,21 @@ package com.google.cloud.opentelemetry.detectors;
 
 import java.util.Map;
 
+/** Represents a GCP specific platform on which a cloud application can run. */
 public interface DetectedPlatform {
+  /**
+   * Method to retrieve the underlying compute platform on which application is running.
+   *
+   * @return the {@link GCPPlatformDetector.SupportedPlatform} representing the Google Cloud
+   *     platform on which application is running.
+   */
   GCPPlatformDetector.SupportedPlatform getSupportedPlatform();
 
+  /**
+   * Method to retrieve the attributes associated with the compute platform on which the application
+   * is running as key-value pairs.
+   *
+   * @return a {@link Map} of attributes specific to the underlying compute platform.
+   */
   Map<String, String> getAttributes();
 }

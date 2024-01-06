@@ -32,7 +32,11 @@ public class GCPPlatformDetector {
     this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
   }
 
-  // Detects the GCP platform on which the application is running
+  /**
+   * Detects the GCP platform on which the application is running.
+   *
+   * @return the specific GCP platform on which the application is running.
+   */
   public DetectedPlatform detectPlatform() {
     return generateDetectedPlatform(detectSupportedPlatform());
   }
@@ -83,12 +87,22 @@ public class GCPPlatformDetector {
     return detectedPlatform;
   }
 
+  /**
+   * SupportedPlatform represents the GCP platforms that can currently be detected by the
+   * resource-detector.
+   */
   public enum SupportedPlatform {
+    /** Represents the Google Compute Engine platform. */
     GOOGLE_COMPUTE_ENGINE,
+    /** Represents the Google Kubernetes Engine platform. */
     GOOGLE_KUBERNETES_ENGINE,
+    /** Represents the Google App Engine platform. Could either be flex or standard. */
     GOOGLE_APP_ENGINE,
+    /** Represents the Google Cloud Run platform. */
     GOOGLE_CLOUD_RUN,
+    /** Represents the Google Cloud Functions platform. */
     GOOGLE_CLOUD_FUNCTIONS,
-    UNKNOWN_PLATFORM, // Not running on GCP
+    /** Represents the case when the application is not running on GCP. */
+    UNKNOWN_PLATFORM,
   }
 }
