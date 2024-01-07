@@ -16,6 +16,10 @@
 package com.google.cloud.opentelemetry.detectors;
 
 class GoogleCloudRun extends GoogleServerlessCompute {
+  GoogleCloudRun(EnvironmentVariables environmentVariables, GCPMetadataConfig metadataConfig) {
+    super(environmentVariables, metadataConfig);
+  }
+
   @Override
   public GCPPlatformDetector.SupportedPlatform getSupportedPlatform() {
     return GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN;

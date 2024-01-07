@@ -28,13 +28,6 @@ abstract class GoogleServerlessCompute implements DetectedPlatform {
   private final GCPMetadataConfig metadataConfig;
   private final Map<String, String> availableAttributes;
 
-  GoogleServerlessCompute() {
-    this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
-    this.metadataConfig = GCPMetadataConfig.DEFAULT_INSTANCE;
-    this.availableAttributes = prepareAttributes();
-  }
-
-  // for testing only
   GoogleServerlessCompute(
       EnvironmentVariables environmentVariables, GCPMetadataConfig metadataConfig) {
     this.environmentVariables = environmentVariables;

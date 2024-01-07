@@ -30,13 +30,6 @@ final class GoogleAppEngine implements DetectedPlatform {
   private final GCPMetadataConfig metadataConfig;
   private final Map<String, String> availableAttributes;
 
-  GoogleAppEngine() {
-    this.environmentVariables = EnvironmentVariables.DEFAULT_INSTANCE;
-    this.metadataConfig = GCPMetadataConfig.DEFAULT_INSTANCE;
-    this.availableAttributes = prepareAttributes();
-  }
-
-  // for testing only
   GoogleAppEngine(EnvironmentVariables environmentVariables, GCPMetadataConfig metadataConfig) {
     this.environmentVariables = environmentVariables;
     this.metadataConfig = metadataConfig;

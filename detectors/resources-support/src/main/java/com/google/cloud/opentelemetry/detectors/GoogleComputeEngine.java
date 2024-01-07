@@ -30,15 +30,9 @@ final class GoogleComputeEngine implements DetectedPlatform {
   private final GCPMetadataConfig metadataConfig;
   private final Map<String, String> availableAttributes;
 
-  GoogleComputeEngine() {
-    this.metadataConfig = GCPMetadataConfig.DEFAULT_INSTANCE;
-    this.availableAttributes = prepareAttributes();
-  }
-
-  // for testing only
-  GoogleComputeEngine(GCPMetadataConfig metadataConfig, Map<String, String> availableAttributes) {
+  GoogleComputeEngine(GCPMetadataConfig metadataConfig) {
     this.metadataConfig = metadataConfig;
-    this.availableAttributes = availableAttributes;
+    this.availableAttributes = prepareAttributes();
   }
 
   private Map<String, String> prepareAttributes() {
