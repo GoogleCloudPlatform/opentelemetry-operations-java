@@ -16,12 +16,21 @@
 description = 'Support library for Google Cloud Resource Detector'
 
 dependencies {
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testImplementation(testLibraries.assertj)
+	testImplementation(testLibraries.wiremock)
+	testImplementation(testLibraries.mockito)
+	testImplementation(testLibraries.junit5)
+	testImplementation(testLibraries.junit5_params)
+	testRuntimeOnly(testLibraries.junit5_runtime)
 }
 
 afterEvaluate {
 	tasks.named("compileJava"){
 		options.release = 8
 	}
+}
+
+test {
+	// required for discovering JUnit 5 tests
+	useJUnitPlatform()
 }

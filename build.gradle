@@ -147,10 +147,11 @@ subprojects {
 		openTelemetryInstrumentationVersion = '1.31.0'
 		openTelemetrySemconvVersion = '1.22.0'
 		junitVersion = '4.13'
+		junit5Version = '5.10.0'
 		mockitoVersion = '3.5.10'
 		pubSubVersion = '1.125.11'
 		testContainersVersion = '1.15.1'
-		wiremockVersion = '2.27.2'
+		wiremockVersion = '2.35.0'
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
@@ -194,6 +195,9 @@ subprojects {
 		testLibraries = [
 			assertj : "org.assertj:assertj-core:${assertjVersion}",
 			junit       : "junit:junit:${junitVersion}",
+			junit5 : "org.junit.jupiter:junit-jupiter-api:${junit5Version}",
+			junit5_runtime : "org.junit.jupiter:junit-jupiter-engine:${junit5Version}",
+			junit5_params : "org.junit.jupiter:junit-jupiter-params:${junit5Version}",
 			mockito     : "org.mockito:mockito-inline:${mockitoVersion}",
 			slf4j_simple: "org.slf4j:slf4j-simple:${slf4jVersion}",
 			opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
