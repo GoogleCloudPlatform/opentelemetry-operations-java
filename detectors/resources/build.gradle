@@ -28,9 +28,12 @@ dependencies {
 	implementation(libraries.opentelemetry_semconv)
 	implementation platform(libraries.opentelemetry_bom)
 	implementation project(':detector-resources-support')
-	testImplementation(testLibraries.assertj)
-	testImplementation(testLibraries.junit)
-	testImplementation(testLibraries.wiremock)
+	testImplementation(testLibraries.junit5)
+	testRuntimeOnly(testLibraries.junit5_runtime)
 	testImplementation(testLibraries.mockito)
-	testImplementation(testLibraries.opentelemetry_sdk_testing)
+}
+
+test {
+	// required for discovering JUnit 5 tests
+	useJUnitPlatform()
 }
