@@ -136,6 +136,8 @@ public class GCPResourceProvider implements ResourceProvider {
     Optional.ofNullable(attributesMap.get(GKE_CLUSTER_NAME))
         .ifPresent(
             clusterName -> attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName));
+    Optional.ofNullable(attributesMap.get(GKE_HOST_ID))
+        .ifPresent(hostId -> attrBuilder.put(ResourceAttributes.HOST_ID, hostId));
     Optional.ofNullable(attributesMap.get(GKE_CLUSTER_LOCATION_TYPE))
         .ifPresent(
             locationType -> {

@@ -16,6 +16,7 @@
 package com.google.cloud.opentelemetry.detectors;
 
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.*;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +45,7 @@ public class GCPResourceProviderTest {
           put(GKE_NAMESPACE, "gke-namespace-default");
           put(GKE_CONTAINER_NAME, "gke-container-2");
           put(GKE_CLUSTER_NAME, "gke-cluster");
+          put(GKE_HOST_ID, "host1");
         }
       };
 
@@ -174,6 +176,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GCE_CLOUD_REGION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertThat(gotResource.getAttributes()).hasSize(8);
   }
 
   @Test
@@ -189,6 +192,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertThat(gotResource.getAttributes()).hasSize(8);
   }
 
   @Test
@@ -204,6 +208,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertThat(gotResource.getAttributes()).hasSize(8);
   }
 
   @Test
@@ -224,6 +229,7 @@ public class GCPResourceProviderTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertThat(gotResource.getAttributes()).hasSize(7);
   }
 
   @Test
@@ -237,6 +243,7 @@ public class GCPResourceProviderTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertThat(gotResource.getAttributes()).hasSize(7);
   }
 
   private void verifyGKEMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
@@ -255,6 +262,12 @@ public class GCPResourceProviderTest {
     assertEquals(
         detectedPlatform.getAttributes().get(GKE_CONTAINER_NAME),
         gotResource.getAttributes().get(ResourceAttributes.K8S_CONTAINER_NAME));
+    assertEquals(
+        detectedPlatform.getAttributes().get(GKE_HOST_ID),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
+    assertEquals(
+        detectedPlatform.getAttributes().get(GKE_CLUSTER_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.K8S_CLUSTER_NAME));
   }
 
   @Test
@@ -269,6 +282,7 @@ public class GCPResourceProviderTest {
         ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN,
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     verifyServerlessMapping(gotResource, mockPlatform);
+    assertThat(gotResource.getAttributes()).hasSize(7);
   }
 
   @Test
@@ -284,6 +298,7 @@ public class GCPResourceProviderTest {
         ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS,
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     verifyServerlessMapping(gotResource, mockPlatform);
+    assertThat(gotResource.getAttributes()).hasSize(7);
   }
 
   private void verifyServerlessMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
@@ -335,6 +350,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GAE_CLOUD_REGION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertThat(gotResource.getAttributes()).hasSize(7);
   }
 
   @Test
