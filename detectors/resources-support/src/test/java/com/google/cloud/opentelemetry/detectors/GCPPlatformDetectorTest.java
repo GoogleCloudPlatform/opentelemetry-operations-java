@@ -19,25 +19,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GAE_CLOUD_REGION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_AVAILABILITY_ZONE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_CLOUD_REGION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_HOSTNAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_PROJECT_ID;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_LOCATION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_LOCATION_TYPE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_NAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_HOST_ID;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_LOCATION_TYPE_REGION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_LOCATION_TYPE_ZONE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_AVAILABILITY_ZONE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_CLOUD_REGION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_INSTANCE_ID;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_NAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_REVISION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.*;
 import static com.google.cloud.opentelemetry.detectors.TestUtils.stubEndpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -318,14 +300,13 @@ public class GCPPlatformDetectorTest {
   /** Google App Engine Tests * */
   @ParameterizedTest
   @MethodSource("provideGAEVariantEnvironmentVariable")
-  public void testGAEResourceWithAppEngineAttributesSucceeds(
-      String gaeEnvironmentVar, String expectedRegion) {
+  public void testGAEResourceWithAppEngineAttributesSucceeds(String gaeEnvironmentVar) {
     envVars.put("GAE_SERVICE", "app-engine-hello");
     envVars.put("GAE_VERSION", "app-engine-hello-v1");
     envVars.put("GAE_INSTANCE", "app-engine-hello-f236d");
     envVars.put("GAE_ENV", gaeEnvironmentVar);
 
-    stubEndpoint("/project/project-id", "GAE-pid-standard");
+    stubEndpoint("/project/project-id", "GAE-pid");
     // for standard, the region should be extracted from region attribute
     stubEndpoint("/instance/zone", "country-region-zone");
     stubEndpoint("/instance/region", "country-region1");
@@ -333,22 +314,34 @@ public class GCPPlatformDetectorTest {
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
+
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_APP_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleAppEngine(mockEnv, mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
-    assertEquals(expectedRegion, detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
+        new GoogleAppEngine(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(5, detectedAttributes.size());
+    if (gaeEnvironmentVar != null && gaeEnvironmentVar.equals("standard")) {
+      assertEquals(
+          "country-region1", detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
+    } else {
+      assertEquals(
+          "country-region", detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
+    }
+    assertEquals("app-engine-hello", detectedAttributes.get(GAE_MODULE_NAME));
+    assertEquals("app-engine-hello-v1", detectedAttributes.get(GAE_APP_VERSION));
+    assertEquals("app-engine-hello-f236d", detectedAttributes.get(GAE_INSTANCE_ID));
+    assertEquals("country-region-zone", detectedAttributes.get(GAE_AVAILABILITY_ZONE));
   }
 
   // Provides key-value pair of GAE variant environment and the expected region
   // value based on the environment variable
   private static Stream<Arguments> provideGAEVariantEnvironmentVariable() {
     return Stream.of(
-        Arguments.of("standard", "country-region1"),
-        Arguments.of((String) null, "country-region"),
-        Arguments.of("flex", "country-region"),
-        Arguments.of("", "country-region"));
+        Arguments.of("standard"),
+        Arguments.of((String) null),
+        Arguments.of("flex"),
+        Arguments.of(""));
   }
 }
