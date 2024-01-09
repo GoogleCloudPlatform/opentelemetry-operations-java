@@ -61,6 +61,11 @@ final class GoogleAppEngine implements DetectedPlatform {
   }
 
   @Override
+  public String getProjectId() {
+    return this.metadataConfig.getProjectId();
+  }
+
+  @Override
   public Map<String, String> getAttributes() {
     return this.availableAttributes;
   }

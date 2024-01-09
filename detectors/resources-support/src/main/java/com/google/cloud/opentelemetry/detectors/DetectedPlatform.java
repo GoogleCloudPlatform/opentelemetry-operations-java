@@ -28,8 +28,17 @@ public interface DetectedPlatform {
   GCPPlatformDetector.SupportedPlatform getSupportedPlatform();
 
   /**
+   * Method to retrieve the GCP Project ID in which the GCP specific platform exists. Every valid
+   * platform must have a GCP Project ID associated with it.
+   *
+   * @return the Google Cloud project ID.
+   */
+  String getProjectId();
+
+  /**
    * Method to retrieve the attributes associated with the compute platform on which the application
-   * is running as key-value pairs.
+   * is running as key-value pairs. The valid keys to query on this {@link Map} are specified in the
+   * {@link AttributeKeys}.
    *
    * @return a {@link Map} of attributes specific to the underlying compute platform.
    */

@@ -21,7 +21,6 @@ import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANC
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_PROJECT_ID;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +37,6 @@ final class GoogleComputeEngine implements DetectedPlatform {
 
   private Map<String, String> prepareAttributes() {
     Map<String, String> map = new HashMap<>();
-    map.put(GCE_PROJECT_ID, this.metadataConfig.getProjectId());
     map.put(GCE_AVAILABILITY_ZONE, this.metadataConfig.getZone());
     map.put(GCE_CLOUD_REGION, this.metadataConfig.getRegionFromZone());
     map.put(GCE_INSTANCE_ID, this.metadataConfig.getInstanceId());
@@ -51,6 +49,11 @@ final class GoogleComputeEngine implements DetectedPlatform {
   @Override
   public GCPPlatformDetector.SupportedPlatform getSupportedPlatform() {
     return GCPPlatformDetector.SupportedPlatform.GOOGLE_COMPUTE_ENGINE;
+  }
+
+  @Override
+  public String getProjectId() {
+    return this.metadataConfig.getProjectId();
   }
 
   @Override

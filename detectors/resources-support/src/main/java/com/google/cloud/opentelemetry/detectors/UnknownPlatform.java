@@ -28,6 +28,11 @@ class UnknownPlatform implements DetectedPlatform {
   }
 
   @Override
+  public String getProjectId() {
+    return "";
+  }
+
+  @Override
   public Map<String, String> getAttributes() {
     return Collections.emptyMap();
   }

@@ -96,11 +96,11 @@ public class GCPPlatformDetectorTest {
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_COMPUTE_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
+    assertEquals("GCE-pid", detector.detectPlatform().getProjectId());
     Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(new GoogleComputeEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
-    assertEquals(7, detectedAttributes.size());
+    assertEquals(6, detectedAttributes.size());
 
-    assertEquals("GCE-pid", detectedAttributes.get(GCE_PROJECT_ID));
     assertEquals("country-gce_region-gce_zone", detectedAttributes.get(GCE_AVAILABILITY_ZONE));
     assertEquals("country-gce_region", detectedAttributes.get(GCE_CLOUD_REGION));
     assertEquals("GCE-instance-id", detectedAttributes.get(GCE_INSTANCE_ID));
@@ -135,6 +135,7 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GKE-pid", detector.detectPlatform().getProjectId());
     assertEquals(4, detectedAttributes.size());
 
     assertEquals(GKE_LOCATION_TYPE_ZONE, detectedAttributes.get(GKE_CLUSTER_LOCATION_TYPE));
@@ -168,7 +169,9 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GKE-pid", detector.detectPlatform().getProjectId());
     assertEquals(4, detectedAttributes.size());
+
     assertEquals(GKE_LOCATION_TYPE_REGION, detectedAttributes.get(GKE_CLUSTER_LOCATION_TYPE));
     assertEquals("country-region", detectedAttributes.get(GKE_CLUSTER_LOCATION));
     assertEquals("GKE-cluster-name", detectedAttributes.get(GKE_CLUSTER_NAME));
@@ -202,7 +205,9 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GKE-pid", detector.detectPlatform().getProjectId());
     assertEquals(4, detectedAttributes.size());
+
     assertEquals("", detector.detectPlatform().getAttributes().get(GKE_CLUSTER_LOCATION_TYPE));
     if (clusterLocation == null || clusterLocation.isEmpty()) {
       assertNull(detectedAttributes.get(GKE_CLUSTER_LOCATION));
@@ -234,7 +239,9 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GCF-pid", detector.detectPlatform().getProjectId());
     assertEquals(5, detectedAttributes.size());
+
     assertEquals("cloud-function-hello", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
     assertEquals("cloud-function-hello.1", detectedAttributes.get(SERVERLESS_COMPUTE_REVISION));
     assertEquals(
@@ -262,6 +269,7 @@ public class GCPPlatformDetectorTest {
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS,
         detector.detectPlatform().getSupportedPlatform());
+    assertEquals("GCF-pid", detector.detectPlatform().getProjectId());
     assertEquals(
         new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(),
         detector.detectPlatform().getAttributes());
@@ -288,7 +296,9 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GCR-pid", detector.detectPlatform().getProjectId());
     assertEquals(5, detectedAttributes.size());
+
     assertEquals("cloud-run-hello", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
     assertEquals("cloud-run-hello.1", detectedAttributes.get(SERVERLESS_COMPUTE_REVISION));
     assertEquals(
@@ -321,7 +331,9 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
         new GoogleAppEngine(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GAE-pid", detector.detectPlatform().getProjectId());
     assertEquals(5, detectedAttributes.size());
+
     if (gaeEnvironmentVar != null && gaeEnvironmentVar.equals("standard")) {
       assertEquals(
           "country-region1", detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));

@@ -62,6 +62,7 @@ public class GCPResourceProvider implements ResourceProvider {
     // This is running on some sort of GCPCompute - figure out the platform
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
+    attrBuilder.put(ResourceAttributes.CLOUD_ACCOUNT_ID, detectedPlatform.getProjectId());
 
     switch (detectedPlatform.getSupportedPlatform()) {
       case GOOGLE_KUBERNETES_ENGINE:
@@ -102,8 +103,6 @@ public class GCPResourceProvider implements ResourceProvider {
         ResourceAttributes.CLOUD_PLATFORM,
         ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
 
-    Optional.ofNullable(attributesMap.get(GCE_PROJECT_ID))
-        .ifPresent(projectId -> attrBuilder.put(ResourceAttributes.CLOUD_ACCOUNT_ID, projectId));
     Optional.ofNullable(attributesMap.get(GCE_AVAILABILITY_ZONE))
         .ifPresent(zone -> attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone));
     Optional.ofNullable(attributesMap.get(GCE_CLOUD_REGION))

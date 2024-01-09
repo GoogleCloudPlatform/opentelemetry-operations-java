@@ -21,7 +21,6 @@ package com.google.cloud.opentelemetry.detectors;
  */
 public final class AttributeKeys {
   // GCE Attributes
-  public static final String GCE_PROJECT_ID = AttributeKeys.PROJECT_ID;
   public static final String GCE_AVAILABILITY_ZONE = AttributeKeys.AVAILABILITY_ZONE;
   public static final String GCE_CLOUD_REGION = AttributeKeys.CLOUD_REGION;
   public static final String GCE_INSTANCE_ID = AttributeKeys.INSTANCE_ID;
@@ -53,7 +52,6 @@ public final class AttributeKeys {
   public static final String SERVERLESS_COMPUTE_CLOUD_REGION = AttributeKeys.CLOUD_REGION;
   public static final String SERVERLESS_COMPUTE_INSTANCE_ID = AttributeKeys.INSTANCE_ID;
 
-  static final String PROJECT_ID = "project_id";
   static final String AVAILABILITY_ZONE = "availability_zone";
   static final String CLOUD_REGION = "cloud_region";
   static final String INSTANCE_ID = "instance_id";
