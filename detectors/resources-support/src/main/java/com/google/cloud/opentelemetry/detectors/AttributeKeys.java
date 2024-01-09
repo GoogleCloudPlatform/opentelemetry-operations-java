@@ -27,6 +27,7 @@ public final class AttributeKeys {
   public static final String GCE_INSTANCE_ID = AttributeKeys.INSTANCE_ID;
   public static final String GCE_INSTANCE_NAME = AttributeKeys.INSTANCE_NAME;
   public static final String GCE_MACHINE_TYPE = AttributeKeys.MACHINE_TYPE;
+  public static final String GCE_INSTANCE_HOSTNAME = "instance_hostname";
 
   // GKE Attributes
   public static final String GKE_CLUSTER_NAME = "gke_cluster_name";

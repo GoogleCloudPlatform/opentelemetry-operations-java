@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.detectors;
 
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_AVAILABILITY_ZONE;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_HOSTNAME;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
@@ -42,6 +43,7 @@ final class GoogleComputeEngine implements DetectedPlatform {
     map.put(GCE_CLOUD_REGION, this.metadataConfig.getRegionFromZone());
     map.put(GCE_INSTANCE_ID, this.metadataConfig.getInstanceId());
     map.put(GCE_INSTANCE_NAME, this.metadataConfig.getInstanceName());
+    map.put(GCE_INSTANCE_HOSTNAME, this.metadataConfig.getInstanceHostName());
     map.put(GCE_MACHINE_TYPE, this.metadataConfig.getMachineType());
     return Collections.unmodifiableMap(map);
   }

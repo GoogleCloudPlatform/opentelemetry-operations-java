@@ -53,6 +53,7 @@ public class GCPResourceProviderTest {
             put(GCE_INSTANCE_ID, "random-id");
             put(GCE_INSTANCE_NAME, "instance-name");
             put(GCE_MACHINE_TYPE, "gce-m2");
+            put(GCE_INSTANCE_HOSTNAME, "instance-hostname");
           }
         };
     DetectedPlatform mockGCEPlatform = Mockito.mock(DetectedPlatform.class);
@@ -161,6 +162,12 @@ public class GCPResourceProviderTest {
         mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
         gotResource.getAttributes().get(ResourceAttributes.HOST_NAME));
     assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_NAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_HOSTNAME),
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME));
+    assertEquals(
         mockPlatform.getAttributes().get(GCE_MACHINE_TYPE),
         gotResource.getAttributes().get(ResourceAttributes.HOST_TYPE));
     assertEquals(
@@ -169,7 +176,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GCE_CLOUD_REGION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
-    assertEquals(8, gotResource.getAttributes().size());
+    assertEquals(10, gotResource.getAttributes().size());
   }
 
   @Test

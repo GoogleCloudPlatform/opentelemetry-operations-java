@@ -77,8 +77,10 @@ public class GCPResourceProvider implements ResourceProvider {
         addGAEAttributes(attrBuilder, detectedPlatform.getAttributes());
         break;
       case GOOGLE_COMPUTE_ENGINE:
-      default:
         addGCEAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      default:
+        // We don't support this platform yet, so just return with what we have
     }
 
     return attrBuilder.build();
@@ -109,7 +111,15 @@ public class GCPResourceProvider implements ResourceProvider {
     Optional.ofNullable(attributesMap.get(GCE_INSTANCE_ID))
         .ifPresent(instanceId -> attrBuilder.put(ResourceAttributes.HOST_ID, instanceId));
     Optional.ofNullable(attributesMap.get(GCE_INSTANCE_NAME))
-        .ifPresent(instanceName -> attrBuilder.put(ResourceAttributes.HOST_NAME, instanceName));
+        .ifPresent(
+            instanceName -> {
+              attrBuilder.put(ResourceAttributes.HOST_NAME, instanceName);
+              attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_NAME, instanceName);
+            });
+    Optional.ofNullable(attributesMap.get(GCE_INSTANCE_HOSTNAME))
+        .ifPresent(
+            instanceHostname ->
+                attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME, instanceHostname));
     Optional.ofNullable(attributesMap.get(GCE_MACHINE_TYPE))
         .ifPresent(machineType -> attrBuilder.put(ResourceAttributes.HOST_TYPE, machineType));
   }

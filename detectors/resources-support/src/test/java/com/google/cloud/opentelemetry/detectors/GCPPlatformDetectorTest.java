@@ -20,11 +20,27 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GAE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_AVAILABILITY_ZONE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_HOSTNAME;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_PROJECT_ID;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_LOCATION;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_LOCATION_TYPE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_CLUSTER_NAME;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_HOST_ID;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_LOCATION_TYPE_REGION;
 import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GKE_LOCATION_TYPE_ZONE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_AVAILABILITY_ZONE;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_INSTANCE_ID;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_NAME;
+import static com.google.cloud.opentelemetry.detectors.AttributeKeys.SERVERLESS_COMPUTE_REVISION;
 import static com.google.cloud.opentelemetry.detectors.TestUtils.stubEndpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.util.Collections;
@@ -86,10 +102,11 @@ public class GCPPlatformDetectorTest {
   @Test
   public void testGCEResourceWithGCEAttributesSucceeds() {
     stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
+    stubEndpoint("/instance/zone", "country-gce_region-gce_zone");
     stubEndpoint("/instance/id", "GCE-instance-id");
     stubEndpoint("/instance/name", "GCE-instance-name");
     stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/instance/hostname", "GCE-instance-hostname");
 
     GCPPlatformDetector detector =
         new GCPPlatformDetector(mockMetadataConfig, new EnvVarMock(envVars));
@@ -97,9 +114,17 @@ public class GCPPlatformDetectorTest {
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_COMPUTE_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
-    assertEquals(
-        new GoogleComputeEngine(mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
+    assertEquals(new GoogleComputeEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(7, detectedAttributes.size());
+
+    assertEquals("GCE-pid", detectedAttributes.get(GCE_PROJECT_ID));
+    assertEquals("country-gce_region-gce_zone", detectedAttributes.get(GCE_AVAILABILITY_ZONE));
+    assertEquals("country-gce_region", detectedAttributes.get(GCE_CLOUD_REGION));
+    assertEquals("GCE-instance-id", detectedAttributes.get(GCE_INSTANCE_ID));
+    assertEquals("GCE-instance-name", detectedAttributes.get(GCE_INSTANCE_NAME));
+    assertEquals("GCE-instance-type", detectedAttributes.get(GCE_MACHINE_TYPE));
+    assertEquals("GCE-instance-hostname", detectedAttributes.get(GCE_INSTANCE_HOSTNAME));
   }
 
   /** Google Kubernetes Engine Tests * */
@@ -112,25 +137,28 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/project/project-id", "GKE-pid");
+    stubEndpoint("/instance/id", "GKE-instance-id");
+    stubEndpoint("/instance/name", "instance-name");
+    stubEndpoint("/instance/machine-type", "instance-type");
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
     stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
 
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
-    assertEquals(
-        GKE_LOCATION_TYPE_ZONE,
-        detector.detectPlatform().getAttributes().get(GKE_CLUSTER_LOCATION_TYPE));
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(4, detectedAttributes.size());
+
+    assertEquals(GKE_LOCATION_TYPE_ZONE, detectedAttributes.get(GKE_CLUSTER_LOCATION_TYPE));
+    assertEquals("country-region-zone", detectedAttributes.get(GKE_CLUSTER_LOCATION));
+    assertEquals("GKE-cluster-name", detectedAttributes.get(GKE_CLUSTER_NAME));
+    assertEquals("GKE-instance-id", detectedAttributes.get(GKE_HOST_ID));
   }
 
   @Test
@@ -142,25 +170,27 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/id", "GCE-instance-id");
+    stubEndpoint("/project/project-id", "GKE-pid");
+    stubEndpoint("/instance/id", "GKE-instance-id");
     stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/instance/machine-type", "GKE-instance-type");
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
     stubEndpoint("/instance/attributes/cluster-location", "country-region");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
 
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
-    assertEquals(
-        GKE_LOCATION_TYPE_REGION,
-        detector.detectPlatform().getAttributes().get(GKE_CLUSTER_LOCATION_TYPE));
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(4, detectedAttributes.size());
+    assertEquals(GKE_LOCATION_TYPE_REGION, detectedAttributes.get(GKE_CLUSTER_LOCATION_TYPE));
+    assertEquals("country-region", detectedAttributes.get(GKE_CLUSTER_LOCATION));
+    assertEquals("GKE-cluster-name", detectedAttributes.get(GKE_CLUSTER_NAME));
+    assertEquals("GKE-instance-id", detectedAttributes.get(GKE_HOST_ID));
   }
 
   @ParameterizedTest
@@ -174,23 +204,31 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    stubEndpoint("/project/project-id", "GKE-pid");
+    stubEndpoint("/instance/id", "GKE-instance-id");
+    stubEndpoint("/instance/name", "GKE-instance-name");
+    stubEndpoint("/instance/machine-type", "GKE-instance-type");
     stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
     stubEndpoint("/instance/attributes/cluster-location", clusterLocation);
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
 
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(4, detectedAttributes.size());
     assertEquals("", detector.detectPlatform().getAttributes().get(GKE_CLUSTER_LOCATION_TYPE));
+    if (clusterLocation == null || clusterLocation.isEmpty()) {
+      assertNull(detectedAttributes.get(GKE_CLUSTER_LOCATION));
+    } else {
+      assertEquals(clusterLocation, detectedAttributes.get(GKE_CLUSTER_LOCATION));
+    }
+    assertEquals("GKE-cluster-name", detectedAttributes.get(GKE_CLUSTER_NAME));
+    assertEquals("GKE-instance-id", detectedAttributes.get(GKE_HOST_ID));
   }
 
   /** Google Cloud Functions Tests * */
@@ -208,12 +246,19 @@ public class GCPPlatformDetectorTest {
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
 
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
+        new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(5, detectedAttributes.size());
+    assertEquals("cloud-function-hello", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
+    assertEquals("cloud-function-hello.1", detectedAttributes.get(SERVERLESS_COMPUTE_REVISION));
+    assertEquals(
+        "country-region-zone", detectedAttributes.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE));
+    assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
+    assertEquals("GCF-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
   }
 
   @Test
@@ -255,12 +300,19 @@ public class GCPPlatformDetectorTest {
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
 
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(),
-        detector.detectPlatform().getAttributes());
+        new GoogleCloudFunction(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals(5, detectedAttributes.size());
+    assertEquals("cloud-run-hello", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
+    assertEquals("cloud-run-hello.1", detectedAttributes.get(SERVERLESS_COMPUTE_REVISION));
+    assertEquals(
+        "country-region-zone", detectedAttributes.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE));
+    assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
+    assertEquals("GCR-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
   }
 
   /** Google App Engine Tests * */
@@ -281,7 +333,6 @@ public class GCPPlatformDetectorTest {
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
-
     assertEquals(
         GCPPlatformDetector.SupportedPlatform.GOOGLE_APP_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
