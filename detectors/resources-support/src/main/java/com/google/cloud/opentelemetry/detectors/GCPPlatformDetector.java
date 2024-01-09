@@ -67,7 +67,7 @@ public class GCPPlatformDetector {
     DetectedPlatform detectedPlatform;
     switch (platform) {
       case GOOGLE_KUBERNETES_ENGINE:
-        detectedPlatform = new GoogleKubernetesEngine(environmentVariables, metadataConfig);
+        detectedPlatform = new GoogleKubernetesEngine(metadataConfig);
         break;
       case GOOGLE_CLOUD_RUN:
         detectedPlatform = new GoogleCloudRun(environmentVariables, metadataConfig);

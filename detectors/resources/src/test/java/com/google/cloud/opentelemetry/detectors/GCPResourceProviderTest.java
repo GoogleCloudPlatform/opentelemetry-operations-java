@@ -37,9 +37,6 @@ public class GCPResourceProviderTest {
   private final Map<String, String> mockGKECommonAttributes =
       new HashMap<>() {
         {
-          put(GKE_POD_NAME, "gke-pod-123");
-          put(GKE_NAMESPACE, "gke-namespace-default");
-          put(GKE_CONTAINER_NAME, "gke-container-2");
           put(GKE_CLUSTER_NAME, "gke-cluster");
           put(GKE_HOST_ID, "host1");
         }
@@ -188,7 +185,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
-    assertEquals(8, gotResource.getAttributes().size());
+    assertEquals(5, gotResource.getAttributes().size());
   }
 
   @Test
@@ -204,7 +201,7 @@ public class GCPResourceProviderTest {
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
-    assertEquals(8, gotResource.getAttributes().size());
+    assertEquals(5, gotResource.getAttributes().size());
   }
 
   @Test
@@ -225,7 +222,7 @@ public class GCPResourceProviderTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
-    assertEquals(7, gotResource.getAttributes().size());
+    assertEquals(4, gotResource.getAttributes().size());
   }
 
   @Test
@@ -239,7 +236,7 @@ public class GCPResourceProviderTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
-    assertEquals(7, gotResource.getAttributes().size());
+    assertEquals(4, gotResource.getAttributes().size());
   }
 
   private void verifyGKEMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
@@ -249,15 +246,6 @@ public class GCPResourceProviderTest {
     assertEquals(
         ResourceAttributes.CloudProviderValues.GCP,
         gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
-    assertEquals(
-        detectedPlatform.getAttributes().get(GKE_POD_NAME),
-        gotResource.getAttributes().get(ResourceAttributes.K8S_POD_NAME));
-    assertEquals(
-        detectedPlatform.getAttributes().get(GKE_NAMESPACE),
-        gotResource.getAttributes().get(ResourceAttributes.K8S_NAMESPACE_NAME));
-    assertEquals(
-        detectedPlatform.getAttributes().get(GKE_CONTAINER_NAME),
-        gotResource.getAttributes().get(ResourceAttributes.K8S_CONTAINER_NAME));
     assertEquals(
         detectedPlatform.getAttributes().get(GKE_HOST_ID),
         gotResource.getAttributes().get(ResourceAttributes.HOST_ID));

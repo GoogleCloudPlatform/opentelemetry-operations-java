@@ -126,13 +126,6 @@ public class GCPResourceProvider implements ResourceProvider {
         ResourceAttributes.CLOUD_PLATFORM,
         ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
 
-    Optional.ofNullable(attributesMap.get(GKE_POD_NAME))
-        .ifPresent(podName -> attrBuilder.put(ResourceAttributes.K8S_POD_NAME, podName));
-    Optional.ofNullable(attributesMap.get(GKE_NAMESPACE))
-        .ifPresent(namespace -> attrBuilder.put(ResourceAttributes.K8S_NAMESPACE_NAME, namespace));
-    Optional.ofNullable(attributesMap.get(GKE_CONTAINER_NAME))
-        .ifPresent(
-            containerName -> attrBuilder.put(ResourceAttributes.K8S_CONTAINER_NAME, containerName));
     Optional.ofNullable(attributesMap.get(GKE_CLUSTER_NAME))
         .ifPresent(
             clusterName -> attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName));

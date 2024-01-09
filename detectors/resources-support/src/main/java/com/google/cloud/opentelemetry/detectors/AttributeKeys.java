@@ -29,9 +29,6 @@ public final class AttributeKeys {
   public static final String GCE_MACHINE_TYPE = AttributeKeys.MACHINE_TYPE;
 
   // GKE Attributes
-  public static final String GKE_POD_NAME = "gke_pod_name";
-  public static final String GKE_NAMESPACE = "gke_namespace";
-  public static final String GKE_CONTAINER_NAME = "gke_container_name";
   public static final String GKE_CLUSTER_NAME = "gke_cluster_name";
   public static final String GKE_CLUSTER_LOCATION_TYPE = "gke_cluster_location_type";
   public static final String GKE_CLUSTER_LOCATION = "gke_cluster_location";

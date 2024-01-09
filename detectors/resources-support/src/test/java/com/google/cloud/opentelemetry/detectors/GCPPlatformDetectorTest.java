@@ -126,7 +126,7 @@ public class GCPPlatformDetectorTest {
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockEnv, mockMetadataConfig).getAttributes(),
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
         detector.detectPlatform().getAttributes());
     assertEquals(
         GKE_LOCATION_TYPE_ZONE,
@@ -156,7 +156,7 @@ public class GCPPlatformDetectorTest {
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockEnv, mockMetadataConfig).getAttributes(),
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
         detector.detectPlatform().getAttributes());
     assertEquals(
         GKE_LOCATION_TYPE_REGION,
@@ -188,7 +188,7 @@ public class GCPPlatformDetectorTest {
         GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE,
         detector.detectPlatform().getSupportedPlatform());
     assertEquals(
-        new GoogleKubernetesEngine(mockEnv, mockMetadataConfig).getAttributes(),
+        new GoogleKubernetesEngine(mockMetadataConfig).getAttributes(),
         detector.detectPlatform().getAttributes());
     assertEquals("", detector.detectPlatform().getAttributes().get(GKE_CLUSTER_LOCATION_TYPE));
   }
