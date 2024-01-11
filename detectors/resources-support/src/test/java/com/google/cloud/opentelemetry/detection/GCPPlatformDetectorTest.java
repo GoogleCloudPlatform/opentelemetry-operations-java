@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.*;
-import static com.google.cloud.opentelemetry.detectors.TestUtils.stubEndpoint;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -83,12 +82,12 @@ public class GCPPlatformDetectorTest {
   /** Google Compute Engine Tests * */
   @Test
   public void testGCEResourceWithGCEAttributesSucceeds() {
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/zone", "country-gce_region-gce_zone");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
-    stubEndpoint("/instance/hostname", "GCE-instance-hostname");
+    TestUtils.stubEndpoint("/project/project-id", "GCE-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-gce_region-gce_zone");
+    TestUtils.stubEndpoint("/instance/id", "GCE-instance-id");
+    TestUtils.stubEndpoint("/instance/name", "GCE-instance-name");
+    TestUtils.stubEndpoint("/instance/machine-type", "GCE-instance-type");
+    TestUtils.stubEndpoint("/instance/hostname", "GCE-instance-hostname");
 
     GCPPlatformDetector detector =
         new GCPPlatformDetector(mockMetadataConfig, new EnvVarMock(envVars));
@@ -119,12 +118,12 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GKE-pid");
-    stubEndpoint("/instance/id", "GKE-instance-id");
-    stubEndpoint("/instance/name", "instance-name");
-    stubEndpoint("/instance/machine-type", "instance-type");
-    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
-    stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
+    TestUtils.stubEndpoint("/project/project-id", "GKE-pid");
+    TestUtils.stubEndpoint("/instance/id", "GKE-instance-id");
+    TestUtils.stubEndpoint("/instance/name", "instance-name");
+    TestUtils.stubEndpoint("/instance/machine-type", "instance-type");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -153,12 +152,12 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GKE-pid");
-    stubEndpoint("/instance/id", "GKE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GKE-instance-type");
-    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
-    stubEndpoint("/instance/attributes/cluster-location", "country-region");
+    TestUtils.stubEndpoint("/project/project-id", "GKE-pid");
+    TestUtils.stubEndpoint("/instance/id", "GKE-instance-id");
+    TestUtils.stubEndpoint("/instance/name", "GCE-instance-name");
+    TestUtils.stubEndpoint("/instance/machine-type", "GKE-instance-type");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-location", "country-region");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -189,12 +188,12 @@ public class GCPPlatformDetectorTest {
     envVars.put("POD_NAME", "GKE-testHostName-full-1234");
     envVars.put("CONTAINER_NAME", "GKE-testContainerName");
 
-    stubEndpoint("/project/project-id", "GKE-pid");
-    stubEndpoint("/instance/id", "GKE-instance-id");
-    stubEndpoint("/instance/name", "GKE-instance-name");
-    stubEndpoint("/instance/machine-type", "GKE-instance-type");
-    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
-    stubEndpoint("/instance/attributes/cluster-location", clusterLocation);
+    TestUtils.stubEndpoint("/project/project-id", "GKE-pid");
+    TestUtils.stubEndpoint("/instance/id", "GKE-instance-id");
+    TestUtils.stubEndpoint("/instance/name", "GKE-instance-name");
+    TestUtils.stubEndpoint("/instance/machine-type", "GKE-instance-type");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
+    TestUtils.stubEndpoint("/instance/attributes/cluster-location", clusterLocation);
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -226,9 +225,9 @@ public class GCPPlatformDetectorTest {
     envVars.put("K_REVISION", "cloud-function-hello.1");
     envVars.put("FUNCTION_TARGET", "cloud-function-hello");
 
-    stubEndpoint("/project/project-id", "GCF-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "GCF-instance-id");
+    TestUtils.stubEndpoint("/project/project-id", "GCF-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/id", "GCF-instance-id");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -259,9 +258,9 @@ public class GCPPlatformDetectorTest {
     // This should be ignored and detected platform should still be GCF
     envVars.put("K_CONFIGURATION", "cloud-run-hello");
 
-    stubEndpoint("/project/project-id", "GCF-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "GCF-instance-id");
+    TestUtils.stubEndpoint("/project/project-id", "GCF-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/id", "GCF-instance-id");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -283,9 +282,9 @@ public class GCPPlatformDetectorTest {
     envVars.put("K_REVISION", "cloud-run-hello.1");
     envVars.put("K_CONFIGURATION", "cloud-run-hello");
 
-    stubEndpoint("/project/project-id", "GCR-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "GCR-instance-id");
+    TestUtils.stubEndpoint("/project/project-id", "GCR-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/id", "GCR-instance-id");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
@@ -316,11 +315,11 @@ public class GCPPlatformDetectorTest {
     envVars.put("GAE_INSTANCE", "app-engine-hello-f236d");
     envVars.put("GAE_ENV", gaeEnvironmentVar);
 
-    stubEndpoint("/project/project-id", "GAE-pid");
+    TestUtils.stubEndpoint("/project/project-id", "GAE-pid");
     // for standard, the region should be extracted from region attribute
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/region", "country-region1");
-    stubEndpoint("/instance/id", "GAE-instance-id");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/region", "country-region1");
+    TestUtils.stubEndpoint("/instance/id", "GAE-instance-id");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
     GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);

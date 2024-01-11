@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 /**
  * Contains constants that act as keys for the known attributes for {@link
- * com.google.cloud.opentelemetry.detectors.GCPPlatformDetector.SupportedPlatform}s.
+ * GCPPlatformDetector.SupportedPlatform}s.
  */
 public final class AttributeKeys {
   // GCE Attributes

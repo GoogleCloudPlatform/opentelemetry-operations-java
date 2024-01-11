@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
-import static com.google.cloud.opentelemetry.detectors.TestUtils.stubEndpoint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -43,15 +42,15 @@ class GCPMetadataConfigTest {
 
   @BeforeEach
   public void setupMockMetadataConfig() {
-    stubEndpoint("/project/project-id", mockProjectId);
-    stubEndpoint("/instance/zone", mockZone);
-    stubEndpoint("/instance/region", mockRegion);
-    stubEndpoint("/instance/id", mockInstanceId);
-    stubEndpoint("/instance/name", mockInstanceName);
-    stubEndpoint("/instance/machine-type", mockInstanceType);
-    stubEndpoint("/instance/attributes/cluster-name", mockClusterName);
-    stubEndpoint("/instance/attributes/cluster-location", mockClusterLocation);
-    stubEndpoint("/instance/hostname", mockHostname);
+    TestUtils.stubEndpoint("/project/project-id", mockProjectId);
+    TestUtils.stubEndpoint("/instance/zone", mockZone);
+    TestUtils.stubEndpoint("/instance/region", mockRegion);
+    TestUtils.stubEndpoint("/instance/id", mockInstanceId);
+    TestUtils.stubEndpoint("/instance/name", mockInstanceName);
+    TestUtils.stubEndpoint("/instance/machine-type", mockInstanceType);
+    TestUtils.stubEndpoint("/instance/attributes/cluster-name", mockClusterName);
+    TestUtils.stubEndpoint("/instance/attributes/cluster-location", mockClusterLocation);
+    TestUtils.stubEndpoint("/instance/hostname", mockHostname);
   }
 
   @Test
@@ -63,7 +62,7 @@ class GCPMetadataConfigTest {
   @ParameterizedTest
   @MethodSource("provideZoneRetrievalArguments")
   void testGetZone(String stubbedMockZone, String expectedMockZone) {
-    stubEndpoint("/instance/zone", stubbedMockZone);
+    TestUtils.stubEndpoint("/instance/zone", stubbedMockZone);
     assertEquals(expectedMockZone, mockMetadataConfig.getZone());
   }
 
@@ -80,7 +79,7 @@ class GCPMetadataConfigTest {
   @ParameterizedTest
   @MethodSource("provideRegionRetrievalArguments")
   void testGetRegion(String stubbedMockRegion, String expectedMockRegion) {
-    stubEndpoint("/instance/region", stubbedMockRegion);
+    TestUtils.stubEndpoint("/instance/region", stubbedMockRegion);
     assertEquals(expectedMockRegion, mockMetadataConfig.getRegion());
   }
 
@@ -96,7 +95,7 @@ class GCPMetadataConfigTest {
   @ParameterizedTest
   @MethodSource("provideZoneArguments")
   void testGetRegionFromZone(String stubbedMockZone, String expectedRegion) {
-    stubEndpoint("/instance/zone", stubbedMockZone);
+    TestUtils.stubEndpoint("/instance/zone", stubbedMockZone);
     assertEquals(expectedRegion, mockMetadataConfig.getRegionFromZone());
   }
 
@@ -113,7 +112,7 @@ class GCPMetadataConfigTest {
   @ParameterizedTest
   @MethodSource("provideMachineTypeRetrievalArguments")
   void testGetMachineType(String stubbedMockMachineType, String expectedMockMachineType) {
-    stubEndpoint("/instance/machine-type", stubbedMockMachineType);
+    TestUtils.stubEndpoint("/instance/machine-type", stubbedMockMachineType);
     assertEquals(expectedMockMachineType, mockMetadataConfig.getMachineType());
   }
 

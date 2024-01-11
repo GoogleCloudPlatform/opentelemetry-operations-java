@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 /**
  * Provides API to fetch environment variables. This is useful in order to create a mock class for

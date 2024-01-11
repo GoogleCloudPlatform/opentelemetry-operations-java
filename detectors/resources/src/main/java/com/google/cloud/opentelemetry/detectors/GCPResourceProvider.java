@@ -15,8 +15,10 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.*;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
 
+import com.google.cloud.opentelemetry.detection.DetectedPlatform;
+import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;

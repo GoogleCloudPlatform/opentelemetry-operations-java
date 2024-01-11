@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
-class GoogleCloudFunction extends GoogleServerlessCompute {
-  GoogleCloudFunction(EnvironmentVariables environmentVariables, GCPMetadataConfig metadataConfig) {
-    super(environmentVariables, metadataConfig);
-  }
+import java.util.Collections;
+import java.util.Map;
+
+class UnknownPlatform implements DetectedPlatform {
+
+  UnknownPlatform() {}
 
   @Override
   public GCPPlatformDetector.SupportedPlatform getSupportedPlatform() {
-    return GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS;
+    return GCPPlatformDetector.SupportedPlatform.UNKNOWN_PLATFORM;
+  }
+
+  @Override
+  public String getProjectId() {
+    return "";
+  }
+
+  @Override
+  public Map<String, String> getAttributes() {
+    return Collections.emptyMap();
   }
 }

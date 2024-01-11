@@ -15,11 +15,13 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.*;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.cloud.opentelemetry.detection.DetectedPlatform;
+import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;

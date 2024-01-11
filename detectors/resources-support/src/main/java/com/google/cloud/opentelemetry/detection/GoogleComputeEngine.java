@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_AVAILABILITY_ZONE;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_CLOUD_REGION;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_HOSTNAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_ID;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_INSTANCE_NAME;
-import static com.google.cloud.opentelemetry.detectors.AttributeKeys.GCE_MACHINE_TYPE;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_AVAILABILITY_ZONE;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_CLOUD_REGION;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_INSTANCE_HOSTNAME;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_INSTANCE_ID;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_INSTANCE_NAME;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.GCE_MACHINE_TYPE;
 
 import java.util.Collections;
 import java.util.HashMap;
