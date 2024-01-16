@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,17 @@ import java.util.logging.Logger;
  * Google Compute Engine (GCE), Google Kubernetes Engine (GKE), Google Cloud Functions (GCF), Google
  * App Engine (GAE) and Google Cloud Run (GCR).
  */
-public class GCPResourceProvider implements ResourceProvider {
+public class GCPResource implements ResourceProvider {
 
-  private static final Logger LOGGER = Logger.getLogger(GCPResourceProvider.class.getSimpleName());
+  private static final Logger LOGGER = Logger.getLogger(GCPResource.class.getSimpleName());
   private final GCPPlatformDetector detector;
 
   // for testing only
-  GCPResourceProvider(GCPPlatformDetector detector) {
+  GCPResource(GCPPlatformDetector detector) {
     this.detector = detector;
   }
 
-  public GCPResourceProvider() {
+  public GCPResource() {
     this.detector = GCPPlatformDetector.DEFAULT_INSTANCE;
   }
 
