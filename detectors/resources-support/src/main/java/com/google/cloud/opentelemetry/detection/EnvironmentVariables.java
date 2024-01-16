@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 /**
  * Provides API to fetch environment variables. This is useful in order to create a mock class for
  * testing.
- *
- * @deprecated Not for public use. This interface is expected to be retained only as package
- *     private.
  */
-@Deprecated
-public interface EnvVars {
-  EnvVars DEFAULT_INSTANCE = System::getenv;
+interface EnvironmentVariables {
+  /** Returns the current environment variables of the platform this is running in. */
+  EnvironmentVariables DEFAULT_INSTANCE = System::getenv;
 
   /**
    * Grabs the system environment variable. Returns null on failure.

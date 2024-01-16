@@ -15,13 +15,18 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
+
+import com.google.cloud.opentelemetry.detection.DetectedPlatform;
+import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -30,20 +35,17 @@ import java.util.logging.Logger;
  * App Engine (GAE) and Google Cloud Run (GCR).
  */
 public class GCPResource implements ResourceProvider {
-  private final GCPMetadataConfig metadata;
-  private final EnvVars envVars;
 
   private static final Logger LOGGER = Logger.getLogger(GCPResource.class.getSimpleName());
-
-  public GCPResource() {
-    this.metadata = GCPMetadataConfig.DEFAULT_INSTANCE;
-    this.envVars = EnvVars.DEFAULT_INSTANCE;
-  }
+  private final GCPPlatformDetector detector;
 
   // for testing only
-  GCPResource(GCPMetadataConfig metadata, EnvVars envVars) {
-    this.metadata = metadata;
-    this.envVars = envVars;
+  GCPResource(GCPPlatformDetector detector) {
+    this.detector = detector;
+  }
+
+  public GCPResource() {
+    this.detector = GCPPlatformDetector.DEFAULT_INSTANCE;
   }
 
   /**
@@ -53,20 +55,35 @@ public class GCPResource implements ResourceProvider {
    * @return The {@link Attributes} for the detected resource.
    */
   public Attributes getAttributes() {
-    if (!metadata.isRunningOnGcp()) {
+    DetectedPlatform detectedPlatform = detector.detectPlatform();
+    if (detectedPlatform.getSupportedPlatform()
+        == GCPPlatformDetector.SupportedPlatform.UNKNOWN_PLATFORM) {
       return Attributes.empty();
     }
 
     // This is running on some sort of GCPCompute - figure out the platform
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
+    attrBuilder.put(ResourceAttributes.CLOUD_ACCOUNT_ID, detectedPlatform.getProjectId());
 
-    if (!(generateGKEAttributesIfApplicable(attrBuilder)
-        || generateGCRAttributesIfApplicable(attrBuilder)
-        || generateGCFAttributesIfApplicable(attrBuilder)
-        || generateGAEAttributesIfApplicable(attrBuilder))) {
-      // none of the above GCP platforms is applicable, default to GCE
-      addGCEAttributes(attrBuilder);
+    switch (detectedPlatform.getSupportedPlatform()) {
+      case GOOGLE_KUBERNETES_ENGINE:
+        addGKEAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      case GOOGLE_CLOUD_RUN:
+        addGCRAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      case GOOGLE_CLOUD_FUNCTIONS:
+        addGCFAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      case GOOGLE_APP_ENGINE:
+        addGAEAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      case GOOGLE_COMPUTE_ENGINE:
+        addGCEAttributes(attrBuilder, detectedPlatform.getAttributes());
+        break;
+      default:
+        // We don't support this platform yet, so just return with what we have
     }
 
     return attrBuilder.build();
@@ -83,33 +100,29 @@ public class GCPResource implements ResourceProvider {
    * additional attributes are added/overwritten if later on, the resource is identified to be some
    * other platform - like GKE, GAE, etc.
    */
-  private void addGCEAttributes(AttributesBuilder attrBuilder) {
+  private void addGCEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
         ResourceAttributes.CLOUD_PLATFORM,
         ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
 
-    String projectId = metadata.getProjectId();
-    if (projectId != null) {
-      attrBuilder.put(ResourceAttributes.CLOUD_ACCOUNT_ID, projectId);
-    }
-
-    AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
-    AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
-
-    String instanceId = metadata.getInstanceId();
-    if (instanceId != null) {
-      attrBuilder.put(ResourceAttributes.HOST_ID, instanceId);
-    }
-
-    String instanceName = metadata.getInstanceName();
-    if (instanceName != null) {
-      attrBuilder.put(ResourceAttributes.HOST_NAME, instanceName);
-    }
-
-    String hostType = metadata.getMachineType();
-    if (hostType != null) {
-      attrBuilder.put(ResourceAttributes.HOST_TYPE, hostType);
-    }
+    Optional.ofNullable(attributesMap.get(GCE_AVAILABILITY_ZONE))
+        .ifPresent(zone -> attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone));
+    Optional.ofNullable(attributesMap.get(GCE_CLOUD_REGION))
+        .ifPresent(region -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, region));
+    Optional.ofNullable(attributesMap.get(GCE_INSTANCE_ID))
+        .ifPresent(instanceId -> attrBuilder.put(ResourceAttributes.HOST_ID, instanceId));
+    Optional.ofNullable(attributesMap.get(GCE_INSTANCE_NAME))
+        .ifPresent(
+            instanceName -> {
+              attrBuilder.put(ResourceAttributes.HOST_NAME, instanceName);
+              attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_NAME, instanceName);
+            });
+    Optional.ofNullable(attributesMap.get(GCE_INSTANCE_HOSTNAME))
+        .ifPresent(
+            instanceHostname ->
+                attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME, instanceHostname));
+    Optional.ofNullable(attributesMap.get(GCE_MACHINE_TYPE))
+        .ifPresent(machineType -> attrBuilder.put(ResourceAttributes.HOST_TYPE, machineType));
   }
 
   /**
@@ -118,79 +131,39 @@ public class GCPResource implements ResourceProvider {
    *
    * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
    *     necessary keys.
-   * @return a boolean indicating if the environment was determined to be GKE and GKE specific
-   *     attributes were applied.
    */
-  private boolean generateGKEAttributesIfApplicable(AttributesBuilder attrBuilder) {
-    if (envVars.get("KUBERNETES_SERVICE_HOST") != null) {
-      attrBuilder.put(
-          ResourceAttributes.CLOUD_PLATFORM,
-          ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
-      String podName = envVars.get("POD_NAME");
-      if (podName != null && !podName.isEmpty()) {
-        attrBuilder.put(ResourceAttributes.K8S_POD_NAME, podName);
-      } else {
-        // If nothing else is set, at least use hostname for pod name.
-        attrBuilder.put(ResourceAttributes.K8S_POD_NAME, envVars.get("HOSTNAME"));
-      }
+  private void addGKEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
+    attrBuilder.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
 
-      String namespace = envVars.get("NAMESPACE");
-      if (namespace != null && !namespace.isEmpty()) {
-        attrBuilder.put(ResourceAttributes.K8S_NAMESPACE_NAME, namespace);
-      }
-
-      String containerName = envVars.get("CONTAINER_NAME");
-      if (containerName != null && !containerName.isEmpty()) {
-        attrBuilder.put(ResourceAttributes.K8S_CONTAINER_NAME, containerName);
-      }
-
-      String instanceId = metadata.getInstanceId();
-      if (instanceId != null) {
-        attrBuilder.put(ResourceAttributes.HOST_ID, instanceId);
-      }
-
-      String clusterLocation = metadata.getClusterLocation();
-      assignGKEAvailabilityZoneOrRegion(clusterLocation, attrBuilder);
-
-      String clusterName = metadata.getClusterName();
-      if (clusterName != null && !clusterName.isEmpty()) {
-        attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Function that assigns either the cloud region or cloud availability zone depending on whether
-   * the cluster is regional or zonal respectively. Assigns both values if the cluster location
-   * passed is in an unexpected format.
-   *
-   * @param clusterLocation The location of the GKE cluster. Can either be an availability zone or a
-   *     region.
-   * @param attributesBuilder The {@link AttributesBuilder} object that needs to be updated with the
-   *     necessary keys.
-   */
-  private void assignGKEAvailabilityZoneOrRegion(
-      String clusterLocation, AttributesBuilder attributesBuilder) {
-    long dashCount =
-        StringUtils.isNullOrEmpty(clusterLocation)
-            ? 0
-            : clusterLocation.chars().filter(ch -> ch == '-').count();
-    switch ((int) dashCount) {
-      case 1:
-        // this is a region
-        attributesBuilder.put(ResourceAttributes.CLOUD_REGION, clusterLocation);
-        break;
-      case 2:
-        // this is a zone
-        attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, clusterLocation);
-        break;
-      default:
-        // TODO: Figure out how to handle unexpected conditions like this - Issue #183
-        LOGGER.severe(
-            String.format("Unrecognized format for cluster location: %s", clusterLocation));
-    }
+    Optional.ofNullable(attributesMap.get(GKE_CLUSTER_NAME))
+        .ifPresent(
+            clusterName -> attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName));
+    Optional.ofNullable(attributesMap.get(GKE_HOST_ID))
+        .ifPresent(hostId -> attrBuilder.put(ResourceAttributes.HOST_ID, hostId));
+    Optional.ofNullable(attributesMap.get(GKE_CLUSTER_LOCATION_TYPE))
+        .ifPresent(
+            locationType -> {
+              if (attributesMap.get(GKE_CLUSTER_LOCATION) != null) {
+                switch (locationType) {
+                  case GKE_LOCATION_TYPE_REGION:
+                    attrBuilder.put(
+                        ResourceAttributes.CLOUD_REGION, attributesMap.get(GKE_CLUSTER_LOCATION));
+                    break;
+                  case GKE_LOCATION_TYPE_ZONE:
+                    attrBuilder.put(
+                        ResourceAttributes.CLOUD_AVAILABILITY_ZONE,
+                        attributesMap.get(GKE_CLUSTER_LOCATION));
+                  default:
+                    // TODO: Figure out how to handle unexpected conditions like this - Issue #183
+                    LOGGER.severe(
+                        String.format(
+                            "Unrecognized format for cluster location: %s",
+                            attributesMap.get(GKE_CLUSTER_LOCATION)));
+                }
+              }
+            });
   }
 
   /**
@@ -199,19 +172,11 @@ public class GCPResource implements ResourceProvider {
    *
    * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
    *     necessary keys.
-   * @return a boolean indicating if the environment was determined to be GCR and GCR specific
-   *     attributes were applied.
    */
-  private boolean generateGCRAttributesIfApplicable(AttributesBuilder attrBuilder) {
-    if (envVars.get("K_CONFIGURATION") != null && envVars.get("FUNCTION_TARGET") == null) {
-      // add the resource attributes for Cloud Run
-      attrBuilder.put(
-          ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
-
-      updateCommonAttributesForServerlessCompute(attrBuilder);
-      return true;
-    }
-    return false;
+  private void addGCRAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
+    attrBuilder.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
+    addCommonAttributesForServerlessCompute(attrBuilder, attributesMap);
   }
 
   /**
@@ -220,20 +185,37 @@ public class GCPResource implements ResourceProvider {
    *
    * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
    *     necessary keys.
-   * @return a boolean indicating if the environment was determined to be GCF and GCF specific
-   *     attributes were applied.
    */
-  private boolean generateGCFAttributesIfApplicable(AttributesBuilder attrBuilder) {
-    if (envVars.get("FUNCTION_TARGET") != null) {
-      // add the resource attributes for Cloud Function
-      attrBuilder.put(
-          ResourceAttributes.CLOUD_PLATFORM,
-          ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
+  private void addGCFAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
+    attrBuilder.put(
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
+    addCommonAttributesForServerlessCompute(attrBuilder, attributesMap);
+  }
 
-      updateCommonAttributesForServerlessCompute(attrBuilder);
-      return true;
-    }
-    return false;
+  /**
+   * Updates the attributes with the required keys for a GAE (Google App Engine) environment. The
+   * attributes are not updated in case the environment is not deemed to be GAE.
+   *
+   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
+   *     necessary keys.
+   */
+  private void addGAEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
+    attrBuilder.put(
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE);
+    Optional.ofNullable(attributesMap.get(GAE_MODULE_NAME))
+        .ifPresent(appName -> attrBuilder.put(ResourceAttributes.FAAS_NAME, appName));
+    Optional.ofNullable(attributesMap.get(GAE_APP_VERSION))
+        .ifPresent(appVersion -> attrBuilder.put(ResourceAttributes.FAAS_VERSION, appVersion));
+    Optional.ofNullable(attributesMap.get(GAE_INSTANCE_ID))
+        .ifPresent(
+            appInstanceId -> attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, appInstanceId));
+    Optional.ofNullable(attributesMap.get(GAE_CLOUD_REGION))
+        .ifPresent(cloudRegion -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, cloudRegion));
+    Optional.ofNullable(attributesMap.get(GAE_AVAILABILITY_ZONE))
+        .ifPresent(
+            cloudAvailabilityZone ->
+                attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, cloudAvailabilityZone));
   }
 
   /**
@@ -243,69 +225,17 @@ public class GCPResource implements ResourceProvider {
    * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
    *     necessary keys.
    */
-  private void updateCommonAttributesForServerlessCompute(AttributesBuilder attrBuilder) {
-    String serverlessComputeName = envVars.get("K_SERVICE");
-    if (serverlessComputeName != null) {
-      attrBuilder.put(ResourceAttributes.FAAS_NAME, serverlessComputeName);
-    }
-
-    String serverlessComputeVersion = envVars.get("K_REVISION");
-    if (serverlessComputeVersion != null) {
-      attrBuilder.put(ResourceAttributes.FAAS_VERSION, serverlessComputeVersion);
-    }
-
-    AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
-    AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attrBuilder, metadata);
-    AttributesExtractorUtil.addInstanceIdFromMetadata(attrBuilder, metadata);
-  }
-
-  /**
-   * Updates the attributes with the required keys for a GAE (Google App Engine) environment. The
-   * attributes are not updated in case the environment is not deemed to be GAE.
-   *
-   * @param attrBuilder The {@link AttributesBuilder} object that needs to be updated with the
-   *     necessary keys.
-   * @return a boolean indicating if the environment was determined to be GAE and GAE specific
-   *     attributes were applied.
-   */
-  private boolean generateGAEAttributesIfApplicable(AttributesBuilder attrBuilder) {
-    if (envVars.get("GAE_SERVICE") != null) {
-      // add the resource attributes for App Engine
-      attrBuilder.put(
-          ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE);
-
-      String appModuleName = envVars.get("GAE_SERVICE");
-      if (appModuleName != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_NAME, appModuleName);
-      }
-
-      String appVersionId = envVars.get("GAE_VERSION");
-      if (appVersionId != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_VERSION, appVersionId);
-      }
-
-      String appInstanceId = envVars.get("GAE_INSTANCE");
-      if (appInstanceId != null) {
-        attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, appInstanceId);
-      }
-      updateAttributesWithRegion(attrBuilder);
-      AttributesExtractorUtil.addAvailabilityZoneFromMetadata(attrBuilder, metadata);
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Selects the correct method to extract the region, depending on the GAE environment.
-   *
-   * @param attributesBuilder The {@link AttributesBuilder} object to which the extracted region
-   *     would be added.
-   */
-  private void updateAttributesWithRegion(AttributesBuilder attributesBuilder) {
-    if (envVars.get("GAE_ENV") != null && envVars.get("GAE_ENV").equals("standard")) {
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingRegion(attributesBuilder, metadata);
-    } else {
-      AttributesExtractorUtil.addCloudRegionFromMetadataUsingZone(attributesBuilder, metadata);
-    }
+  private void addCommonAttributesForServerlessCompute(
+      AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
+    Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_NAME))
+        .ifPresent(name -> attrBuilder.put(ResourceAttributes.FAAS_NAME, name));
+    Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_REVISION))
+        .ifPresent(revision -> attrBuilder.put(ResourceAttributes.FAAS_VERSION, revision));
+    Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_INSTANCE_ID))
+        .ifPresent(instanceId -> attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, instanceId));
+    Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE))
+        .ifPresent(zone -> attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone));
+    Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_CLOUD_REGION))
+        .ifPresent(region -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, region));
   }
 }

@@ -15,35 +15,370 @@
  */
 package com.google.cloud.opentelemetry.detectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.cloud.opentelemetry.detection.DetectedPlatform;
+import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-@RunWith(JUnit4.class)
 public class GCPResourceTest {
-  @Rule public final WireMockRule wireMockRule = new WireMockRule(8089);
-  private final GCPMetadataConfig metadataConfig = new GCPMetadataConfig("http://localhost:8089/");
-  private static final Map<String, String> envVars = new HashMap<>();
+  private static final String DUMMY_PROJECT_ID = "google-pid";
+  private final ConfigProperties mockConfigProps = Mockito.mock(ConfigProperties.class);
+  private final Map<String, String> mockGKECommonAttributes =
+      new HashMap<>() {
+        {
+          put(GKE_CLUSTER_NAME, "gke-cluster");
+          put(GKE_HOST_ID, "host1");
+        }
+      };
 
-  @Before
-  public void clearEnvVars() {
-    envVars.clear();
+  // Mock Platforms
+  private DetectedPlatform generateMockGCEPlatform() {
+    Map<String, String> mockAttributes =
+        new HashMap<>() {
+          {
+            put(GCE_CLOUD_REGION, "australia-southeast1");
+            put(GCE_AVAILABILITY_ZONE, "australia-southeast1-b");
+            put(GCE_INSTANCE_ID, "random-id");
+            put(GCE_INSTANCE_NAME, "instance-name");
+            put(GCE_MACHINE_TYPE, "gce-m2");
+            put(GCE_INSTANCE_HOSTNAME, "instance-hostname");
+          }
+        };
+    DetectedPlatform mockGCEPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockGCEPlatform.getSupportedPlatform())
+        .thenReturn(GCPPlatformDetector.SupportedPlatform.GOOGLE_COMPUTE_ENGINE);
+    Mockito.when(mockGCEPlatform.getAttributes()).thenReturn(mockAttributes);
+    Mockito.when(mockGCEPlatform.getProjectId()).thenReturn(DUMMY_PROJECT_ID);
+    return mockGCEPlatform;
+  }
+
+  private DetectedPlatform generateMockGKEPlatform(String gkeClusterLocationType) {
+    Map<String, String> mockAttributes = new HashMap<>(mockGKECommonAttributes);
+    if (gkeClusterLocationType.equals(GKE_LOCATION_TYPE_ZONE)) {
+      mockAttributes.put(GKE_CLUSTER_LOCATION, "australia-southeast1-a");
+    } else if (gkeClusterLocationType.equals(GKE_LOCATION_TYPE_REGION)) {
+      mockAttributes.put(GKE_CLUSTER_LOCATION, "australia-southeast1");
+    }
+    mockAttributes.put(GKE_CLUSTER_LOCATION_TYPE, gkeClusterLocationType);
+
+    DetectedPlatform mockGKEPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockGKEPlatform.getSupportedPlatform())
+        .thenReturn(GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE);
+    Mockito.when(mockGKEPlatform.getAttributes()).thenReturn(mockAttributes);
+    Mockito.when(mockGKEPlatform.getProjectId()).thenReturn(DUMMY_PROJECT_ID);
+    return mockGKEPlatform;
+  }
+
+  private DetectedPlatform generateMockServerlessPlatform(
+      GCPPlatformDetector.SupportedPlatform platform) {
+    final EnumSet<GCPPlatformDetector.SupportedPlatform> serverlessPlatforms =
+        EnumSet.of(
+            GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN,
+            GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS);
+    if (!serverlessPlatforms.contains(platform)) {
+      throw new IllegalArgumentException();
+    }
+    Map<String, String> mockAttributes =
+        new HashMap<>() {
+          {
+            put(SERVERLESS_COMPUTE_NAME, "serverless-app");
+            put(SERVERLESS_COMPUTE_REVISION, "v2");
+            put(SERVERLESS_COMPUTE_INSTANCE_ID, "serverless-instance-id");
+            put(SERVERLESS_COMPUTE_CLOUD_REGION, "us-central1");
+            put(SERVERLESS_COMPUTE_AVAILABILITY_ZONE, "us-central1-b");
+          }
+        };
+    DetectedPlatform mockServerlessPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockServerlessPlatform.getSupportedPlatform()).thenReturn(platform);
+    Mockito.when(mockServerlessPlatform.getAttributes()).thenReturn(mockAttributes);
+    Mockito.when(mockServerlessPlatform.getProjectId()).thenReturn(DUMMY_PROJECT_ID);
+    return mockServerlessPlatform;
+  }
+
+  private DetectedPlatform generateMockGAEPlatform() {
+    Map<String, String> mockAttributes =
+        new HashMap<>() {
+          {
+            put(GAE_MODULE_NAME, "gae-app");
+            put(GAE_APP_VERSION, "v1");
+            put(GAE_INSTANCE_ID, "gae-instance-id");
+            put(GAE_CLOUD_REGION, "us-central1");
+            put(GAE_AVAILABILITY_ZONE, "us-central1-b");
+          }
+        };
+    DetectedPlatform mockGAEPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockGAEPlatform.getSupportedPlatform())
+        .thenReturn(GCPPlatformDetector.SupportedPlatform.GOOGLE_APP_ENGINE);
+    Mockito.when(mockGAEPlatform.getAttributes()).thenReturn(mockAttributes);
+    Mockito.when(mockGAEPlatform.getProjectId()).thenReturn(DUMMY_PROJECT_ID);
+    return mockGAEPlatform;
+  }
+
+  private DetectedPlatform generateMockUnknownPlatform() {
+    Map<String, String> mockAttributes =
+        new HashMap<>() {
+          {
+            put(GCE_INSTANCE_ID, "instance-id");
+            put(GCE_CLOUD_REGION, "australia-southeast1");
+          }
+        };
+
+    DetectedPlatform mockUnknownPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockUnknownPlatform.getSupportedPlatform())
+        .thenReturn(GCPPlatformDetector.SupportedPlatform.UNKNOWN_PLATFORM);
+    Mockito.when(mockUnknownPlatform.getAttributes()).thenReturn(mockAttributes);
+    return mockUnknownPlatform;
+  }
+
+  @Test
+  public void testGCEResourceAttributesMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGCEPlatform();
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_ID),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_NAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_NAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_INSTANCE_HOSTNAME),
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_MACHINE_TYPE),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_TYPE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_AVAILABILITY_ZONE),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GCE_CLOUD_REGION),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertEquals(10, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testGKEResourceAttributesMapping_LocationTypeRegion() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGKEPlatform(GKE_LOCATION_TYPE_REGION);
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+
+    verifyGKEMapping(gotResource, mockPlatform);
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertEquals(6, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testGKEResourceAttributesMapping_LocationTypeZone() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGKEPlatform(GKE_LOCATION_TYPE_ZONE);
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+
+    verifyGKEMapping(gotResource, mockPlatform);
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertEquals(
+        mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(6, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testGKEResourceAttributesMapping_LocationTypeInvalid() {
+    Map<String, String> mockGKEAttributes = new HashMap<>(mockGKECommonAttributes);
+    mockGKEAttributes.put(GKE_CLUSTER_LOCATION_TYPE, "INVALID");
+    mockGKEAttributes.put(GKE_CLUSTER_LOCATION, "some-location");
+
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = Mockito.mock(DetectedPlatform.class);
+    Mockito.when(mockPlatform.getSupportedPlatform())
+        .thenReturn(GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE);
+    Mockito.when(mockPlatform.getProjectId()).thenReturn(DUMMY_PROJECT_ID);
+    Mockito.when(mockPlatform.getAttributes()).thenReturn(mockGKEAttributes);
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+
+    verifyGKEMapping(gotResource, mockPlatform);
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(5, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testGKEResourceAttributesMapping_LocationMissing() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGKEPlatform("");
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+
+    verifyGKEMapping(gotResource, mockPlatform);
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(5, gotResource.getAttributes().size());
+  }
+
+  private void verifyGKEMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
+    assertEquals(
+        detectedPlatform.getAttributes().get(GKE_HOST_ID),
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
+    assertEquals(
+        detectedPlatform.getAttributes().get(GKE_CLUSTER_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.K8S_CLUSTER_NAME));
+  }
+
+  @Test
+  public void testGCRResourceAttributesMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform =
+        generateMockServerlessPlatform(GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN);
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    verifyServerlessMapping(gotResource, mockPlatform);
+    assertEquals(8, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testGCFResourceAttributeMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform =
+        generateMockServerlessPlatform(
+            GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_FUNCTIONS);
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    verifyServerlessMapping(gotResource, mockPlatform);
+    assertEquals(8, gotResource.getAttributes().size());
+  }
+
+  private void verifyServerlessMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
+    assertEquals(
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
+    assertEquals(
+        detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_NAME));
+    assertEquals(
+        detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_REVISION),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_VERSION));
+    assertEquals(
+        detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_INSTANCE_ID),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_INSTANCE));
+    assertEquals(
+        detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(
+        detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_CLOUD_REGION),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+  }
+
+  @Test
+  public void testGAEResourceAttributeMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockGAEPlatform();
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+    assertEquals(
+        ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
+    assertEquals(
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
+    assertEquals(
+        mockPlatform.getProjectId(),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertEquals(
+        mockPlatform.getAttributes().get(GAE_MODULE_NAME),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_NAME));
+    assertEquals(
+        mockPlatform.getAttributes().get(GAE_APP_VERSION),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_VERSION));
+    assertEquals(
+        mockPlatform.getAttributes().get(GAE_INSTANCE_ID),
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_INSTANCE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GAE_AVAILABILITY_ZONE),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
+    assertEquals(
+        mockPlatform.getAttributes().get(GAE_CLOUD_REGION),
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertEquals(8, gotResource.getAttributes().size());
+  }
+
+  @Test
+  public void testUnknownPlatformResourceAttributesMapping() {
+    GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
+    DetectedPlatform mockPlatform = generateMockUnknownPlatform();
+    Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
+
+    Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
+    assertTrue(gotResource.getAttributes().isEmpty(), "no attributes for unknown platform");
   }
 
   @Test
@@ -51,204 +386,7 @@ public class GCPResourceTest {
     ServiceLoader<ResourceProvider> services =
         ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
     assertTrue(
-        "Could not load GCP Resource detector using serviceloader, found: " + services,
-        services.stream().anyMatch(provider -> provider.type().equals(GCPResource.class)));
-  }
-
-  @Test
-  public void testGCPComputeResourceNotGCP() {
-    GCPMetadataConfig mockMetadataConfig = Mockito.mock(GCPMetadataConfig.class);
-    Mockito.when(mockMetadataConfig.isRunningOnGcp()).thenReturn(false);
-
-    GCPResource testResource = new GCPResource(mockMetadataConfig, EnvVars.DEFAULT_INSTANCE);
-    // If GCPMetadataConfig determines that its not running on GCP, then attributes should be empty
-    assertThat(testResource.getAttributes()).isEmpty();
-  }
-
-  @Test
-  public void testGCPComputeResourceNonGCPEndpoint() {
-    // intentionally not providing the required Metadata-Flovor header with the
-    // request to mimic non GCP endpoint
-    stubFor(
-        get(urlEqualTo("/project/project-id"))
-            .willReturn(aResponse().withBody("nonGCPendpointTest")));
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes()).isEmpty();
-  }
-
-  /** Google Compute Engine Tests * */
-  @Test
-  public void testGCEResourceWithGCEAttributesSucceeds() {
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
-
-    final GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(8)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PLATFORM,
-            ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE)
-        .containsEntry(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid")
-        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
-        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
-        .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
-        .containsEntry(ResourceAttributes.HOST_NAME, "GCE-instance-name")
-        .containsEntry(ResourceAttributes.HOST_TYPE, "GCE-instance-type");
-  }
-
-  /** Google Kubernetes Engine Tests * */
-  @Test
-  public void testGKEResourceWithGKEAttributesSucceedsLocationZone() {
-    envVars.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
-    envVars.put("NAMESPACE", "GKE-testNameSpace");
-    // Hostname can truncate pod name, so we test downward API override.
-    envVars.put("HOSTNAME", "GKE-testHostName");
-    envVars.put("POD_NAME", "GKE-testHostName-full-1234");
-    envVars.put("CONTAINER_NAME", "GKE-testContainerName");
-
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
-    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
-    stubEndpoint("/instance/attributes/cluster-location", "country-region-zone");
-
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(8)
-        .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
-        .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
-        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
-        .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
-        .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
-        .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
-        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName-full-1234")
-        .containsEntry(ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName");
-  }
-
-  @Test
-  public void testGKEResourceWithGKEAttributesSucceedsLocationRegion() {
-    envVars.put("KUBERNETES_SERVICE_HOST", "GKE-testHost");
-    envVars.put("NAMESPACE", "GKE-testNameSpace");
-    // Hostname can truncate pod name, so we test downward API override.
-    envVars.put("HOSTNAME", "GKE-testHostName");
-    envVars.put("POD_NAME", "GKE-testHostName-full-1234");
-    envVars.put("CONTAINER_NAME", "GKE-testContainerName");
-
-    stubEndpoint("/project/project-id", "GCE-pid");
-    stubEndpoint("/instance/id", "GCE-instance-id");
-    stubEndpoint("/instance/name", "GCE-instance-name");
-    stubEndpoint("/instance/machine-type", "GCE-instance-type");
-    stubEndpoint("/instance/attributes/cluster-name", "GKE-cluster-name");
-    stubEndpoint("/instance/attributes/cluster-location", "country-region");
-
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(8)
-        .containsEntry(ResourceAttributes.CLOUD_PROVIDER, "gcp")
-        .containsEntry(ResourceAttributes.CLOUD_PLATFORM, "gcp_kubernetes_engine")
-        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
-        .containsEntry(ResourceAttributes.HOST_ID, "GCE-instance-id")
-        .containsEntry(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")
-        .containsEntry(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace")
-        .containsEntry(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName-full-1234")
-        .containsEntry(ResourceAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName");
-  }
-
-  /** Google Cloud Functions Tests * */
-  @Test
-  public void testGCFResourceWithCloudFunctionAttributesSucceeds() {
-    // Setup GCF required env vars
-    envVars.put("K_SERVICE", "cloud-function-hello");
-    envVars.put("K_REVISION", "cloud-function-hello.1");
-    envVars.put("FUNCTION_TARGET", "cloud-function-hello");
-
-    stubEndpoint("/project/project-id", "GCF-pid");
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/id", "GCF-instance-id");
-
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(7)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PLATFORM,
-            ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS)
-        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
-        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
-        .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("K_SERVICE"))
-        .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("K_REVISION"))
-        .containsEntry(ResourceAttributes.FAAS_INSTANCE, "GCF-instance-id");
-  }
-
-  /** Google App Engine Tests * */
-  @Test
-  public void testGAEResourceWithAppEngineAttributesSucceedsInFlex() {
-    envVars.put("GAE_SERVICE", "app-engine-hello");
-    envVars.put("GAE_VERSION", "app-engine-hello-v1");
-    envVars.put("GAE_INSTANCE", "app-engine-hello-f236d");
-
-    stubEndpoint("/project/project-id", "GAE-pid-flex");
-    // for flex, the region should be parsed from zone attribute
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/region", "country-region1");
-    stubEndpoint("/instance/id", "GAE-instance-id");
-
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(envVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(7)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PLATFORM,
-            ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
-        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region")
-        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
-        .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
-        .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
-        .containsEntry(ResourceAttributes.FAAS_INSTANCE, envVars.get("GAE_INSTANCE"));
-  }
-
-  @Test
-  public void testGAEResourceWithAppEngineAttributesSucceedsInStandard() {
-    envVars.put("GAE_SERVICE", "app-engine-hello");
-    envVars.put("GAE_VERSION", "app-engine-hello-v1");
-    envVars.put("GAE_INSTANCE", "app-engine-hello-f236d");
-
-    stubEndpoint("/project/project-id", "GAE-pid-standard");
-    // for standard, the region should be extracted from region attribute
-    stubEndpoint("/instance/zone", "country-region-zone");
-    stubEndpoint("/instance/region", "country-region1");
-    stubEndpoint("/instance/id", "GAE-instance-id");
-
-    Map<String, String> updatedEnvVars = new HashMap<>(envVars);
-    updatedEnvVars.put("GAE_ENV", "standard");
-    GCPResource testResource = new GCPResource(metadataConfig, new EnvVarMock(updatedEnvVars));
-    assertThat(testResource.getAttributes())
-        .hasSize(7)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP)
-        .containsEntry(
-            ResourceAttributes.CLOUD_PLATFORM,
-            ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE)
-        .containsEntry(ResourceAttributes.CLOUD_REGION, "country-region1")
-        .containsEntry(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone")
-        .containsEntry(ResourceAttributes.FAAS_NAME, envVars.get("GAE_SERVICE"))
-        .containsEntry(ResourceAttributes.FAAS_VERSION, envVars.get("GAE_VERSION"))
-        .containsEntry(ResourceAttributes.FAAS_INSTANCE, envVars.get("GAE_INSTANCE"));
-  }
-
-  // Helper method to help stub endpoints
-  private void stubEndpoint(String endpointPath, String responseBody) {
-    stubFor(
-        get(urlEqualTo(endpointPath))
-            .willReturn(
-                aResponse().withHeader("Metadata-Flavor", "Google").withBody(responseBody)));
+        services.stream().anyMatch(provider -> provider.type().equals(GCPResource.class)),
+        "Could not load GCP Resource detector using serviceloader, found: " + services);
   }
 }

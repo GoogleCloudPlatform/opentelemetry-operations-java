@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,24 +30,21 @@ import java.util.Map;
  *
  * @see <a href="https://cloud.google.com/compute/docs/storing-retrieving-metadata">
  *     https://cloud.google.com/compute/docs/storing-retrieving-metadata</a>
- * @deprecated This class is no longer used, it is only maintained here to support {@link
- *     AttributesExtractorUtil}.
  */
-@Deprecated
 final class GCPMetadataConfig {
-  private static final String DEFAULT_URL = "http://metadata.google.internal/computeMetadata/v1/";
-  public static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig(DEFAULT_URL);
+  static final GCPMetadataConfig DEFAULT_INSTANCE = new GCPMetadataConfig();
 
+  private static final String DEFAULT_URL = "http://metadata.google.internal/computeMetadata/v1/";
   private final String url;
   private final Map<String, String> cachedAttributes = new HashMap<>();
 
-  // For testing only
-  public GCPMetadataConfig(String url) {
-    this.url = url;
+  private GCPMetadataConfig() {
+    this.url = DEFAULT_URL;
   }
 
-  boolean isRunningOnGcp() {
-    return getProjectId() != null && !getProjectId().isEmpty();
+  // For testing only
+  GCPMetadataConfig(String url) {
+    this.url = url;
   }
 
   // Returns null on failure to retrieve from metadata server
@@ -55,8 +52,16 @@ final class GCPMetadataConfig {
     return getAttribute("project/project-id");
   }
 
-  // Example response: projects/640212054955/zones/australia-southeast1-a
-  // Returns null on failure to retrieve from metadata server
+  /**
+   * Method to extract cloud availability zone from the metadata server.
+   *
+   * <p>Example response: projects/640212054955/zones/australia-southeast1-a
+   *
+   * <p>Example zone: australia-southeast1-a
+   *
+   * @return the extracted zone from the metadata server response or null in case of failure to
+   *     retrieve from metadata server.
+   */
   String getZone() {
     String zone = getAttribute("instance/zone");
     if (zone != null && zone.contains("/")) {
@@ -65,14 +70,39 @@ final class GCPMetadataConfig {
     return zone;
   }
 
-  // Use this method only when the region cannot be parsed from the zone. Known use-cases of this
-  // method involve detecting region in GAE standard environment
-  // Example response: projects/5689182099321/regions/us-central1
-  // Returns null on failure to retrieve from metadata server
+  /**
+   * Use this method only when the region cannot be parsed from the zone. Known use-cases of this
+   * method involve detecting region in GAE standard environment.
+   *
+   * <p>Example response: projects/5689182099321/regions/us-central1.
+   *
+   * @return the retrieved region or null in case of failure to retrieve from metadata server
+   */
   String getRegion() {
     String region = getAttribute("instance/region");
     if (region != null && region.contains("/")) {
       region = region.substring(region.lastIndexOf('/') + 1);
+    }
+    return region;
+  }
+
+  /**
+   * Use this method to parse region from zone.
+   *
+   * <p>Example region: australia-southeast1
+   *
+   * @return parsed region from the zone, if zone is not found or is invalid, this method returns
+   *     null.
+   */
+  String getRegionFromZone() {
+    String region = null;
+    String zone = getZone();
+    if (zone != null && !zone.isEmpty()) {
+      // Parsing required to scope up to a region
+      String[] splitArr = zone.split("-");
+      if (splitArr.length > 2) {
+        region = String.join("-", splitArr[0], splitArr[1]);
+      }
     }
     return region;
   }

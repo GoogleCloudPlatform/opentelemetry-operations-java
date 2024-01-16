@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.cloud.opentelemetry.detectors;
+package com.google.cloud.opentelemetry.detection;
 
 import java.util.Map;
 
-class EnvVarMock implements EnvVars {
+class EnvVarMock implements EnvironmentVariables {
   private final Map<String, String> mock;
 
   public EnvVarMock(Map<String, String> mock) {

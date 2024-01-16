@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-description = 'Google Cloud resource provider for OpenTelemetry'
+description = 'Support library for Google Cloud Resource Detector'
+
+dependencies {
+	testImplementation(testLibraries.assertj)
+	testImplementation(testLibraries.wiremock)
+	testImplementation(testLibraries.mockito)
+	testImplementation(testLibraries.junit5)
+	testImplementation(testLibraries.junit5_params)
+	testRuntimeOnly(testLibraries.junit5_runtime)
+}
 
 afterEvaluate {
 	tasks.named("compileJava"){
 		options.release = 8
 	}
-}
-
-dependencies {
-	implementation(libraries.opentelemetry_api)
-	implementation(libraries.opentelemetry_sdk)
-	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.opentelemetry_semconv)
-	implementation platform(libraries.opentelemetry_bom)
-	implementation project(':detector-resources-support')
-	testImplementation(testLibraries.junit5)
-	testRuntimeOnly(testLibraries.junit5_runtime)
-	testImplementation(testLibraries.mockito)
 }
 
 test {

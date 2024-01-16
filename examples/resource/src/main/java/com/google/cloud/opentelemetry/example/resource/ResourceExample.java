@@ -25,7 +25,7 @@ public class ResourceExample {
     Resource autoResource = ResourceConfiguration.createEnvironmentResource();
     System.out.println(autoResource.getAttributes());
     System.out.println("Detecting resource: hardcoded");
-    GCPResource resource = new GCPResource();
-    System.out.println(resource.getAttributes());
+    GCPResource resourceProvider = new GCPResource();
+    System.out.println(resourceProvider.getAttributes());
   }
 }

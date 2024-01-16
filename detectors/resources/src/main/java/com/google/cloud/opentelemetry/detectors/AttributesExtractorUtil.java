@@ -24,7 +24,10 @@ import io.opentelemetry.semconv.ResourceAttributes;
  *
  * <p>This class only adds helper methods to extract {@link ResourceAttributes} that are common
  * across all the supported compute environments.
+ *
+ * @deprecated Not for public use. This class is expected to be retained only as package private.
  */
+@Deprecated
 public class AttributesExtractorUtil {
 
   /**
