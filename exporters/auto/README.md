@@ -15,7 +15,7 @@ To leverage the GCP extensions to this, simply add the exporter-auto dependency 
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-auto</artifactId>
-  <version>0.25.1-alpha</version>
+  <version>0.26.0-alpha</version>
   <!-- Add the classifier if you explicitly wish to use the shaded variant -->
   <classifier>shaded</classifier>
 </dependency>
@@ -23,15 +23,26 @@ To leverage the GCP extensions to this, simply add the exporter-auto dependency 
 
 #### Gradle
 ```groovy
-implementation "com.google.cloud.opentelemetry:exporter-auto:0.25.1-alpha"
+implementation "com.google.cloud.opentelemetry:exporter-auto:0.26.0-alpha"
 ```
 
 To use the shaded variant with Gradle,
 ```groovy
-implementation "com.google.cloud.opentelemetry:exporter-auto:0.25.1-alpha:shaded"
+implementation "com.google.cloud.opentelemetry:exporter-auto:0.26.0-alpha:shaded"
 ```
 
-*Note: Make sure to use the latest release [![LatestRelease][maven-image]][maven-url].*
+#### Shaded Local JAR
+
+You can download the shaded JAR for `exporter-auto` from the following link -
+```text
+https://repo1.maven.org/maven2/com/google/cloud/opentelemetry/exporter-auto/<VERSION>-alpha/exporter-auto-<VERSION>-alpha-shaded.jar
+```
+Replace `<VERSION>` with the version you wish to download. For instance, shaded
+variant for `v0.26.0`, will be found at -
+
+`https://repo1.maven.org/maven2/com/google/cloud/opentelemetry/exporter-auto/0.26.0-alpha/exporter-auto-0.26.0-alpha-shaded.jar`
+
+**Note: Make sure to use the latest release [![LatestRelease][maven-image]][maven-url].**
 
 Then you can configure your sdk using the following system properties/environmnet variables:
 
