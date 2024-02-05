@@ -27,13 +27,12 @@ following roles to run the example:
 ### Cloud Shell or GCE
 
 ```sh
-git clone https://github.com/GoogleCloudPlatform/java-docs-samples.git
-cd java-docs-samples/opentelemetry/spring-boot-instrumentation/
+git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java.git
+cd opentelemetry-operations-java/examples/instrumentation-quickstart
 docker compose up --abort-on-container-exit
 ```
 
 ### Locally with Application Default Credentials
-
 
 First Create local credentials by running the following command and following the
 oauth2 flow (read more about the command [here][auth_command]):
@@ -51,8 +50,8 @@ Learn more at [Setting Up Authentication for Server to Server Production Applica
 Then run the example:
 
 ```sh
-git clone https://github.com/GoogleCloudPlatform/java-docs-samples.git
-cd java-docs-samples/opentelemetry/spring-boot-instrumentation/
+git clone https://github.com/GoogleCloudPlatform/opentelemetry-operations-java.git
+cd opentelemetry-operations-java/examples/instrumentation-quickstart
 
 # Lets collector read mounted config
 export USERID="$(id -u)"
