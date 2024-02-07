@@ -18,21 +18,24 @@ package com.example.demo;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.api.client.util.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+@Tag("integrationTest")
+@Testcontainers
 public class DockerComposeTestsIT {
-  @ClassRule
+  @Container
   public static ComposeContainer environment =
       new ComposeContainer(new File("docker-compose.yaml"), new File("docker-compose.creds.yaml"))
           .withEnv("USERID", System.getenv("USERID"))
@@ -81,7 +84,11 @@ public class DockerComposeTestsIT {
   }
 
   private static String getenvNotNull(String key) {
-    return Preconditions.checkNotNull(
-        System.getenv(key), "Environment variable " + key + " is required but was not set");
+    String val = System.getenv(key);
+    if (val == null) {
+      throw new IllegalArgumentException(
+          "Environment variable " + key + " is required but was not set");
+    }
+    return val;
   }
 }
