@@ -6,34 +6,54 @@ on:
       - main
 jobs:
   test:
-    name: Test
+    strategy:
+      matrix:
+        include:
+          - build-root: .
+            name: root
+            java-version: 11
+          - build-root: examples/instrumentation-quickstart
+            java-version: 17
+    name: Test (${{matrix.name || matrix.build-root}})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - id: setup-java-11
-        name: Setup Java 11
+      - id: setup-java
+        name: Setup Java ${{matrix.java-version}}
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{matrix.java-version}}
       - uses: burrunan/gradle-cache-action@v1.6
         with:
+          job-id: java-${{matrix.java-version}}
           remote-build-cache-proxy-enabled: false
+          build-root-directory: ${{matrix.build-root}}
           arguments: test
   style:
-    name: Stylecheck
+    name: Stylecheck (${{matrix.name || matrix.build-root}})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - build-root: .
+            name: root
+            java-version: 11
+          - build-root: examples/instrumentation-quickstart
+            java-version: 17
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - id: setup-java-11
-        name: Setup Java 11
+      - id: setup-java
+        name: Setup Java ${{matrix.java-version}}
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{matrix.java-version}}
       - uses: burrunan/gradle-cache-action@v1.6
         with:
+          job-id: java-${{matrix.java-version}}
           remote-build-cache-proxy-enabled: false
+          build-root-directory: ${{matrix.build-root}}
           arguments: spotlessCheck
