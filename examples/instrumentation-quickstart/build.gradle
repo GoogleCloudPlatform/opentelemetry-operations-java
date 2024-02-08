@@ -18,6 +18,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.18'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'com.example'
@@ -26,6 +27,16 @@ description = 'OpenTelemetry instrumentation quickstart using Spring Boot'
 
 repositories {
 	mavenCentral()
+}
+
+spotless {
+	java {
+		googleJavaFormat("1.10.0")
+	}
+	groovyGradle {
+		target '*.gradle' // default target of groovyGradle
+		greclipse()
+	}
 }
 
 dependencies {
@@ -44,12 +55,18 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform {
 		// Individual integration tests are annotated with @Tag('integrationTest')
-        excludeTags 'integrationTest'
-    }
+		excludeTags 'integrationTest'
+	}
 }
 
 tasks.register("integrationTest", Test) {
-    useJUnitPlatform {
+	useJUnitPlatform {
 		includeTags 'integrationTest'
-    }
+	}
+
+	// Passing -DcomposeOverrideFile=foo.yaml will merge docker-compose.yaml with foo.yaml.
+	// This is used to set overrides for Cloud Build.
+	if (System.getProperty('composeOverrideFile')) {
+		systemProperty 'composeOverrideFile', System.getProperty('composeOverrideFile')
+	}
 }

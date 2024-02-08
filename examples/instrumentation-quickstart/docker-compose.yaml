@@ -21,7 +21,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4317
       - OTEL_SERVICE_NAME=otel-quickstart-spring-boot
       - OTEL_METRIC_EXPORT_INTERVAL=5000
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT?}
+      - GOOGLE_CLOUD_PROJECT
     volumes:
       - logs:/var/log:rw
     depends_on:
@@ -32,7 +32,7 @@ services:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
       - logs:/var/log:ro
     environment:
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT?}
+      - GOOGLE_CLOUD_PROJECT
   loadgen:
     image: golang:1.21
     command:

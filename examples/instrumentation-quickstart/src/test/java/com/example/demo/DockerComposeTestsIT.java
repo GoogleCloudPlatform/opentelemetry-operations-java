@@ -37,11 +37,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class DockerComposeTestsIT {
   @Container
   public static ComposeContainer environment =
-      new ComposeContainer(new File("docker-compose.yaml"), new File("docker-compose.creds.yaml"))
+      new ComposeContainer(
+              new File("docker-compose.yaml"),
+              new File(System.getProperty("composeOverrideFile", "docker-compose.creds.yaml")))
           .withEnv("USERID", System.getenv("USERID"))
-          .withEnv("GOOGLE_CLOUD_PROJECT", getenvNotNull("GOOGLE_CLOUD_PROJECT"))
+          .withEnv("GOOGLE_CLOUD_PROJECT", System.getenv("GOOGLE_CLOUD_PROJECT"))
           .withEnv(
-              "GOOGLE_APPLICATION_CREDENTIALS", getenvNotNull("GOOGLE_APPLICATION_CREDENTIALS"))
+              "GOOGLE_APPLICATION_CREDENTIALS", System.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
           .withExposedService("app", 8080)
           .withExposedService("otelcol", 8888)
           .waitingFor("app", Wait.forHttp("/multi"))
@@ -81,14 +83,5 @@ public class DockerComposeTestsIT {
               Pattern.MULTILINE);
       assertThat(promText).containsMatch(re);
     }
-  }
-
-  private static String getenvNotNull(String key) {
-    String val = System.getenv(key);
-    if (val == null) {
-      throw new IllegalArgumentException(
-          "Environment variable " + key + " is required but was not set");
-    }
-    return val;
   }
 }
