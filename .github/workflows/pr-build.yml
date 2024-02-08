@@ -8,13 +8,12 @@ jobs:
   test:
     strategy:
       matrix:
+        java-version: [11]
+        build-root: [".", "examples/instrumentation-quickstart"]
         include:
           - build-root: .
             name: root
-            java-version: 11
-          - build-root: examples/instrumentation-quickstart
-            java-version: 17
-    name: Test (${{matrix.name || matrix.build-root}})
+    name: Test (${{matrix.name || matrix.build-root}}, java-${{matrix.java-version}})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,12 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        java-version: [11]
+        build-root: [".", "examples/instrumentation-quickstart"]
         include:
           - build-root: .
             name: root
-            java-version: 11
-          - build-root: examples/instrumentation-quickstart
-            java-version: 17
     steps:
       - uses: actions/checkout@v2
         with:
