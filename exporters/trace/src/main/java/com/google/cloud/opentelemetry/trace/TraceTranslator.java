@@ -120,7 +120,7 @@ class TraceTranslator {
       spanBuilder.setEndTime(toTimestampProto(end));
     }
     spanBuilder.setLinks(toLinksProto(spanData.getLinks(), spanData.getTotalRecordedLinks()));
-    if (spanData.getParentSpanId() != null) {
+    if (spanData.getParentSpanContext().isValid()) {
       spanBuilder.setParentSpanId(spanData.getParentSpanId());
     }
     boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
