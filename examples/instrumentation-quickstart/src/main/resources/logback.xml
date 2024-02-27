@@ -23,7 +23,7 @@
       <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
         <pattern>
           {
-            "logging.googleapis.com/trace": "projects/${GOOGLE_CLOUD_PROJECT}/traces/%mdc{trace_id}",
+            "logging.googleapis.com/trace": "%mdc{trace_id}",
             "logging.googleapis.com/spanId": "%mdc{span_id}",
             "logging.googleapis.com/trace_sampled": "#asBoolean{%replace(%mdc{trace_flags}){'01', 'true'}}"
           }
