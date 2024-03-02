@@ -146,6 +146,7 @@ subprojects {
 		openTelemetryVersion = '1.33.0'
 		openTelemetryInstrumentationVersion = '1.33.0'
 		openTelemetrySemconvVersion = '1.23.1'
+		openTelemetryContribVersion = '1.33.0'
 		junitVersion = '4.13'
 		junit5Version = '5.10.0'
 		mockitoVersion = '3.5.10'
@@ -188,6 +189,7 @@ subprojects {
 			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",
 			opentelemetry_agent_extension    : "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${openTelemetryInstrumentationVersion}-alpha",
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
+			opentelemetry_gcp_resources      : "io.opentelemetry.contrib:opentelemetry-gcp-resources:${openTelemetryContribVersion}-alpha",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",

@@ -1,5 +1,7 @@
 # Resource Detectors for OpenTelemetry
 
+> NOTE: This artifact has moved to [Opentelemetry Java Contrib](https://github.com/open-telemetry/opentelemetry-java-contrib) repo. All future releases/updates made to this artifact would be managed in the new repository. The code for this artifact is likely to be deleted from here in the near future. 
+
 This package provides resource detectors for OpenTelemetry.
 
 The following OpenTelemetry semantic conventions will be detected:
