@@ -23,7 +23,7 @@ plugins {
 description = 'Examples for showing resource detection in various GCP environments.'
 
 dependencies {
-	implementation project(':detector-resources')
+	implementation(libraries.opentelemetry_gcp_resources)
 	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_otlp_exporter)
 }
