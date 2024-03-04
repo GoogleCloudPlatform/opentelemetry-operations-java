@@ -33,7 +33,12 @@ import java.util.logging.Logger;
  * This class is used to detect the correct GCP compute platform resource. Supports detection of
  * Google Compute Engine (GCE), Google Kubernetes Engine (GKE), Google Cloud Functions (GCF), Google
  * App Engine (GAE) and Google Cloud Run (GCR).
+ *
+ * @deprecated Use {@link io.opentelemetry.contrib.gcp.resource.GCPResourceProvider} from <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib">io.opentelemetry.contrib:opentelemetry-gcp-resources</a>
+ *     instead.
  */
+@Deprecated
 public class GCPResource implements ResourceProvider {
 
   private static final Logger LOGGER = Logger.getLogger(GCPResource.class.getSimpleName());
