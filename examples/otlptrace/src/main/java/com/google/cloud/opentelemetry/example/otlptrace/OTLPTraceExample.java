@@ -13,39 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.google.cloud.opentelemetry.example.otlptrace;
 
 import com.google.auth.oauth2.GoogleCredentials;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.export.OtlpHttpSpanExporter;
-import java.time.Duration;
+import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class TraceExporterExample {
-  private static final String INSTRUMENTATION_SCOPE_NAME = TraceExporterExample.class.getName();
+public class OTLPTraceExample {
+  private static final String INSTRUMENTATION_SCOPE_NAME = OTLPTraceExample.class.getName();
   private static final Random random = new Random();
 
   private static OpenTelemetrySdk openTelemetrySdk;
 
-  private static OpenTelemetrySdk setupTraceExporter() {
+  private static OpenTelemetrySdk setupTraceExporter() throws IOException {
     GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
 
     // Register the TraceExporter with OpenTelemetry
     return OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(OtlpHttpSpanExporter.builder().addHeader("Authorization", "Bearer "+credentials.getAccessToken()).build()).build())
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(
+                    BatchSpanProcessor.builder(
+                            OtlpHttpSpanExporter.builder()
+                                .addHeader(
+                                    "Authorization", "Bearer " + credentials.getAccessToken())
+                                .build())
+                        .build())
                 .build())
-            .buildAndRegisterGlobal();
+        .buildAndRegisterGlobal();
   }
 
   private static void myUseCase(String description) {
@@ -80,7 +83,7 @@ public class TraceExporterExample {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     // Configure the OpenTelemetry pipeline with CloudTrace exporter
     openTelemetrySdk = setupTraceExporter();
 
