@@ -15,14 +15,11 @@
  */
 package com.google.cloud.opentelemetry.example.otlptrace;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -33,22 +30,9 @@ public class OTLPTraceExample {
 
   private static OpenTelemetrySdk openTelemetrySdk;
 
-  private static OpenTelemetrySdk setupTraceExporter() throws IOException {
-    GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-
-    // Register the TraceExporter with OpenTelemetry
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(
-            SdkTracerProvider.builder()
-                .addSpanProcessor(
-                    BatchSpanProcessor.builder(
-                            OtlpHttpSpanExporter.builder()
-                                .addHeader(
-                                    "Authorization", "Bearer " + credentials.getAccessToken())
-                                .build())
-                        .build())
-                .build())
-        .buildAndRegisterGlobal();
+  private static OpenTelemetrySdk setupTraceExporter() {
+    // Let the SDK configure itself using environment variables and system properties
+    return AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
   private static void myUseCase(String description) {
