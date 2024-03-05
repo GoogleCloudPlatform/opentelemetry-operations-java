@@ -2,7 +2,7 @@
 
 [![Maven Central][maven-image]][maven-url]
 
-This library provides detection support for supported GCP environments and is intended to be consumed by the [GCP OpenTelemetry Detector](../resources/README.md).
+This library provides detection support for supported GCP environments and is intended to be consumed by the [GCP OpenTelemetry Detector](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/gcp-resources).
 The GCP environments supported by this library are - 
 1. [Google Compute Engine](https://cloud.google.com/compute?hl=en)
 2. [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine?hl=en)

@@ -2,7 +2,7 @@
 
 [![Maven Central][maven-image]][maven-url] ![Status][deprecated]
 
-> NOTE: This artifact has moved to [Opentelemetry Java Contrib](https://github.com/open-telemetry/opentelemetry-java-contrib) repo. All future releases/updates made to this artifact would be managed in the new repository. The code for this artifact is likely to be deleted from here in the near future. 
+> NOTE: This artifact has moved to [Opentelemetry Java Contrib](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/gcp-resources) repository. All future releases/updates made to this artifact would be managed in the new repository. The code for this artifact is likely to be deleted from here in the near future. 
 
 This package provides resource detectors for OpenTelemetry.
 
