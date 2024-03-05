@@ -1,5 +1,9 @@
 # Resource Detectors for OpenTelemetry
 
+[![Maven Central][maven-image]][maven-url] ![Status][deprecated]
+
+> NOTE: This artifact has moved to [Opentelemetry Java Contrib](https://github.com/open-telemetry/opentelemetry-java-contrib) repo. All future releases/updates made to this artifact would be managed in the new repository. The code for this artifact is likely to be deleted from here in the near future. 
+
 This package provides resource detectors for OpenTelemetry.
 
 The following OpenTelemetry semantic conventions will be detected:
@@ -45,3 +49,7 @@ spec:
 
 Additionally, the container name will only be discovered via the environment variable `CONTAINER_NAME`
 which much be included in the environment.
+
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/detector-resources/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/detector-resources
+[deprecated]: https://img.shields.io/badge/status-deprecated-red

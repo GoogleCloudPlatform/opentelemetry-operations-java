@@ -28,7 +28,7 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.google_cloud_trace)
 	implementation project(':exporter-trace')
-	runtimeOnly project(':detector-resources')
+	runtimeOnly(libraries.opentelemetry_gcp_resources)
 }
 
 // Set Docker image path here, e.g. using Google Container Registry or Docker Hub

@@ -54,5 +54,5 @@ dependencies {
 	implementation(libraries.spring_cloud_starter_openfeign)
 	implementation(libraries.spring_cloud_sleuth_otel_autoconf)
 	implementation project(':exporter-trace')
-	runtimeOnly project(':detector-resources')
+	runtimeOnly(libraries.opentelemetry_gcp_resources)
 }

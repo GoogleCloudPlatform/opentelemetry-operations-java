@@ -13,12 +13,6 @@ Executing this command will save your application credentials to default path wh
  - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
  - Windows: `%APPDATA%\gcloud\application_default_credentials.json`
 
-##### Export the retrieved credentials to `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
-
-```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.config/gcloud/application_default_credentials.json
-```
-
 ##### Export the Google Cloud Project ID to `GOOGLE_CLOUD_PROJECT` environment variable:
 
 ```shell

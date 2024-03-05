@@ -34,7 +34,7 @@ dependencies {
 	implementation(project(':exporter-trace')) {
 		exclude group: 'io.opentelemetry'
 	}
-	implementation(project(':detector-resources')) {
+	implementation(libraries.opentelemetry_gcp_resources) {
 		exclude group: 'io.opentelemetry'
 	}
 	implementation(project(':propagators-gcp')) {

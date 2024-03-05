@@ -31,6 +31,7 @@ dependencies {
 	testImplementation(testLibraries.junit5)
 	testRuntimeOnly(testLibraries.junit5_runtime)
 	testImplementation(testLibraries.mockito)
+	compileOnly(libraries.opentelemetry_gcp_resources)
 }
 
 test {
