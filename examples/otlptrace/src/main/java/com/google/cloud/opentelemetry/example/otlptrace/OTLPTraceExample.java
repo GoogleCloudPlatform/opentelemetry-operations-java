@@ -16,6 +16,7 @@
 package com.google.cloud.opentelemetry.example.otlptrace;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.AccessToken;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.*;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -50,11 +52,17 @@ public class OTLPTraceExample {
   private static SpanExporter addAuthorizationHeaders(
       SpanExporter exporter, GoogleCredentials credentials) {
     if (exporter instanceof OtlpHttpSpanExporter) {
-      OtlpHttpSpanExporterBuilder builder =
-          ((OtlpHttpSpanExporter) exporter)
-              .toBuilder().addHeader("Authorization", "Bearer " + credentials.getAccessToken());
+      try {
+        credentials.refreshIfExpired();
+        OtlpHttpSpanExporterBuilder builder =
+            ((OtlpHttpSpanExporter) exporter)
+                .toBuilder().addHeader("Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
 
-      return builder.build();
+        return builder.build();
+      }
+      catch(IOException e) {
+        System.out.println("error");
+      }
     }
     return exporter;
   }
