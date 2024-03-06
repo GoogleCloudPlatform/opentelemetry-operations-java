@@ -26,15 +26,15 @@ dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_otlp_exporter)
-	implementation(libraries.google_auth)
 	implementation(libraries.opentelemetry_sdk_autoconf)
+	implementation(libraries.google_auth)
 }
 
 // Provide headers from env variable
-// export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer $(gcloud auth print-access-token),X-Goog-User-Project=otel-test-starter"
 // export OTEL_EXPORTER_OTLP_ENDPOINT="http://path/to/yourendpoint:port"
 def autoconf_config = [
-	'-Dotel.resource.attributes=gcp.project_id=otel-test-starter',
+	'-Dotel.resource.attributes=gcp.project_id=your-gcp-project',
+	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=your-gcp-project',
 	'-Dotel.traces.exporter=otlp',
 	'-Dotel.java.global-autoconfigure.enabled=true',
 ]

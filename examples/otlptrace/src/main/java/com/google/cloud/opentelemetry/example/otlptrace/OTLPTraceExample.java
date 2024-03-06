@@ -15,11 +15,15 @@
  */
 package com.google.cloud.opentelemetry.example.otlptrace;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -30,9 +34,29 @@ public class OTLPTraceExample {
 
   private static OpenTelemetrySdk openTelemetrySdk;
 
-  private static OpenTelemetrySdk setupTraceExporter() {
-    // Let the SDK configure itself using environment variables and system properties
-    return AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
+  private static OpenTelemetrySdk setupTraceExporter() throws IOException {
+    GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
+
+    // Update the SDK configured using environment variables and system properties
+    AutoConfiguredOpenTelemetrySdk autoConfOTelSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addSpanExporterCustomizer(
+                (exporter, configProperties) -> addAuthorizationHeaders(exporter, credentials))
+            .build();
+    return autoConfOTelSdk.getOpenTelemetrySdk();
+  }
+
+  // Configures span exporter using configuration from
+  private static SpanExporter addAuthorizationHeaders(
+      SpanExporter exporter, GoogleCredentials credentials) {
+    if (exporter instanceof OtlpHttpSpanExporter) {
+      OtlpHttpSpanExporterBuilder builder =
+          ((OtlpHttpSpanExporter) exporter)
+              .toBuilder().addHeader("Authorization", "Bearer " + credentials.getAccessToken());
+
+      return builder.build();
+    }
+    return exporter;
   }
 
   private static void myUseCase(String description) {
