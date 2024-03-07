@@ -16,7 +16,6 @@
 package com.google.cloud.opentelemetry.example.otlptrace;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.AccessToken;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
@@ -56,11 +55,12 @@ public class OTLPTraceExample {
         credentials.refreshIfExpired();
         OtlpHttpSpanExporterBuilder builder =
             ((OtlpHttpSpanExporter) exporter)
-                .toBuilder().addHeader("Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
+                .toBuilder()
+                    .addHeader(
+                        "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
 
         return builder.build();
-      }
-      catch(IOException e) {
+      } catch (IOException e) {
         System.out.println("error");
       }
     }
