@@ -24,4 +24,8 @@ Next, update [`build.gradle`](build.grade) to set the following:
 	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
 ```
 
-Finally, run `gradle run` to run the sample.
+Finally, to run the sample from the project root:
+
+```
+cd examples/otlptrace && gradle run
+```
