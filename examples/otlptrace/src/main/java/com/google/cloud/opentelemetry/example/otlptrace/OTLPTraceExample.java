@@ -47,7 +47,7 @@ public class OTLPTraceExample {
     return autoConfOTelSdk.getOpenTelemetrySdk();
   }
 
-  // Configures span exporter using configuration from
+  // Modifies the span exporter initially auto-configured using environment variables
   private static SpanExporter addAuthorizationHeaders(
       SpanExporter exporter, GoogleCredentials credentials) {
     if (exporter instanceof OtlpHttpSpanExporter) {
@@ -61,7 +61,7 @@ public class OTLPTraceExample {
 
         return builder.build();
       } catch (IOException e) {
-        System.out.println("error");
+        System.out.println("error:" + e.getMessage());
       }
     }
     return exporter;
