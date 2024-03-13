@@ -27,6 +27,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.TraceServiceSettings;
 import com.google.cloud.trace.v2.stub.TraceServiceStub;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import com.google.devtools.cloudtrace.v2.ProjectName;
@@ -56,7 +57,8 @@ class InternalTraceExporter implements SpanExporter {
       Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
   private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
 
-  private static InternalTraceExporter createWithClient(
+  @VisibleForTesting
+  static InternalTraceExporter createWithClient(
       String projectId,
       CloudTraceClient cloudTraceClient,
       ImmutableMap<String, String> attributeMappings,
@@ -104,7 +106,7 @@ class InternalTraceExporter implements SpanExporter {
           configuration.getAttributeMapping(),
           configuration.getFixedAttributes());
     }
-    return InternalTraceExporter.createWithClient(
+    return new InternalTraceExporter(
         projectId,
         new CloudTraceClientImpl(TraceServiceClient.create(stub)),
         configuration.getAttributeMapping(),
