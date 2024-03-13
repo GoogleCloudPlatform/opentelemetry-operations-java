@@ -18,11 +18,11 @@ package com.google.cloud.opentelemetry.trace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.trace.v2.TraceServiceClient;
 import com.google.cloud.trace.v2.TraceServiceSettings;
-import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.devtools.cloudtrace.v2.ProjectName;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,12 +46,27 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class TraceExporterTest {
 
   private static final String PROJECT_ID = "test-id";
+  private static final String FAKE_ENDPOINT = "fake.endpoint.com:443";
+  private static final GoogleCredentials FAKE_CREDENTIAL =
+      GoogleCredentials.newBuilder().setAccessToken(new AccessToken("fake", new Date(100))).build();
+
   @Mock private TraceServiceClient mockedTraceServiceClient;
-  @Mock private TraceServiceStub mockedTraceServiceStub;
 
   @After
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
+  }
+
+  @Test
+  public void testCreateWithConfigurationSucceeds() {
+    TraceConfiguration configuration =
+        TraceConfiguration.builder()
+            .setCredentials(FAKE_CREDENTIAL)
+            .setProjectId(PROJECT_ID)
+            .setTraceServiceEndpoint(FAKE_ENDPOINT)
+            .build();
+    SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
+    assertNotNull(exporter);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -59,12 +75,13 @@ public class TraceExporterTest {
     try (MockedStatic<TraceServiceClient> mockedTraceServiceClient =
         Mockito.mockStatic(TraceServiceClient.class)) {
       mockedTraceServiceClient
-          .when(() -> TraceServiceClient.create(Mockito.eq(mockedTraceServiceStub)))
+          .when(() -> TraceServiceClient.create(Mockito.any(TraceServiceSettings.class)))
           .thenReturn(this.mockedTraceServiceClient);
 
       TraceConfiguration configuration =
           TraceConfiguration.builder()
-              .setTraceServiceStub(mockedTraceServiceStub)
+              .setCredentials(FAKE_CREDENTIAL)
+              .setTraceServiceEndpoint(FAKE_ENDPOINT)
               .setProjectId(PROJECT_ID)
               .build();
       SpanExporter exporter = TraceExporter.createWithConfiguration(configuration);
@@ -73,7 +90,8 @@ public class TraceExporterTest {
       simulateExport(exporter);
 
       mockedTraceServiceClient.verify(
-          () -> TraceServiceClient.create(Mockito.eq(mockedTraceServiceStub)));
+          Mockito.times(1),
+          () -> TraceServiceClient.create(Mockito.any(TraceServiceSettings.class)));
       Mockito.verify(this.mockedTraceServiceClient)
           .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
     }

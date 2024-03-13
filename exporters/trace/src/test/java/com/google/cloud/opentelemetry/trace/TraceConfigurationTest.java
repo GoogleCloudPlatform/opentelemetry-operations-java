@@ -16,6 +16,7 @@
 package com.google.cloud.opentelemetry.trace;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -25,6 +26,7 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.trace.v2.TraceServiceSettings;
 import com.google.devtools.cloudtrace.v2.AttributeValue;
 import java.time.Duration;
 import java.util.Collections;
@@ -53,7 +55,9 @@ public class TraceConfigurationTest {
 
     assertNull(configuration.getCredentials());
     assertNotNull(configuration.getProjectId());
-    assertNull(configuration.getTraceServiceStub());
+    assertFalse(configuration.getInsecureEndpoint());
+    assertEquals(
+        configuration.getTraceServiceEndpoint(), TraceServiceSettings.getDefaultEndpoint());
     assertTrue(configuration.getFixedAttributes().isEmpty());
     assertEquals(TraceConfiguration.DEFAULT_DEADLINE, configuration.getDeadline());
   }

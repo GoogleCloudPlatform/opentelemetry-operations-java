@@ -19,7 +19,6 @@ import com.google.api.client.util.Strings;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
-import com.google.cloud.trace.v2.stub.TraceServiceStub;
 import com.google.cloud.trace.v2.stub.TraceServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -88,15 +87,6 @@ public abstract class TraceConfiguration {
   public final String getProjectId() {
     return getProjectIdSupplier().get();
   }
-
-  /**
-   * Returns a TraceServiceStub instance used to make RPC calls.
-   *
-   * @return the trace service stub.
-   */
-  @Nullable
-  @Deprecated
-  public abstract TraceServiceStub getTraceServiceStub();
 
   /**
    * Returns the endpoint where to write traces.
@@ -185,16 +175,6 @@ public abstract class TraceConfiguration {
       setProjectIdSupplier(() -> projectId);
       return this;
     }
-
-    /**
-     * Sets the trace service stub used to send gRPC calls.
-     *
-     * @deprecated("Use setTraceServiceEndpoint")
-     * @param traceServiceStub the {@code TraceServiceStub}.
-     * @return this.
-     */
-    @Deprecated
-    public abstract Builder setTraceServiceStub(TraceServiceStub traceServiceStub);
 
     /** Sets the endpoint where to write traces. Defaults to tracing.googleapis.com:443. */
     public abstract Builder setTraceServiceEndpoint(String endpoint);
