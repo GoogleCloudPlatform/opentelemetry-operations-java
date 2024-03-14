@@ -29,6 +29,16 @@ dependencies {
 	implementation(libraries.google_cloud_trace)
 	implementation project(':exporter-trace')
 	runtimeOnly(libraries.opentelemetry_gcp_resources)
+
+	testImplementation(testLibraries.opentelemetry_sdk_testing)
+	testImplementation(testLibraries.mockito)
+	testImplementation(testLibraries.junit5)
+	testRuntimeOnly(testLibraries.junit5_runtime)
+}
+
+test {
+	// Required to discover JUnit 5 tests
+	useJUnitPlatform()
 }
 
 // Set Docker image path here, e.g. using Google Container Registry or Docker Hub
