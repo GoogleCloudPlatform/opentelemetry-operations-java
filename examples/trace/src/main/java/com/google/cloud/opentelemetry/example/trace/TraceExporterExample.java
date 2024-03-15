@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.example.trace;
 
 import com.google.cloud.opentelemetry.trace.TraceConfiguration;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -49,25 +50,33 @@ public class TraceExporterExample {
         .buildAndRegisterGlobal();
   }
 
-  private static void myUseCase(String description) {
+  @VisibleForTesting
+  static void myUseCase(OpenTelemetrySdk openTelemetrySdk, String description) {
     // Generate a span
     Span span =
         openTelemetrySdk.getTracer(INSTRUMENTATION_SCOPE_NAME).spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       span.addEvent("Event A");
+      span.setAttribute("test_span", true);
       // Do some work for the use case
       for (int i = 0; i < 3; i++) {
         String work = String.format("%s - Work #%d", description, (i + 1));
-        doWork(work);
+        doWork(openTelemetrySdk, work);
       }
 
+      span.setAttribute("work_loop", 3);
       span.addEvent("Event B");
     } finally {
       span.end();
     }
   }
 
-  private static void doWork(String description) {
+  private static void myUseCase(String description) {
+    // Generate a span
+    myUseCase(openTelemetrySdk, description);
+  }
+
+  private static void doWork(OpenTelemetrySdk openTelemetrySdk, String description) {
     // Child span
     Span span =
         openTelemetrySdk.getTracer(INSTRUMENTATION_SCOPE_NAME).spanBuilder(description).startSpan();
