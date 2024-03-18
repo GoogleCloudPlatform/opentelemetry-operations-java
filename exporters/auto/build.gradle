@@ -36,6 +36,7 @@ dependencies {
 	}
 	implementation(libraries.opentelemetry_gcp_resources) {
 		exclude group: 'io.opentelemetry'
+		exclude group: 'com.fasterxml.jackson.core'
 	}
 	implementation(project(':propagators-gcp')) {
 		exclude group: 'io.opentelemetry'
