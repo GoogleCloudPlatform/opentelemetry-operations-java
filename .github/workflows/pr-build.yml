@@ -30,6 +30,30 @@ jobs:
           remote-build-cache-proxy-enabled: false
           build-root-directory: ${{matrix.build-root}}
           arguments: test
+  shadow:
+    strategy:
+      matrix:
+        java-version: [11]
+    name: Shadow Jar Build (Java ${{matrix.java-version}})
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout-repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: setup-java
+        name: Setup Java ${{matrix.java-version}}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{matrix.java-version}}
+      - id: setup-gradle-cache
+        name: Run Gradle Build with ShadowJar
+        uses: burrunan/gradle-cache-action@v1.6
+        with:
+          job-id: gradle-shadow-java-${{matrix.java-version}}
+          remote-build-cache-proxy-enabled: false
+          build-root-directory: .
+          arguments: shadowJar
   style:
     name: Stylecheck (${{matrix.name || matrix.build-root}})
     runs-on: ubuntu-latest
