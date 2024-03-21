@@ -32,6 +32,7 @@ services:
       - logs:/var/log:ro
     environment:
       - GOOGLE_CLOUD_PROJECT
+      - GOOGLE_CLOUD_QUOTA_PROJECT
   loadgen:
     image: golang:1.21
     command:
