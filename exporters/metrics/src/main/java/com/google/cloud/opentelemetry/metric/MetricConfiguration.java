@@ -25,7 +25,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.time.Duration;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -38,6 +41,19 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
+  /** Resource attribute filter that disables addition of resource attributes to metric labels. */
+  public static final Predicate<AttributeKey<?>> NO_RESOURCE_ATTRIBUTES = attributeKey -> false;
+
+  /**
+   * Default resource attribute filter that adds recommended resource attributes to metric labels.
+   */
+  public static final Predicate<AttributeKey<?>> DEFAULT_RESOURCE_ATTRIBUTES_FILTER =
+      attributeKey ->
+          (attributeKey.equals(ResourceAttributes.SERVICE_NAME)
+                  || attributeKey.equals(ResourceAttributes.SERVICE_NAMESPACE)
+                  || attributeKey.equals(ResourceAttributes.SERVICE_INSTANCE_ID))
+              && !attributeKey.getKey().isEmpty();
+
   static final String DEFAULT_PREFIX = "workload.googleapis.com";
 
   private static final Duration DEFAULT_DEADLINE =
@@ -100,7 +116,7 @@ public abstract class MetricConfiguration {
    *
    * <p>The Default is to only send descriptors once per process/classloader.
    *
-   * @return thhe configured strategy.
+   * @return the configured strategy.
    */
   public abstract MetricDescriptorStrategy getDescriptorStrategy();
 
@@ -111,6 +127,19 @@ public abstract class MetricConfiguration {
    */
   @Nullable
   public abstract String getMetricServiceEndpoint();
+
+  /**
+   * Returns the {@link Predicate} based filter that determines which resource attributes to add to
+   * a metric label.
+   *
+   * <p>The default filter adds {@link ResourceAttributes#SERVICE_NAME}, {@link
+   * ResourceAttributes#SERVICE_NAMESPACE}, and {@link ResourceAttributes#SERVICE_INSTANCE_ID} as
+   * metric labels.
+   *
+   * @return a {@link Predicate} that acts as a resource attribute filter.
+   * @see Builder#setResourceAttributesFilter(Predicate) for details.
+   */
+  public abstract Predicate<AttributeKey<?>> getResourceAttributesFilter();
 
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
@@ -135,6 +164,7 @@ public abstract class MetricConfiguration {
         .setDeadline(DEFAULT_DEADLINE)
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
         .setInsecureEndpoint(false)
+        .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 
@@ -187,6 +217,19 @@ public abstract class MetricConfiguration {
 
     @VisibleForTesting
     abstract Builder setInsecureEndpoint(boolean value);
+
+    /**
+     * Set a filter to determine which resource attributes to add to metrics as metric labels. By
+     * default, it adds service.name, service.namespace, and service.instance.id. This is
+     * recommended to avoid writing duplicate timeseries against the same monitored resource. Use
+     * setResourceAttributesFilter(NO_RESOURCE_ATTRIBUTES) to disable the addition of resource
+     * attributes to metric labels.
+     *
+     * @param filter A {@link Predicate} that determines if a resource attribute would be added as a
+     *     metric label
+     * @return this.
+     */
+    abstract Builder setResourceAttributesFilter(Predicate<AttributeKey<?>> filter);
 
     abstract MetricConfiguration autoBuild();
 

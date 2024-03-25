@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.monitoring.v3.DroppedLabels;
 import com.google.monitoring.v3.SpanContext;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -86,15 +87,32 @@ public class MetricTranslatorTest {
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
             .setType(DEFAULT_PREFIX + "/" + aMetricData.getName())
+            .addLabels(
+                LabelDescriptor.newBuilder().setKey("service_id").setValueType(ValueType.STRING))
+            .addLabels(
+                LabelDescriptor.newBuilder().setKey("service_name").setValueType(ValueType.STRING))
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("service_namespace")
+                    .setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.STRING))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
             .setDescription(aMetricData.getDescription())
             .setMetricKind(MetricKind.CUMULATIVE)
             .setValueType(MetricDescriptor.ValueType.INT64);
-
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, aMetricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(
+            DEFAULT_PREFIX,
+            aMetricData,
+            aLongPoint,
+            Attributes.of(
+                AttributeKey.stringKey("service.id"),
+                "test-service-id",
+                AttributeKey.stringKey("service.name"),
+                "test-service",
+                AttributeKey.stringKey("service.namespace"),
+                "test-service-ns"));
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -104,6 +122,8 @@ public class MetricTranslatorTest {
         MetricDescriptor.newBuilder()
             .setDisplayName(aMetricData.getName())
             .setType(CUSTOM_PREFIX + "/" + aMetricData.getName())
+            .addLabels(
+                LabelDescriptor.newBuilder().setKey("service_name").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label1").setValueType(ValueType.STRING))
             .addLabels(LabelDescriptor.newBuilder().setKey("label2").setValueType(ValueType.BOOL))
             .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
@@ -112,12 +132,16 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.INT64);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(CUSTOM_PREFIX, aMetricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(
+            CUSTOM_PREFIX,
+            aMetricData,
+            aLongPoint,
+            Attributes.of(AttributeKey.stringKey("service.name"), "test-service"));
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
   @Test
-  public void testMapMetricDescriptorNonMonotonicSumIsGauage() {
+  public void testMapMetricDescriptorNonMonotonicSumIsGauge() {
     String name = "Metric Name";
     String description = "Metric Description";
     String unit = "ns";
@@ -142,7 +166,8 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.INT64);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(
+            DEFAULT_PREFIX, metricData, aLongPoint, Attributes.empty());
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -171,7 +196,8 @@ public class MetricTranslatorTest {
             .setValueType(MetricDescriptor.ValueType.DISTRIBUTION);
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aHistogramPoint);
+        MetricTranslator.mapMetricDescriptor(
+            DEFAULT_PREFIX, metricData, aHistogramPoint, Attributes.empty());
     assertEquals(expectedDescriptor.build(), actualDescriptor);
   }
 
@@ -190,7 +216,8 @@ public class MetricTranslatorTest {
             ImmutableSummaryData.create(ImmutableList.of(aDoubleSummaryPoint)));
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(
+            DEFAULT_PREFIX, metricData, aLongPoint, Attributes.empty());
     assertNull(actualDescriptor);
   }
 
@@ -210,7 +237,11 @@ public class MetricTranslatorTest {
                 true, AggregationTemporality.DELTA, ImmutableList.of(aDoublePoint)));
 
     MetricDescriptor actualDescriptor =
-        MetricTranslator.mapMetricDescriptor(DEFAULT_PREFIX, metricData, aLongPoint);
+        MetricTranslator.mapMetricDescriptor(
+            DEFAULT_PREFIX,
+            metricData,
+            aLongPoint,
+            Attributes.of(AttributeKey.stringKey("service.id"), "test-service-id"));
     assertNull(actualDescriptor);
   }
 
