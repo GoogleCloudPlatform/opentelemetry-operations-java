@@ -1,0 +1,4 @@
+# Maven Build target folder
+target/
+# IDE specific file
+nbactions.xml

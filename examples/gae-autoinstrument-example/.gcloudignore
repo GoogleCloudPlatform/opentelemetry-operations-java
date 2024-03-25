@@ -1,0 +1,2 @@
+# Ignore the readme file for otel agents
+src/main/webapp/WEB-INF/otelagent/README.md
