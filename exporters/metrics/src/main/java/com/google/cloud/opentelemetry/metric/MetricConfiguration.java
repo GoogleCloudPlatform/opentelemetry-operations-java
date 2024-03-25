@@ -129,8 +129,8 @@ public abstract class MetricConfiguration {
   public abstract String getMetricServiceEndpoint();
 
   /**
-   * Returns the {@link Predicate} based filter that determines which resource attributes to add to
-   * a metric label.
+   * Returns the {@link Predicate} based filter that determines which resource attributes to add as
+   * metric labels.
    *
    * <p>The default filter adds {@link ResourceAttributes#SERVICE_NAME}, {@link
    * ResourceAttributes#SERVICE_NAMESPACE}, and {@link ResourceAttributes#SERVICE_INSTANCE_ID} as
