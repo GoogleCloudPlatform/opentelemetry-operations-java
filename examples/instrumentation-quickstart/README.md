@@ -39,7 +39,8 @@ oauth2 flow (read more about the command [here][auth_command]):
 
 	gcloud auth application-default login
 
-**NOTE: This method of authentication is not recommended for production environments.**
+> [!CAUTION]
+> This method of authentication is not recommended for production environments.
 
 Executing this command will save your application credentials to the default path which will depend on the type of machine -
 - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
@@ -50,6 +51,11 @@ Next, export the credentials to `GOOGLE_APPLICATION_CREDENTIALS` environment var
 For Linux & MacOS:
 ```shell
 export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.config/gcloud/application_default_credentials.json
+```
+
+For Windows:
+```shell
+SET GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%\gcloud\application_default_credentials.json
 ```
 
 You can also manually set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a service account key JSON file path.
