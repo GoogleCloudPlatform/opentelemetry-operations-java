@@ -41,7 +41,7 @@ oauth2 flow (read more about the command [here][auth_command]):
 
 **NOTE: This method of authentication is not recommended for production environments.**
 
-Executing this command will save your application credentials to default path which will depend on the type of machine -
+Executing this command will save your application credentials to the default path which will depend on the type of machine -
 - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
 - Windows: `%APPDATA%\gcloud\application_default_credentials.json`
 
@@ -54,7 +54,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.config/gcloud/application_default_c
 
 You can also manually set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a service account key JSON file path.
 
-> Learn more at [Setting Up Authentication for Server to Server Production Applications][ADC].
+Learn more at [Setting Up Authentication for Server to Server Production Applications][ADC].
 
 *Note:* Application Default Credentials is able to implicitly find the credentials as long as the application is running on Compute Engine, Kubernetes Engine, App Engine, or Cloud Functions.
 
