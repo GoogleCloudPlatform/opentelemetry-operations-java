@@ -28,6 +28,7 @@ dependencies {
 	runtimeOnly(libraries.opentelemetry_sdk_autoconf)
 	runtimeOnly(libraries.opentelemetry_sdk)
 	runtimeOnly project(':exporter-auto')
+	// Provides resources to the autoconfiguration module
 	runtimeOnly(libraries.opentelemetry_gcp_resources)
 }
 
@@ -38,6 +39,7 @@ def autoconf_config = [
 	'-Dotel.metrics.exporter=google_cloud_monitoring',
 	'-Dotel.logs.exporter=none',
 	'-Dotel.java.global-autoconfigure.enabled=true',
+	'-Dotel.service.name=example-autoconf-service',
 ]
 
 mainClassName = 'com.google.cloud.opentelemetry.example.autoconf.AutoconfExample'
