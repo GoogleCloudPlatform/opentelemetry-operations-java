@@ -70,6 +70,9 @@ public class FakeData {
           .put(ResourceAttributes.HOST_ID, aHostId)
           .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, aCloudZone)
           .put(ResourceAttributes.CLOUD_PROVIDER, "gcp")
+          .put(ResourceAttributes.SERVICE_NAME, "test-gce-service")
+          .put(ResourceAttributes.SERVICE_NAMESPACE, "test-gce-service-ns")
+          .put(ResourceAttributes.SERVICE_INSTANCE_ID, "test-gce-service-id")
           .put("extra_info", "extra")
           .put("not_gcp_resource", "value")
           .build();

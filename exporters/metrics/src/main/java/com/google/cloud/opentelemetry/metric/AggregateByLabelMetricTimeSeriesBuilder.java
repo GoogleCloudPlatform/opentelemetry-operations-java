@@ -27,17 +27,20 @@ import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -55,10 +58,20 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final Map<MetricWithLabels, TimeSeries.Builder> pendingTimeSeries = new HashMap<>();
   private final String projectId;
   private final String prefix;
+  private final Predicate<AttributeKey<?>> resourceAttributeFilter;
 
+  @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
     this.projectId = projectId;
     this.prefix = prefix;
+    this.resourceAttributeFilter = MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
+  }
+
+  public AggregateByLabelMetricTimeSeriesBuilder(
+      String projectId, String prefix, Predicate<AttributeKey<?>> resourceAttributeFilter) {
+    this.projectId = projectId;
+    this.prefix = prefix;
+    this.resourceAttributeFilter = resourceAttributeFilter;
   }
 
   @Override
@@ -96,15 +109,21 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   }
 
   private void recordPointInTimeSeries(MetricData metric, PointData point, Point builtPoint) {
-    MetricDescriptor descriptor = mapMetricDescriptor(this.prefix, metric, point);
+    MetricDescriptor descriptor =
+        mapMetricDescriptor(
+            this.prefix, metric, point, extraLabelsFromResource(metric.getResource()));
     if (descriptor == null) {
       // Unsupported type.
       return;
     }
     descriptors.putIfAbsent(descriptor.getType(), descriptor);
     Attributes metricAttributes =
-        attachInstrumentationLibraryLabels(
-            point.getAttributes(), metric.getInstrumentationScopeInfo());
+        Attributes.builder()
+            .putAll(
+                instrumentationLibraryLabels(
+                    point.getAttributes(), metric.getInstrumentationScopeInfo()))
+            .putAll(extraLabelsFromResource(metric.getResource()))
+            .build();
     MetricWithLabels key = new MetricWithLabels(descriptor.getType(), metricAttributes);
     pendingTimeSeries
         .computeIfAbsent(key, k -> makeTimeSeriesHeader(metric, metricAttributes, descriptor))
@@ -119,7 +138,13 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
         .setResource(mapResource(metric.getResource()));
   }
 
-  private Attributes attachInstrumentationLibraryLabels(
+  private Attributes extraLabelsFromResource(Resource resource) {
+    AttributesBuilder attrBuilder = resource.getAttributes().toBuilder();
+    attrBuilder.removeIf(resourceAttributeFilter.negate());
+    return attrBuilder.build();
+  }
+
+  private Attributes instrumentationLibraryLabels(
       Attributes attributes, InstrumentationScopeInfo instrumentationScopeInfo) {
     return attributes.toBuilder()
         .put(

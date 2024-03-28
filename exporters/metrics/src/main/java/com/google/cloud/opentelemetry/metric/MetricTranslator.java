@@ -64,13 +64,18 @@ public final class MetricTranslator {
   }
 
   static MetricDescriptor mapMetricDescriptor(
-      String prefix, MetricData metric, io.opentelemetry.sdk.metrics.data.PointData metricPoint) {
+      String prefix,
+      MetricData metric,
+      io.opentelemetry.sdk.metrics.data.PointData metricPoint,
+      Attributes extraLabels) {
     MetricDescriptor.Builder builder =
         MetricDescriptor.newBuilder()
             .setDisplayName(metric.getName())
             .setDescription(metric.getDescription())
             .setType(mapMetricType(metric.getName(), prefix))
             .setUnit(metric.getUnit());
+    // add extra labels if any
+    extraLabels.forEach((key, value) -> builder.addLabels(mapAttribute(key, prefix)));
     metricPoint
         .getAttributes()
         .forEach((key, value) -> builder.addLabels(mapAttribute(key, prefix)));

@@ -32,6 +32,7 @@ import com.google.monitoring.v3.CreateMetricDescriptorRequest;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeSeries;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,16 +65,19 @@ class InternalMetricExporter implements MetricExporter {
   private final String projectId;
   private final String prefix;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
+  private final Predicate<AttributeKey<?>> resourceAttributesFilter;
 
   InternalMetricExporter(
       String projectId,
       String prefix,
       CloudMetricClient client,
-      MetricDescriptorStrategy descriptorStrategy) {
+      MetricDescriptorStrategy descriptorStrategy,
+      Predicate<AttributeKey<?>> resourceAttributesFilter) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
+    this.resourceAttributesFilter = resourceAttributesFilter;
   }
 
   static InternalMetricExporter createWithConfiguration(MetricConfiguration configuration)
@@ -109,7 +114,8 @@ class InternalMetricExporter implements MetricExporter {
         projectId,
         prefix,
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
-        configuration.getDescriptorStrategy());
+        configuration.getDescriptorStrategy(),
+        configuration.getResourceAttributesFilter());
   }
 
   @VisibleForTesting
@@ -117,8 +123,10 @@ class InternalMetricExporter implements MetricExporter {
       String projectId,
       String prefix,
       CloudMetricClient metricServiceClient,
-      MetricDescriptorStrategy descriptorStrategy) {
-    return new InternalMetricExporter(projectId, prefix, metricServiceClient, descriptorStrategy);
+      MetricDescriptorStrategy descriptorStrategy,
+      Predicate<AttributeKey<?>> resourceAttributesFilter) {
+    return new InternalMetricExporter(
+        projectId, prefix, metricServiceClient, descriptorStrategy, resourceAttributesFilter);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
@@ -142,7 +150,7 @@ class InternalMetricExporter implements MetricExporter {
     // 2. Attempt to register MetricDescriptors (using configured strategy)
     // 3. Fire the set of time series off.
     MetricTimeSeriesBuilder builder =
-        new AggregateByLabelMetricTimeSeriesBuilder(projectId, prefix);
+        new AggregateByLabelMetricTimeSeriesBuilder(projectId, prefix, resourceAttributesFilter);
     for (final MetricData metricData : metrics) {
       // Extract all the underlying points.
       switch (metricData.getType()) {
