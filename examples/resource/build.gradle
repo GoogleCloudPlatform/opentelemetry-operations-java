@@ -19,13 +19,14 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 }
 
-
 description = 'Examples for showing resource detection in various GCP environments.'
 
 dependencies {
+	implementation(libraries.opentelemetry_api)
+	// Detects resource attributes from various GCP environments
 	implementation(libraries.opentelemetry_gcp_resources)
+	// Provides resources to the autoconfiguration module
 	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.opentelemetry_otlp_exporter)
 }
 
 mainClassName = 'com.google.cloud.opentelemetry.example.resource.ResourceExample'
@@ -33,4 +34,16 @@ mainClassName = 'com.google.cloud.opentelemetry.example.resource.ResourceExample
 jib {
 	from.image = 'gcr.io/distroless/java-debian10:11'
 	containerizingMode = 'packaged'
+}
+
+def autoconf_config = [
+	'-Dotel.traces.exporter=none',
+	'-Dotel.metrics.exporter=none',
+	'-Dotel.logs.exporter=none',
+	'-Dotel.java.global-autoconfigure.enabled=true',
+	'-Dotel.service.name=example-resource',
+]
+
+application {
+	applicationDefaultJvmArgs = autoconf_config
 }
