@@ -41,6 +41,11 @@ public final class CloudMetricClientImpl implements CloudMetricClient {
   }
 
   @Override
+  public void createServiceTimeSeries(ProjectName name, List<TimeSeries> timeSeries) {
+    this.metricServiceClient.createServiceTimeSeries(name, timeSeries);
+  }
+
+  @Override
   public void shutdown() {
     this.metricServiceClient.shutdown();
   }

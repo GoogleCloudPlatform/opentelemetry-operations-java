@@ -31,13 +31,23 @@ public interface CloudMetricClient {
   MetricDescriptor createMetricDescriptor(CreateMetricDescriptorRequest request);
 
   /**
-   * Send a timeseries to Cloud Monitoring.
+   * Send a time series to Cloud Monitoring.
    *
-   * @param name The name of the project where we write the timeseries.
-   * @param timeSeries The list of timeseries to write.
-   *     <p>Note: This can only take one point at per timeseries.
+   * @param name The name of the project where we write the time series.
+   * @param timeSeries The list of time series to write.
+   *     <p>Note: This can only take one point at per time series.
    */
   void createTimeSeries(ProjectName name, List<TimeSeries> timeSeries);
+
+  /**
+   * Send a service time series to Cloud Monitoring. A service time series is a time series for a
+   * metric from a Google Cloud service. This method should not be used for sending custom metrics.
+   *
+   * @param name The name of the project where we write the time series.
+   * @param timeSeries The list of time series to write.
+   *     <p>Note: This can only take one point at per time series.
+   */
+  void createServiceTimeSeries(ProjectName name, List<TimeSeries> timeSeries);
 
   /** Shutdown this client, cleaning up any resources. */
   void shutdown();

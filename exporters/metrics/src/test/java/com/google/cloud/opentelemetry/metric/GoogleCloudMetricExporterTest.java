@@ -132,7 +132,8 @@ public class GoogleCloudMetricExporterTest {
             DEFAULT_PREFIX,
             mockClient,
             MetricDescriptorStrategy.SEND_ONCE,
-            DEFAULT_RESOURCE_ATTRIBUTES_FILTER);
+            DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            false);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
     CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -241,7 +242,8 @@ public class GoogleCloudMetricExporterTest {
             DEFAULT_PREFIX,
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
-            DEFAULT_RESOURCE_ATTRIBUTES_FILTER);
+            DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            false);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -362,7 +364,8 @@ public class GoogleCloudMetricExporterTest {
             DEFAULT_PREFIX,
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
-            DEFAULT_RESOURCE_ATTRIBUTES_FILTER);
+            DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            false);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1))
@@ -382,7 +385,8 @@ public class GoogleCloudMetricExporterTest {
             DEFAULT_PREFIX,
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
-            NO_RESOURCE_ATTRIBUTES);
+            NO_RESOURCE_ATTRIBUTES,
+            false);
 
     MetricData metricData =
         ImmutableMetricData.createDoubleSummary(
