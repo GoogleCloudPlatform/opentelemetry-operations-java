@@ -30,6 +30,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
+import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
@@ -454,6 +455,26 @@ public class GoogleCloudMetricExporterTest {
       assertEquals(CompletableResultCode.ofSuccess(), metricExporter.flush());
       assertEquals(CompletableResultCode.ofSuccess(), metricExporter.shutdown());
     }
+  }
+
+  @Test
+  public void verifyExporterExportGoogleServiceMetrics() {
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
+            aProjectId,
+            "compute.googleapis.com",
+            mockClient,
+            MetricDescriptorStrategy.ALWAYS_SEND,
+            NO_RESOURCE_ATTRIBUTES,
+            true);
+
+    CompletableResultCode result =
+        exporter.export(ImmutableList.of(googleComputeServiceMetricData));
+    verify(mockClient, times(0)).createMetricDescriptor(any());
+    verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
+    verify(mockClient, times(1)).createServiceTimeSeries(any(ProjectName.class), any());
+
+    assertTrue(result.isSuccess());
   }
 
   private void generateOpenTelemetryUsingGoogleCloudMetricExporter(MetricExporter metricExporter) {

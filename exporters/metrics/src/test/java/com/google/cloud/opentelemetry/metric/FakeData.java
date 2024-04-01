@@ -119,6 +119,16 @@ public class FakeData {
           ImmutableSumData.create(
               true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
 
+  static final MetricData googleComputeServiceMetricData =
+      ImmutableMetricData.createLongSum(
+          aGceResource,
+          anInstrumentationLibraryInfo,
+          "guest/disk/io_time",
+          "description",
+          "ns",
+          ImmutableSumData.create(
+              true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+
   static final String aTraceId = "00000000000000000000000000000001";
   static final String aSpanId = "0000000000000002";
   static final SpanContext aSpanContext =
