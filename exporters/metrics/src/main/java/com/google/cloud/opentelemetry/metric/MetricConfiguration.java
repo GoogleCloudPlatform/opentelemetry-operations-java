@@ -227,6 +227,18 @@ public abstract class MetricConfiguration {
     public abstract Builder setMetricServiceEndpoint(String endpoint);
 
     /**
+     * Sets the {@link MetricConfiguration} to configure the exporter to write metrics via {@link
+     * com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
+     * method. By default, this is false.
+     *
+     * @param useServiceTimeSeries a boolean indicating whether to use {@link
+     *     com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
+     *     method for writing metrics to Google Cloud Monitoring.
+     * @return this
+     */
+    public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
+
+    /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By
      * default, it adds service.name, service.namespace, and service.instance.id. This is
      * recommended to avoid writing duplicate timeseries against the same monitored resource. Use
@@ -241,18 +253,6 @@ public abstract class MetricConfiguration {
 
     @VisibleForTesting
     abstract Builder setInsecureEndpoint(boolean value);
-
-    /**
-     * Sets the {@link MetricConfiguration} to configure the exporter to write metrics via {@link
-     * com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
-     * method. By default, this is false.
-     *
-     * @param useServiceTimeSeries a boolean indicating whether to use {@link
-     *     com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
-     *     method for writing metrics to Google Cloud Monitoring.
-     * @return this
-     */
-    abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
 
     abstract MetricConfiguration autoBuild();
 
