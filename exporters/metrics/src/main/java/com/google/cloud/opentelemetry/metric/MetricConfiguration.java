@@ -215,9 +215,6 @@ public abstract class MetricConfiguration {
     /** Sets the endpoint where to write Metrics. Defaults to monitoring.googleapis.com:443. */
     public abstract Builder setMetricServiceEndpoint(String endpoint);
 
-    @VisibleForTesting
-    abstract Builder setInsecureEndpoint(boolean value);
-
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By
      * default, it adds service.name, service.namespace, and service.instance.id. This is
@@ -229,7 +226,10 @@ public abstract class MetricConfiguration {
      *     metric label
      * @return this.
      */
-    abstract Builder setResourceAttributesFilter(Predicate<AttributeKey<?>> filter);
+    public abstract Builder setResourceAttributesFilter(Predicate<AttributeKey<?>> filter);
+
+    @VisibleForTesting
+    abstract Builder setInsecureEndpoint(boolean value);
 
     abstract MetricConfiguration autoBuild();
 
