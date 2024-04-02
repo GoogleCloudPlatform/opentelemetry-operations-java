@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -211,14 +211,13 @@ class InternalMetricExporter implements MetricExporter {
     exportDescriptors(builder);
 
     List<TimeSeries> series = builder.getTimeSeries();
-    Function<List<TimeSeries>, Void> timeSeriesGenerator =
+    Consumer<List<TimeSeries>> timeSeriesGenerator =
         timeSeries -> {
           if (useCreateServiceTimeSeries) {
             metricServiceClient.createServiceTimeSeries(ProjectName.of(projectId), timeSeries);
           } else {
             metricServiceClient.createTimeSeries(ProjectName.of(projectId), timeSeries);
           }
-          return null;
         };
     createTimeSeriesBatch(series, timeSeriesGenerator);
     // TODO: better error reporting.
@@ -245,10 +244,10 @@ class InternalMetricExporter implements MetricExporter {
 
   // Fragment metrics into batches and send to GCM.
   private void createTimeSeriesBatch(
-      List<TimeSeries> allTimesSeries, Function<List<TimeSeries>, Void> timeSeriesGenerator) {
+      List<TimeSeries> allTimesSeries, Consumer<List<TimeSeries>> timeSeriesGenerator) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {
-      timeSeriesGenerator.apply(new ArrayList<>(timeSeries));
+      timeSeriesGenerator.accept(new ArrayList<>(timeSeries));
     }
   }
 
