@@ -24,7 +24,10 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.opentelemetry.metric.MetricConfiguration.Builder;
+import io.opentelemetry.api.common.AttributeKey;
+import java.time.Duration;
 import java.util.Date;
+import java.util.function.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -49,14 +52,17 @@ public class MetricConfigurationTest {
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
+    Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
     MetricConfiguration configuration =
         MetricConfiguration.builder()
             .setProjectId(PROJECT_ID)
             .setCredentials(FAKE_CREDENTIALS)
+            .setResourceAttributesFilter(allowAllPredicate)
             .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
+    assertEquals(allowAllPredicate, configuration.getResourceAttributesFilter());
   }
 
   @Test
@@ -64,6 +70,19 @@ public class MetricConfigurationTest {
     Builder builder = MetricConfiguration.builder();
     assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(""));
     assertThrows(IllegalArgumentException.class, () -> builder.setProjectId(null));
+  }
+
+  @Test
+  public void testConfigurationWithNegativeDeadlineFails() {
+    MetricConfiguration.Builder builder =
+        MetricConfiguration.builder().setDeadline(Duration.ofSeconds(-1));
+    assertThrows(IllegalArgumentException.class, builder::build);
+  }
+
+  @Test
+  public void testConfigurationWithNullResourceAttributesFilterFails() {
+    Builder builder = MetricConfiguration.builder();
+    assertThrows(NullPointerException.class, () -> builder.setResourceAttributesFilter(null));
   }
 
   @Test
