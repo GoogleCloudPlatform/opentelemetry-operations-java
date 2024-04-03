@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -66,18 +67,21 @@ class InternalMetricExporter implements MetricExporter {
   private final String prefix;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
   private final Predicate<AttributeKey<?>> resourceAttributesFilter;
+  private final boolean useCreateServiceTimeSeries;
 
   InternalMetricExporter(
       String projectId,
       String prefix,
       CloudMetricClient client,
       MetricDescriptorStrategy descriptorStrategy,
-      Predicate<AttributeKey<?>> resourceAttributesFilter) {
+      Predicate<AttributeKey<?>> resourceAttributesFilter,
+      boolean useCreateServiceTimeSeries) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
     this.resourceAttributesFilter = resourceAttributesFilter;
+    this.useCreateServiceTimeSeries = useCreateServiceTimeSeries;
   }
 
   static InternalMetricExporter createWithConfiguration(MetricConfiguration configuration)
@@ -115,7 +119,8 @@ class InternalMetricExporter implements MetricExporter {
         prefix,
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy(),
-        configuration.getResourceAttributesFilter());
+        configuration.getResourceAttributesFilter(),
+        configuration.getUseServiceTimeSeries());
   }
 
   @VisibleForTesting
@@ -124,9 +129,15 @@ class InternalMetricExporter implements MetricExporter {
       String prefix,
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy,
-      Predicate<AttributeKey<?>> resourceAttributesFilter) {
+      Predicate<AttributeKey<?>> resourceAttributesFilter,
+      boolean useCreateServiceTimeSeries) {
     return new InternalMetricExporter(
-        projectId, prefix, metricServiceClient, descriptorStrategy, resourceAttributesFilter);
+        projectId,
+        prefix,
+        metricServiceClient,
+        descriptorStrategy,
+        resourceAttributesFilter,
+        useCreateServiceTimeSeries);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
@@ -197,17 +208,18 @@ class InternalMetricExporter implements MetricExporter {
       // }
     }
     // Update metric descriptors based on configured strategy.
-    try {
-      Collection<MetricDescriptor> descriptors = builder.getDescriptors();
-      if (!descriptors.isEmpty()) {
-        metricDescriptorStrategy.exportDescriptors(descriptors, this::exportDescriptor);
-      }
-    } catch (Exception e) {
-      logger.warn("Failed to create metric descriptors", e);
-    }
+    exportDescriptors(builder);
 
     List<TimeSeries> series = builder.getTimeSeries();
-    createTimeSeriesBatch(metricServiceClient, ProjectName.of(projectId), series);
+    Consumer<List<TimeSeries>> timeSeriesGenerator =
+        timeSeries -> {
+          if (useCreateServiceTimeSeries) {
+            metricServiceClient.createServiceTimeSeries(ProjectName.of(projectId), timeSeries);
+          } else {
+            metricServiceClient.createTimeSeries(ProjectName.of(projectId), timeSeries);
+          }
+        };
+    createTimeSeriesBatch(series, timeSeriesGenerator);
     // TODO: better error reporting.
     if (series.size() < metrics.size()) {
       return CompletableResultCode.ofFailure();
@@ -215,14 +227,27 @@ class InternalMetricExporter implements MetricExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  private void exportDescriptors(MetricTimeSeriesBuilder timeSeriesBuilder) {
+    if (useCreateServiceTimeSeries) {
+      // do not export metric descriptors when using createServiceTimeSeries
+      return;
+    }
+    try {
+      Collection<MetricDescriptor> descriptors = timeSeriesBuilder.getDescriptors();
+      if (!descriptors.isEmpty()) {
+        metricDescriptorStrategy.exportDescriptors(descriptors, this::exportDescriptor);
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to create metric descriptors", e);
+    }
+  }
+
   // Fragment metrics into batches and send to GCM.
-  private static void createTimeSeriesBatch(
-      CloudMetricClient metricServiceClient,
-      ProjectName projectName,
-      List<TimeSeries> allTimesSeries) {
+  private void createTimeSeriesBatch(
+      List<TimeSeries> allTimesSeries, Consumer<List<TimeSeries>> timeSeriesGenerator) {
     List<List<TimeSeries>> batches = Lists.partition(allTimesSeries, MAX_BATCH_SIZE);
     for (List<TimeSeries> timeSeries : batches) {
-      metricServiceClient.createTimeSeries(projectName, new ArrayList<>(timeSeries));
+      timeSeriesGenerator.accept(new ArrayList<>(timeSeries));
     }
   }
 

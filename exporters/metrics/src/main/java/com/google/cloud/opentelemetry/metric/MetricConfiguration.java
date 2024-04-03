@@ -28,6 +28,7 @@ import com.google.common.base.Suppliers;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -141,6 +142,15 @@ public abstract class MetricConfiguration {
    */
   public abstract Predicate<AttributeKey<?>> getResourceAttributesFilter();
 
+  /**
+   * Returns a boolean indicating if the {@link MetricConfiguration} is configured to write to a
+   * metric generated from a Google Cloud Service.
+   *
+   * @return true if the {@link MetricConfiguration} is configured to write to a metric generated
+   *     from a Google Cloud Service, false otherwise.
+   */
+  public abstract boolean getUseServiceTimeSeries();
+
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
 
@@ -164,6 +174,7 @@ public abstract class MetricConfiguration {
         .setDeadline(DEFAULT_DEADLINE)
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
         .setInsecureEndpoint(false)
+        .setUseServiceTimeSeries(false)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
@@ -214,6 +225,18 @@ public abstract class MetricConfiguration {
 
     /** Sets the endpoint where to write Metrics. Defaults to monitoring.googleapis.com:443. */
     public abstract Builder setMetricServiceEndpoint(String endpoint);
+
+    /**
+     * Sets the {@link MetricConfiguration} to configure the exporter to write metrics via {@link
+     * com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
+     * method. By default, this is false.
+     *
+     * @param useServiceTimeSeries a boolean indicating whether to use {@link
+     *     com.google.cloud.monitoring.v3.MetricServiceClient#createServiceTimeSeries(String, List)}
+     *     method for writing metrics to Google Cloud Monitoring.
+     * @return this
+     */
+    public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
 
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By

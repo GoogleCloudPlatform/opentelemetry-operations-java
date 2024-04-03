@@ -16,8 +16,10 @@
 package com.google.cloud.opentelemetry.metric;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
@@ -48,6 +50,7 @@ public class MetricConfigurationTest {
 
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
+    assertFalse(configuration.getUseServiceTimeSeries());
   }
 
   @Test
@@ -58,11 +61,13 @@ public class MetricConfigurationTest {
             .setProjectId(PROJECT_ID)
             .setCredentials(FAKE_CREDENTIALS)
             .setResourceAttributesFilter(allowAllPredicate)
+            .setUseServiceTimeSeries(true)
             .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertEquals(allowAllPredicate, configuration.getResourceAttributesFilter());
+    assertTrue(configuration.getUseServiceTimeSeries());
   }
 
   @Test
