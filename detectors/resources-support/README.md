@@ -10,5 +10,5 @@ The GCP environments supported by this library are -
 4. [Google Cloud Functions](https://cloud.google.com/functions?hl=en)
 5. [Google Cloud Run](https://cloud.google.com/run?hl=en)
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/detector-resources-support/badge.svg
-[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/detector-resources-support
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/detector-resources-support?color=dark-green
+[maven-url]: https://central.sonatype.com/artifact/com.google.cloud.opentelemetry/detector-resources-support
