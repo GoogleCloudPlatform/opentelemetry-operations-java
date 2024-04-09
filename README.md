@@ -47,5 +47,5 @@ See [Metrics Readme](exporters/metrics/README.md) for installation and usage ins
 See [Autoconfigure Readme](exporters/auto/README.md) for installation and usage instructions.
 
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace/badge.svg
-[maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/exporter-trace?color=dark-green
+[maven-url]: https://central.sonatype.com/artifact/com.google.cloud.opentelemetry/exporter-trace
