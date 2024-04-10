@@ -22,6 +22,8 @@ Next, update [`build.gradle`](build.grade) to set the following:
 ```
 	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT_ID>,
 	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
+	# Optional - if you want to export using gRPC protocol
+	'-Dotel.exporter.otlp.protocol=grpc',
 ```
 
 Finally, to run the sample from the project root:
