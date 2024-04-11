@@ -49,6 +49,7 @@ public class OTLPTraceExample {
   }
 
   // Modifies the span exporter initially auto-configured using environment variables
+  // Note: This adds static authorization headers which are set only at initialization time.
   private static SpanExporter addAuthorizationHeaders(
       SpanExporter exporter, GoogleCredentials credentials) {
     if (exporter instanceof OtlpHttpSpanExporter) {
