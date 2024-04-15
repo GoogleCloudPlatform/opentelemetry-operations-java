@@ -40,8 +40,10 @@ def autoconf_config = [
 	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT>',
 	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
 	'-Dotel.traces.exporter=otlp',
+	'-Dotel.metrics.exporter=none',
 	'-Dotel.exporter.otlp.protocol=http/protobuf',
 	'-Dotel.java.global-autoconfigure.enabled=true',
+	'-Dotel.service.name=spring-otlp-trace-example-service',
 ]
 
 application {

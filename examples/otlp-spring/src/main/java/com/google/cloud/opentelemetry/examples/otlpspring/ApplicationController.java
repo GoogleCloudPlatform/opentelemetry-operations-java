@@ -15,12 +15,14 @@
  */
 package com.google.cloud.opentelemetry.examples.otlpspring;
 
-import static com.google.cloud.opentelemetry.examples.otlpspring.Main.openTelemetrySdk;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.Optional;
 import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +35,14 @@ public class ApplicationController {
   private static final String INDEX_GREETING =
       "Welcome to OTLP Trace sample with Google Auth on Spring";
   private static final String WORK_RESPONSE_FMT = "Work finished in %d ms";
+
+  private final Logger logger = LoggerFactory.getLogger(ApplicationController.class);
+  private final OpenTelemetrySdk openTelemetrySdk;
+
+  @Autowired
+  public ApplicationController(OpenTelemetrySdk openTelemetrySdk) {
+    this.openTelemetrySdk = openTelemetrySdk;
+  }
 
   @GetMapping("/")
   public String index() {
@@ -54,6 +64,7 @@ public class ApplicationController {
       Thread.sleep(workDurationMillis);
       span.addEvent("Event B");
     } catch (InterruptedException e) {
+      logger.debug("Error while sleeping: {}", e.getMessage());
       throw new RuntimeException(e);
     } finally {
       span.end();
