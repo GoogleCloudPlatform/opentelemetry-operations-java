@@ -15,13 +15,16 @@
  */
 package com.google.cloud.opentelemetry.examples.otlpspring;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication
-public class Main {
-  public static void main(String[] args) {
-    System.out.println("Starting OTLP with Spring Boot and Google Auth");
-    SpringApplication.run(Main.class, args);
+@RestController
+public class ApplicationController {
+  private static final String INDEX_GREETING =
+      "Welcome to OTLP Trace sample with Google Auth on Spring";
+
+  @GetMapping("/")
+  public String index() {
+    return INDEX_GREETING;
   }
 }
