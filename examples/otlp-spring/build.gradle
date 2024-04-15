@@ -16,7 +16,10 @@
 plugins {
 	id 'java'
 	id 'application'
+	id 'com.google.cloud.tools.jib'
 }
+
+description = 'Example showcasing OTLP trace ingest on GCP and Google Auth in a Spring Boot App'
 
 group 'com.google.cloud.opentelemetry.examples'
 
@@ -47,6 +50,16 @@ def autoconf_config = [
 ]
 
 application {
+	mainClass = "com.google.cloud.opentelemetry.examples.otlpspring.Main"
 	applicationDefaultJvmArgs = autoconf_config
-	mainClassName = "com.google.cloud.opentelemetry.examples.otlpspring.Main"
+}
+
+jib {
+	from.image = "gcr.io/distroless/java-debian10:11"
+	containerizingMode = "packaged"
+	container.jvmFlags = autoconf_config as List
+	container.ports = ["8080"]
+	container.environment = [
+		"OTEL_EXPORTER_OTLP_ENDPOINT":"https://staging-us-central1-telemetry.sandbox.googleapis.com:443",
+	]
 }
