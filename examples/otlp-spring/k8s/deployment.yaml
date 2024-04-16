@@ -5,18 +5,22 @@ metadata:
   namespace: default
   labels:
     app: spring-otlp-trace-example
+    tier: backend
 spec:
   selector:
     matchLabels:
       app: spring-otlp-trace-example
+      tier: backend
   template:
     metadata:
       labels:
         app: spring-otlp-trace-example
+        tier: backend
     spec:
       containers:
         - name: spring-otlp-trace-example
           image: us-central1-docker.pkg.dev/%GOOGLE_CLOUD_PROJECT%/otlp-samples/spring-otlp-trace-example:v1
+          imagePullPolicy: Always
           # required for resource detection in GKE environment
           env:
             - name: NAMESPACE
@@ -27,3 +31,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-otlp-service
+spec:
+  selector:
+    app: spring-otlp-trace-example
+    tier: backend
+  ports:
+    - protocol: TCP
+      port: 60000
+      targetPort: 8080

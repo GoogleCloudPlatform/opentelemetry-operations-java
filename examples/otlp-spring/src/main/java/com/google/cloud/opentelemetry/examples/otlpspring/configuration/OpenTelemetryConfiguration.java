@@ -61,12 +61,17 @@ public class OpenTelemetryConfiguration {
   private SpanExporter addAuthorizationHeaders(
       SpanExporter exporter, GoogleCredentials credentials) {
     Map<String, String> authHeaders = new ConcurrentHashMap<>();
-    authHeaders.put("Authorization", refreshToken(credentials));
     if (exporter instanceof OtlpHttpSpanExporter) {
       try {
         credentials.refreshIfExpired();
         OtlpHttpSpanExporterBuilder builder =
-            ((OtlpHttpSpanExporter) exporter).toBuilder().setHeaders(() -> authHeaders);
+            ((OtlpHttpSpanExporter) exporter)
+                .toBuilder()
+                    .setHeaders(
+                        () -> {
+                          authHeaders.put("Authorization", refreshToken(credentials));
+                          return authHeaders;
+                        });
         return builder.build();
       } catch (IOException e) {
         logger.error("Error while adding headers : {}", e.getMessage());
@@ -76,7 +81,13 @@ public class OpenTelemetryConfiguration {
       try {
         credentials.refreshIfExpired();
         OtlpGrpcSpanExporterBuilder builder =
-            ((OtlpGrpcSpanExporter) exporter).toBuilder().setHeaders(() -> authHeaders);
+            ((OtlpGrpcSpanExporter) exporter)
+                .toBuilder()
+                    .setHeaders(
+                        () -> {
+                          authHeaders.put("Authorization", refreshToken(credentials));
+                          return authHeaders;
+                        });
         return builder.build();
       } catch (IOException e) {
         logger.error("Error while adding headers: {}", e.getMessage());
@@ -89,8 +100,10 @@ public class OpenTelemetryConfiguration {
   private String refreshToken(GoogleCredentials credentials) {
     logger.info("Refreshing Google Credentials");
     try {
+      logger.info(
+          "Current access token expires at {}", credentials.getAccessToken().getExpirationTime());
       credentials.refreshIfExpired();
-      logger.info("Credential Refresh complete");
+      logger.info("Credential refresh check complete");
       return String.format("Bearer %s", credentials.getAccessToken().getTokenValue());
     } catch (IOException e) {
       logger.error("Error while refreshing credentials: {}", e.getMessage());
