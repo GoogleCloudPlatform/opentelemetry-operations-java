@@ -60,6 +60,11 @@ jib {
 	container.jvmFlags = autoconf_config as List
 	container.ports = ["8080"]
 	container.environment = [
-		"OTEL_EXPORTER_OTLP_ENDPOINT":"https://staging-us-central1-telemetry.sandbox.googleapis.com:443",
+		"OTEL_EXPORTER_OTLP_ENDPOINT":"http://path/to/yourendpoint:port",
 	]
+}
+
+tasks.register('runClient', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.google.cloud.opentelemetry.examples.otlpspring.MainClient'
 }
