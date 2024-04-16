@@ -22,8 +22,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Retrieves Google Cloud project-id and a limited set of instance attributes from Metadata server.
@@ -36,7 +36,7 @@ final class GCPMetadataConfig {
 
   private static final String DEFAULT_URL = "http://metadata.google.internal/computeMetadata/v1/";
   private final String url;
-  private final Map<String, String> cachedAttributes = new HashMap<>();
+  private final Map<String, String> cachedAttributes = new ConcurrentHashMap<>();
 
   private GCPMetadataConfig() {
     this.url = DEFAULT_URL;
