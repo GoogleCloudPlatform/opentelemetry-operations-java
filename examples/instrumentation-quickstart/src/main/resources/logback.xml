@@ -25,15 +25,16 @@
           {
             "logging.googleapis.com/trace": "%mdc{trace_id}",
             "logging.googleapis.com/spanId": "%mdc{span_id}",
-            "logging.googleapis.com/trace_sampled": "#asBoolean{%replace(%mdc{trace_flags}){'01', 'true'}}"
+            "logging.googleapis.com/trace_sampled": "#asBoolean{%replace(%mdc{trace_flags}){'01', 'true'}}",
+            "severity": "%replace(%replace(%level){'WARN', 'WARNING'}){'TRACE', 'DEBUG'}"
           }
         </pattern>
       </provider>
 
       <!-- Rename fields for the Logging agent -->
       <fieldNames>
-        <level>severity</level>
         <timestamp>timestamp</timestamp>
+        <level>[ignore]</level>
         <levelValue>[ignore]</levelValue>
       </fieldNames>
 
