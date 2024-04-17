@@ -46,10 +46,11 @@ This will start the web application on localhost:8080. The application provides 
  - http://localhost:8080/work : This route generates a trace.
 
 Visit these routes to interact with the application.
-s
+
 ## Running on Google Kubernetes Engine
 
-*You need to have a GKE cluster already setup in your GCP project before continuing with these steps.*
+> [!NOTE]
+> You need to have a GKE cluster already setup in your GCP project before continuing with these steps.
 
 Create artifact registry repository to host your containerized image of the application:
 ```shell
