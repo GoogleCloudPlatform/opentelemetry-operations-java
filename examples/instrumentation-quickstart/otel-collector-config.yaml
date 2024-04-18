@@ -35,12 +35,26 @@ receivers:
           layout: '%Y-%m-%dT%H:%M:%S.%fZ'
         severity:
           parse_from: body.severity
+          preset: none
+          # parse minimal set of severity strings that Cloud Logging explicitly supports
+          # https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
+          mapping:
+            debug: debug
+            info: info
+            info3: notice
+            warn: warning
+            error: error
+            fatal: critical
+            fatal3: alert
+            fatal4: emergency
 
-      # set trace_flags to SAMPLED if GCP attribute is set to true
-      - type: add
-        field: body.trace_flags
-        value: "01"
-        if: body["logging.googleapis.com/trace_sampled"] == true
+      # TODO(aaronabbott): uncomment once the log4j2 config is correctly outputing the
+      # logging.googleapis.com/trace_sampled value
+      ## set trace_flags to SAMPLED if GCP attribute is set to true
+      # - type: add
+      #   field: body.trace_flags
+      #   value: "01"
+      #   if: body["logging.googleapis.com/trace_sampled"] == true
 
       # parse the trace context fields from GCP attributes
       - type: regex_parser
