@@ -48,13 +48,11 @@ receivers:
             fatal3: alert
             fatal4: emergency
 
-      # TODO(aaronabbott): uncomment once the log4j2 config is correctly outputing the
-      # logging.googleapis.com/trace_sampled value
-      ## set trace_flags to SAMPLED if GCP attribute is set to true
-      # - type: add
-      #   field: body.trace_flags
-      #   value: "01"
-      #   if: body["logging.googleapis.com/trace_sampled"] == true
+      # set trace_flags to SAMPLED if GCP attribute is set to true
+      - type: add
+        field: body.trace_flags
+        value: "01"
+        if: body["logging.googleapis.com/trace_sampled"] == true
 
       # parse the trace context fields from GCP attributes
       - type: regex_parser
