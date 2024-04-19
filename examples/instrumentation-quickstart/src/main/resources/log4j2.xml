@@ -17,7 +17,8 @@
 <Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <!-- TODO(#331): output logging.googleapis.com/trace_sampled as a boolean -->
+      <!-- TODO(#331): output logging.googleapis.com/trace_sampled based on trace_flags instead
+      of hardcoding as true -->
       <!-- [START opentelemetry_instrumentation_setup_logging] -->
       <!-- Format JSON logs for the Cloud Logging agent
       https://cloud.google.com/logging/docs/structured-logging#special-payload-fields -->
@@ -36,6 +37,11 @@
           key="logging.googleapis.com/spanId"
           format="JSON"
           value='{"$resolver": "mdc", "key": "span_id"}'
+        />
+        <EventTemplateAdditionalField
+          key="logging.googleapis.com/trace_sampled"
+          format="JSON"
+          value="true"
         />
       </JsonTemplateLayout>
       <!-- [END opentelemetry_instrumentation_setup_logging] -->
