@@ -64,7 +64,7 @@ jib {
 		// Use the downloaded java agent.
 		'-javaagent:/otelagent/otel_agent.jar',
 		// Use the GCP exporter extensions.
-		'-Dotel.javaagent.experimental.extensions=/otelagent/gcp_ext.jar',
+		'-Dotel.javaagent.extensions=/otelagent/gcp_ext.jar',
 		// Configure auto instrumentation.
 		'-Dotel.traces.exporter=google_cloud_trace',
 		'-Dotel.metrics.exporter=google_cloud_monitoring',
