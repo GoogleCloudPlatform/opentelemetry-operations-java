@@ -13,9 +13,9 @@ The preferred mechanism is to use the [SDK autoconfigure extension](https://gith
 
 - Add a runtime dependency from your java project to this library.
 - You can now use `oneway-gcp` and `gcp` as viable propagation strings in [the `otel.propagators` flag](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#propagator)
-- When using the autoinstrumentation agent, you also need to pass our propagators to the autoinstrumentation "extension" classpath. This can be done through the `otel.javaagent.experimental.extensions` flag. 
+- When using the autoinstrumentation agent, you also need to pas our propagators to the autoinstrumentation "extension" classpath. This can be done through the `otel.javaagent.extensions` flag.
     ```
-    -Dotel.javaagent.experimental.extensions=/path/to/downloaded/gcp-propagator.jar
+    -Dotel.javaagent.extensions=/path/to/downloaded/gcp-propagator.jar
     ```
     For a complete example see [here](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/examples/autoinstrument/build.gradle#L63).
 
