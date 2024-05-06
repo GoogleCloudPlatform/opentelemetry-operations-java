@@ -130,17 +130,18 @@ public class ResourceTranslatorTest {
   @Test
   public void testMapResourcesWithEksClusterResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -152,32 +153,33 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "EKS-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "EKS-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithAksClusterResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -189,34 +191,35 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "AKS-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "AKS-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithEksPodResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "EKS-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "EKS-pod-name"}
-                    })
-                    .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "EKS-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "EKS-pod-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -228,36 +231,37 @@ public class ResourceTranslatorTest {
     assertEquals(4, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "EKS-cluster-name"},
-                            {"pod_name", "EKS-pod-name"},
-                            {"namespace_name", "EKS-namespace-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "EKS-cluster-name"},
+                  {"pod_name", "EKS-pod-name"},
+                  {"namespace_name", "EKS-namespace-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithAksPodResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "AKS-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "AKS-pod-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "AKS-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "AKS-pod-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -269,35 +273,36 @@ public class ResourceTranslatorTest {
     assertEquals(4, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "AKS-cluster-name"},
-                            {"pod_name", "AKS-pod-name"},
-                            {"namespace_name", "AKS-namespace-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "AKS-cluster-name"},
+                  {"pod_name", "AKS-pod-name"},
+                  {"namespace_name", "AKS-namespace-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithEksNodeResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
-                            {ResourceAttributes.K8S_NODE_NAME, "EKS-node-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
+                  {ResourceAttributes.K8S_NODE_NAME, "EKS-node-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -309,33 +314,34 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "EKS-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "EKS-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithAksNodeResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
-                            {ResourceAttributes.K8S_NODE_NAME, "AKS-node-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
+                  {ResourceAttributes.K8S_NODE_NAME, "AKS-node-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -347,35 +353,36 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "AKS-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "AKS-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithEksContainerResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "EKS-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "EKS-pod-name"},
-                            {ResourceAttributes.K8S_CONTAINER_NAME, "EKS-container-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "EKS-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "EKS-pod-name"},
+                  {ResourceAttributes.K8S_CONTAINER_NAME, "EKS-container-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -387,38 +394,39 @@ public class ResourceTranslatorTest {
     assertEquals(5, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "EKS-cluster-name"},
-                            {"namespace_name", "EKS-namespace-name"},
-                            {"pod_name", "EKS-pod-name"},
-                            {"container_name", "EKS-container-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "EKS-cluster-name"},
+                  {"namespace_name", "EKS-namespace-name"},
+                  {"pod_name", "EKS-pod-name"},
+                  {"container_name", "EKS-container-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithAksContainerResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "AKS-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "AKS-pod-name"},
-                            {ResourceAttributes.K8S_CONTAINER_NAME, "AKS-container-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "AKS-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "AKS-pod-name"},
+                  {ResourceAttributes.K8S_CONTAINER_NAME, "AKS-container-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -430,35 +438,36 @@ public class ResourceTranslatorTest {
     assertEquals(5, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "AKS-cluster-name"},
-                            {"namespace_name", "AKS-namespace-name"},
-                            {"pod_name", "AKS-pod-name"},
-                            {"container_name", "AKS-container-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "AKS-cluster-name"},
+                  {"namespace_name", "AKS-namespace-name"},
+                  {"pod_name", "AKS-pod-name"},
+                  {"container_name", "AKS-container-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithNonCloudClusterResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -470,34 +479,35 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "non-cloud-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "non-cloud-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithNonCloudPodResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AWS_EKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "non-cloud-pod-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AWS_EKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "non-cloud-pod-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -509,35 +519,36 @@ public class ResourceTranslatorTest {
     assertEquals(4, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "non-cloud-cluster-name"},
-                            {"pod_name", "non-cloud-pod-name"},
-                            {"namespace_name", "non-cloud-namespace-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "non-cloud-cluster-name"},
+                  {"pod_name", "non-cloud-pod-name"},
+                  {"namespace_name", "non-cloud-namespace-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithNonCloudNodeResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
-                            {ResourceAttributes.K8S_NODE_NAME, "non-cloud-node-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
+                  {ResourceAttributes.K8S_NODE_NAME, "non-cloud-node-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -549,35 +560,36 @@ public class ResourceTranslatorTest {
     assertEquals(2, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "non-cloud-cluster-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "non-cloud-cluster-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
   public void testMapResourcesWithNonCloudContainerResource() {
     Map<AttributeKey<String>, String> testAttributes =
-            Stream.of(
-                    new Object[][]{
-                            {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
-                            {
-                                    ResourceAttributes.CLOUD_PLATFORM,
-                                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
-                            },
-                            {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
-                            {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
-                            {ResourceAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"},
-                            {ResourceAttributes.K8S_POD_NAME, "non-cloud-pod-name"},
-                            {ResourceAttributes.K8S_CONTAINER_NAME, "non-cloud-container-name"}
-                    })
-                .collect(Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP},
+                  {
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.AZURE_AKS
+                  },
+                  {ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"},
+                  {ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"},
+                  {ResourceAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"},
+                  {ResourceAttributes.K8S_POD_NAME, "non-cloud-pod-name"},
+                  {ResourceAttributes.K8S_CONTAINER_NAME, "non-cloud-container-name"}
+                })
+            .collect(
+                Collectors.toMap(data -> (AttributeKey<String>) data[0], data -> (String) data[1]));
     AttributesBuilder attrBuilder = Attributes.builder();
     testAttributes.forEach(attrBuilder::put);
     Attributes attributes = attrBuilder.build();
@@ -589,19 +601,19 @@ public class ResourceTranslatorTest {
     assertEquals(5, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
-            Stream.of(
-                    new Object[][]{
-                            {"cluster_name", "non-cloud-cluster-name"},
-                            {"namespace_name", "non-cloud-namespace-name"},
-                            {"pod_name", "non-cloud-pod-name"},
-                            {"container_name", "non-cloud-container-name"},
-                            {"location", "country-region-zone"}
-                    })
-                .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+        Stream.of(
+                new Object[][] {
+                  {"cluster_name", "non-cloud-cluster-name"},
+                  {"namespace_name", "non-cloud-namespace-name"},
+                  {"pod_name", "non-cloud-pod-name"},
+                  {"container_name", "non-cloud-container-name"},
+                  {"location", "country-region-zone"}
+                })
+            .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
     expectedMappings.forEach(
-            (key, value) -> {
-              assertEquals(value, monitoredResourceMap.get(key));
-            });
+        (key, value) -> {
+          assertEquals(value, monitoredResourceMap.get(key));
+        });
   }
 
   @Test
