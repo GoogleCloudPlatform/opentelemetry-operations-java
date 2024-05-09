@@ -311,12 +311,13 @@ public class ResourceTranslatorTest {
 
     assertEquals("k8s_node", monitoredResource.getResourceType());
     Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
-    assertEquals(2, monitoredResourceMap.size());
+    assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
                   {"cluster_name", "EKS-cluster-name"},
+                  {"node_name", "EKS-node-name"},
                   {"location", "country-region-zone"}
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
@@ -350,12 +351,13 @@ public class ResourceTranslatorTest {
 
     assertEquals("k8s_node", monitoredResource.getResourceType());
     Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
-    assertEquals(2, monitoredResourceMap.size());
+    assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
                   {"cluster_name", "AKS-cluster-name"},
+                  {"node_name", "AKS-node-name"},
                   {"location", "country-region-zone"}
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
@@ -557,12 +559,13 @@ public class ResourceTranslatorTest {
 
     assertEquals("k8s_node", monitoredResource.getResourceType());
     Map<String, String> monitoredResourceMap = monitoredResource.getResourceLabels().getLabels();
-    assertEquals(2, monitoredResourceMap.size());
+    assertEquals(3, monitoredResourceMap.size());
 
     Map<String, String> expectedMappings =
         Stream.of(
                 new Object[][] {
                   {"cluster_name", "non-cloud-cluster-name"},
+                  {"node_name", "non-cloud-node-name"},
                   {"location", "country-region-zone"}
                 })
             .collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));

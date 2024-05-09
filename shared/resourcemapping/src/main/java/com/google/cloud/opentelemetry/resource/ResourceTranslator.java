@@ -103,6 +103,30 @@ public class ResourceTranslator {
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
+  private static List<AttributeMapping> K8S_POD_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
+          AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
+          AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
+  private static List<AttributeMapping> K8S_NODE_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
+          AttributeMapping.create("node_name", ResourceAttributes.K8S_NODE_NAME));
+  private static List<AttributeMapping> K8S_CLUSTER_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME));
   private static List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID),
@@ -164,11 +188,11 @@ public class ResourceTranslator {
           if (resource.getAttribute(ResourceAttributes.K8S_CONTAINER_NAME) != null) {
             return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
           } else if (resource.getAttribute(ResourceAttributes.K8S_POD_NAME) != null) {
-            return mapBase(resource, "k8s_pod", K8S_CONTAINER_LABELS);
+            return mapBase(resource, "k8s_pod", K8S_POD_LABELS);
           } else if (resource.getAttribute(ResourceAttributes.K8S_NODE_NAME) != null) {
-            return mapBase(resource, "k8s_node", K8S_CONTAINER_LABELS);
+            return mapBase(resource, "k8s_node", K8S_NODE_LABELS);
           } else {
-            return mapBase(resource, "k8s_cluster", K8S_CONTAINER_LABELS);
+            return mapBase(resource, "k8s_cluster", K8S_CLUSTER_LABELS);
           }
         }
         return genericTaskOrNode(resource);
