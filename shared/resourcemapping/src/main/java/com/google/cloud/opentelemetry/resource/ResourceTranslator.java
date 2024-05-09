@@ -158,6 +158,8 @@ public class ResourceTranslator {
       case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
         return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
+        // if k8s.cluster.name is set, pattern match for various k8s resources.
+        // this will also match non-cloud k8s platforms like minikube.
         if (resource.getAttribute(ResourceAttributes.K8S_CLUSTER_NAME) != null) {
           if (resource.getAttribute(ResourceAttributes.K8S_CONTAINER_NAME) != null) {
             return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
