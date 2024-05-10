@@ -309,16 +309,20 @@ public class GCPPlatformDetectorTest {
   /** Google App Engine Tests * */
   @ParameterizedTest
   @MethodSource("provideGAEVariantEnvironmentVariable")
-  public void testGAEResourceWithAppEngineAttributesSucceeds(String gaeEnvironmentVar) {
+  public void testGAEResourceWithAppEngineAttributesSucceeds(
+      String gaeEnvironmentVar,
+      String metadataZone,
+      String expectedZone,
+      String metadataRegion,
+      String expectedRegion) {
     envVars.put("GAE_SERVICE", "app-engine-hello");
     envVars.put("GAE_VERSION", "app-engine-hello-v1");
     envVars.put("GAE_INSTANCE", "app-engine-hello-f236d");
     envVars.put("GAE_ENV", gaeEnvironmentVar);
 
     TestUtils.stubEndpoint("/project/project-id", "GAE-pid");
-    // for standard, the region should be extracted from region attribute
-    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
-    TestUtils.stubEndpoint("/instance/region", "country-region1");
+    TestUtils.stubEndpoint("/instance/zone", metadataZone);
+    TestUtils.stubEndpoint("/instance/region", metadataRegion);
     TestUtils.stubEndpoint("/instance/id", "GAE-instance-id");
 
     EnvironmentVariables mockEnv = new EnvVarMock(envVars);
@@ -332,27 +336,47 @@ public class GCPPlatformDetectorTest {
         new GoogleAppEngine(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
     assertEquals("GAE-pid", detector.detectPlatform().getProjectId());
     assertEquals(5, detectedAttributes.size());
-
-    if (gaeEnvironmentVar != null && gaeEnvironmentVar.equals("standard")) {
-      assertEquals(
-          "country-region1", detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
-    } else {
-      assertEquals(
-          "country-region", detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
-    }
+    assertEquals(expectedRegion, detector.detectPlatform().getAttributes().get(GAE_CLOUD_REGION));
     assertEquals("app-engine-hello", detectedAttributes.get(GAE_MODULE_NAME));
     assertEquals("app-engine-hello-v1", detectedAttributes.get(GAE_APP_VERSION));
     assertEquals("app-engine-hello-f236d", detectedAttributes.get(GAE_INSTANCE_ID));
-    assertEquals("country-region-zone", detectedAttributes.get(GAE_AVAILABILITY_ZONE));
+    assertEquals(expectedZone, detectedAttributes.get(GAE_AVAILABILITY_ZONE));
   }
 
-  // Provides key-value pair of GAE variant environment and the expected region
-  // value based on the environment variable
+  private static Arguments gaeTestArguments(
+      String gaeEnvironmentVar,
+      String metadataZone,
+      String expectedZone,
+      String metadataRegion,
+      String expectedRegion) {
+    return Arguments.of(
+        gaeEnvironmentVar, metadataZone, expectedZone, metadataRegion, expectedRegion);
+  }
+
+  // Provides parameterized arguments for testGAEResourceWithAppEngineAttributesSucceeds
   private static Stream<Arguments> provideGAEVariantEnvironmentVariable() {
+
     return Stream.of(
-        Arguments.of("standard"),
-        Arguments.of((String) null),
-        Arguments.of("flex"),
-        Arguments.of(""));
+        // GAE standard
+        gaeTestArguments(
+            "standard",
+            // the zone should be extracted from the zone attribute
+            "projects/233510669999/zones/us15",
+            "us15",
+            // the region should be extracted from region attribute
+            "projects/233510669999/regions/us-central1",
+            "us-central1"),
+
+        // GAE flex
+        gaeTestArguments(
+            (String) null,
+            "country-region-zone",
+            "country-region-zone",
+            // the region should be extracted from the zone attribute
+            "",
+            "country-region"),
+        gaeTestArguments(
+            "flex", "country-region-zone", "country-region-zone", "", "country-region"),
+        gaeTestArguments("", "country-region-zone", "country-region-zone", "", "country-region"));
   }
 }
