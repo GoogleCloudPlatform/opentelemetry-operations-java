@@ -28,7 +28,9 @@ dependencies {
 	annotationProcessor(libraries.auto_value)
 	implementation(libraries.opentelemetry_semconv)
 	implementation platform(libraries.opentelemetry_bom)
-	testImplementation(testLibraries.junit)
+	testImplementation(testLibraries.junit5)
+	testImplementation(testLibraries.junit5_params)
+	testRuntimeOnly(testLibraries.junit5_runtime)
 	testImplementation(libraries.opentelemetry_semconv)
 }
 
@@ -55,6 +57,11 @@ publishing {
 			}
 		}
 	}
+}
+
+test {
+	// required for discovering JUnit 5 tests
+	useJUnitPlatform()
 }
 
 // This is to fix the explicit dependency error which comes when publishing via the `candidate` task
