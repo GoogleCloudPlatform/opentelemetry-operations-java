@@ -103,6 +103,30 @@ public class ResourceTranslator {
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
+  private static List<AttributeMapping> K8S_POD_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
+          AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
+          AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
+  private static List<AttributeMapping> K8S_NODE_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
+          AttributeMapping.create("node_name", ResourceAttributes.K8S_NODE_NAME));
+  private static List<AttributeMapping> K8S_CLUSTER_LABELS =
+      Arrays.asList(
+          AttributeMapping.create(
+              "location",
+              Arrays.asList(
+                  ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
+          AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME));
   private static List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID),
@@ -153,13 +177,24 @@ public class ResourceTranslator {
     switch (platform) {
       case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
         return mapBase(resource, "gce_instance", GCE_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE:
-        return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
       case ResourceAttributes.CloudPlatformValues.AWS_EC2:
         return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
       case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
         return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
+        // if k8s.cluster.name is set, pattern match for various k8s resources.
+        // this will also match non-cloud k8s platforms like minikube.
+        if (resource.getAttribute(ResourceAttributes.K8S_CLUSTER_NAME) != null) {
+          if (resource.getAttribute(ResourceAttributes.K8S_CONTAINER_NAME) != null) {
+            return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
+          } else if (resource.getAttribute(ResourceAttributes.K8S_POD_NAME) != null) {
+            return mapBase(resource, "k8s_pod", K8S_POD_LABELS);
+          } else if (resource.getAttribute(ResourceAttributes.K8S_NODE_NAME) != null) {
+            return mapBase(resource, "k8s_node", K8S_NODE_LABELS);
+          } else {
+            return mapBase(resource, "k8s_cluster", K8S_CLUSTER_LABELS);
+          }
+        }
         return genericTaskOrNode(resource);
     }
   }
