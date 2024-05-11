@@ -172,7 +172,7 @@ public class ResourceTranslator {
   public static GcpResource mapResource(Resource resource) {
     String platform = resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM);
     if (platform == null) {
-      return genericTaskOrNode(resource);
+      return mapK8sResourceOrGenericTaskOrNode(resource);
     }
     switch (platform) {
       case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
@@ -182,21 +182,25 @@ public class ResourceTranslator {
       case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
         return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
       default:
-        // if k8s.cluster.name is set, pattern match for various k8s resources.
-        // this will also match non-cloud k8s platforms like minikube.
-        if (resource.getAttribute(ResourceAttributes.K8S_CLUSTER_NAME) != null) {
-          if (resource.getAttribute(ResourceAttributes.K8S_CONTAINER_NAME) != null) {
-            return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
-          } else if (resource.getAttribute(ResourceAttributes.K8S_POD_NAME) != null) {
-            return mapBase(resource, "k8s_pod", K8S_POD_LABELS);
-          } else if (resource.getAttribute(ResourceAttributes.K8S_NODE_NAME) != null) {
-            return mapBase(resource, "k8s_node", K8S_NODE_LABELS);
-          } else {
-            return mapBase(resource, "k8s_cluster", K8S_CLUSTER_LABELS);
-          }
-        }
-        return genericTaskOrNode(resource);
+        return mapK8sResourceOrGenericTaskOrNode(resource);
     }
+  }
+
+  private static GcpResource mapK8sResourceOrGenericTaskOrNode(Resource resource) {
+    // if k8s.cluster.name is set, pattern match for various k8s resources.
+    // this will also match non-cloud k8s platforms like minikube.
+    if (resource.getAttribute(ResourceAttributes.K8S_CLUSTER_NAME) != null) {
+      if (resource.getAttribute(ResourceAttributes.K8S_CONTAINER_NAME) != null) {
+        return mapBase(resource, "k8s_container", K8S_CONTAINER_LABELS);
+      } else if (resource.getAttribute(ResourceAttributes.K8S_POD_NAME) != null) {
+        return mapBase(resource, "k8s_pod", K8S_POD_LABELS);
+      } else if (resource.getAttribute(ResourceAttributes.K8S_NODE_NAME) != null) {
+        return mapBase(resource, "k8s_node", K8S_NODE_LABELS);
+      } else {
+        return mapBase(resource, "k8s_cluster", K8S_CLUSTER_LABELS);
+      }
+    }
+    return genericTaskOrNode(resource);
   }
 
   private static GcpResource genericTaskOrNode(Resource resource) {

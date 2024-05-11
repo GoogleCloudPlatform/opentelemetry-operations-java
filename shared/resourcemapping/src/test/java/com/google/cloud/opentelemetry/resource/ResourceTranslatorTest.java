@@ -90,6 +90,60 @@ public class ResourceTranslatorTest {
                     ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_REGION, "country-region"),
+                new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"),
+                new SimpleEntry<>(ResourceAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"),
+                new SimpleEntry<>(ResourceAttributes.K8S_POD_NAME, "GKE-testHostName")),
+            "k8s_pod",
+            Map.ofEntries(
+                new SimpleEntry<>("location", "country-region-zone"),
+                new SimpleEntry<>("cluster_name", "GKE-cluster-name"),
+                new SimpleEntry<>("namespace_name", "GKE-testNameSpace"),
+                new SimpleEntry<>("pod_name", "GKE-testHostName"))),
+        generateOTelResourceMappingTestArgs(
+            Map.ofEntries(
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_REGION, "country-region"),
+                new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"),
+                new SimpleEntry<>(ResourceAttributes.K8S_NODE_NAME, "GKE-node-name")),
+            "k8s_node",
+            Map.ofEntries(
+                new SimpleEntry<>("location", "country-region-zone"),
+                new SimpleEntry<>("node_name", "GKE-node-name"),
+                new SimpleEntry<>("cluster_name", "GKE-cluster-name"))),
+        generateOTelResourceMappingTestArgs(
+            Map.ofEntries(
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PLATFORM,
+                    ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_ACCOUNT_ID, "GCE-pid"),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
+                new SimpleEntry<>(ResourceAttributes.CLOUD_REGION, "country-region"),
+                new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name")),
+            "k8s_cluster",
+            Map.ofEntries(
+                new SimpleEntry<>("location", "country-region-zone"),
+                new SimpleEntry<>("cluster_name", "GKE-cluster-name"))),
+        generateOTelResourceMappingTestArgs(
+            Map.ofEntries(
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS),
+                new SimpleEntry<>(
+                    ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AWS_EKS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
@@ -101,7 +155,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER,
+                    ResourceAttributes.CloudProviderValues.AZURE),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AZURE_AKS),
@@ -115,7 +170,7 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AWS_EKS),
@@ -133,7 +188,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER,
+                    ResourceAttributes.CloudProviderValues.AZURE),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AZURE_AKS),
@@ -151,7 +207,7 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AWS_EKS),
@@ -167,7 +223,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER,
+                    ResourceAttributes.CloudProviderValues.AZURE),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AZURE_AKS),
@@ -183,7 +240,7 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AWS_EKS),
@@ -203,7 +260,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
+                    ResourceAttributes.CLOUD_PROVIDER,
+                    ResourceAttributes.CloudProviderValues.AZURE),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_PLATFORM,
                     ResourceAttributes.CloudPlatformValues.AZURE_AKS),
@@ -223,11 +281,6 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PLATFORM,
-                    ResourceAttributes.CloudPlatformValues.AWS_EKS),
-                new SimpleEntry<>(
                     ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
                 new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name")),
             "k8s_cluster",
@@ -236,11 +289,6 @@ public class ResourceTranslatorTest {
                 new SimpleEntry<>("location", "country-region-zone"))),
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PLATFORM,
-                    ResourceAttributes.CloudPlatformValues.AWS_EKS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
                 new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
@@ -256,11 +304,6 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PLATFORM,
-                    ResourceAttributes.CloudPlatformValues.AZURE_AKS),
-                new SimpleEntry<>(
                     ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
                 new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
                 new SimpleEntry<>(ResourceAttributes.K8S_NODE_NAME, "non-cloud-node-name")),
@@ -271,11 +314,6 @@ public class ResourceTranslatorTest {
                 new SimpleEntry<>("location", "country-region-zone"))),
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP),
-                new SimpleEntry<>(
-                    ResourceAttributes.CLOUD_PLATFORM,
-                    ResourceAttributes.CloudPlatformValues.AZURE_AKS),
                 new SimpleEntry<>(
                     ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
                 new SimpleEntry<>(ResourceAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
