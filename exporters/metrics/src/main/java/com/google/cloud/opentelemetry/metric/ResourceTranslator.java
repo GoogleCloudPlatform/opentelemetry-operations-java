@@ -18,15 +18,28 @@ package com.google.cloud.opentelemetry.metric;
 import com.google.api.MonitoredResource;
 import com.google.cloud.opentelemetry.resource.GcpResource;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.function.Function;
 
 /** Translates from OpenTelemetry Resource into Google Cloud Monitoring's MonitoredResource. */
 public class ResourceTranslator {
   private ResourceTranslator() {}
 
   /** Converts a Java OpenTelemetry SDK resource into a MonitoredResource from GCP. */
+  @Deprecated
   public static MonitoredResource mapResource(Resource resource) {
     GcpResource gcpResource =
         com.google.cloud.opentelemetry.resource.ResourceTranslator.mapResource(resource);
+    MonitoredResource.Builder mr = MonitoredResource.newBuilder();
+    mr.setType(gcpResource.getResourceType());
+    gcpResource.getResourceLabels().getLabels().forEach(mr::putLabels);
+    return mr.build();
+  }
+
+  static MonitoredResource mapResource(
+      Resource resource, Function<Resource, GcpResource> resourceMapper) {
+    GcpResource gcpResource =
+        com.google.cloud.opentelemetry.resource.ResourceTranslator.mapResource(
+            resource, resourceMapper);
     MonitoredResource.Builder mr = MonitoredResource.newBuilder();
     mr.setType(gcpResource.getResourceType());
     gcpResource.getResourceLabels().getLabels().forEach(mr::putLabels);

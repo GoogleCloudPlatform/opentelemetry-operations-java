@@ -36,6 +36,7 @@ import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
+import static com.google.cloud.opentelemetry.resource.ResourceTranslator.DEFAULT_RESOURCE_MAPPER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -134,6 +135,7 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.SEND_ONCE,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            DEFAULT_RESOURCE_MAPPER,
             false);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
@@ -244,6 +246,7 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            DEFAULT_RESOURCE_MAPPER,
             false);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
@@ -366,6 +369,7 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            DEFAULT_RESOURCE_MAPPER,
             false);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -387,6 +391,7 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
+            DEFAULT_RESOURCE_MAPPER,
             false);
 
     MetricData metricData =
@@ -466,6 +471,7 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
+            DEFAULT_RESOURCE_MAPPER,
             true);
 
     CompletableResultCode result =

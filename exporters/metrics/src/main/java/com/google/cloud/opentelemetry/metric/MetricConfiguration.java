@@ -21,14 +21,18 @@ import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
+import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceTranslator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -151,6 +155,8 @@ public abstract class MetricConfiguration {
    */
   public abstract boolean getUseServiceTimeSeries();
 
+  public abstract Function<Resource, GcpResource> getResourceMapper();
+
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
 
@@ -175,6 +181,7 @@ public abstract class MetricConfiguration {
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
         .setInsecureEndpoint(false)
         .setUseServiceTimeSeries(false)
+        .setResourceMapper(ResourceTranslator.DEFAULT_RESOURCE_MAPPER)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
@@ -237,6 +244,8 @@ public abstract class MetricConfiguration {
      * @return this
      */
     public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
+
+    public abstract Builder setResourceMapper(Function<Resource, GcpResource> resourceMapper);
 
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By
