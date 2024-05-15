@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 /** Translates from OpenTelemetry Resource into Google Cloud's notion of resource. */
 public class ResourceTranslator {
@@ -89,11 +90,11 @@ public class ResourceTranslator {
     }
   }
 
-  private static List<AttributeMapping> GCE_INSTANCE_LABELS =
+  private static final List<AttributeMapping> GCE_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("zone", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID));
-  private static List<AttributeMapping> K8S_CONTAINER_LABELS =
+  private static final List<AttributeMapping> K8S_CONTAINER_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
@@ -103,7 +104,7 @@ public class ResourceTranslator {
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", ResourceAttributes.K8S_CONTAINER_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
-  private static List<AttributeMapping> K8S_POD_LABELS =
+  private static final List<AttributeMapping> K8S_POD_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
@@ -112,7 +113,7 @@ public class ResourceTranslator {
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", ResourceAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("pod_name", ResourceAttributes.K8S_POD_NAME));
-  private static List<AttributeMapping> K8S_NODE_LABELS =
+  private static final List<AttributeMapping> K8S_NODE_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
@@ -120,25 +121,25 @@ public class ResourceTranslator {
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("node_name", ResourceAttributes.K8S_NODE_NAME));
-  private static List<AttributeMapping> K8S_CLUSTER_LABELS =
+  private static final List<AttributeMapping> K8S_CLUSTER_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
               Arrays.asList(
                   ResourceAttributes.CLOUD_AVAILABILITY_ZONE, ResourceAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", ResourceAttributes.K8S_CLUSTER_NAME));
-  private static List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
+  private static final List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("instance_id", ResourceAttributes.HOST_ID),
           AttributeMapping.create("region", ResourceAttributes.CLOUD_AVAILABILITY_ZONE),
           AttributeMapping.create("aws_account", ResourceAttributes.CLOUD_ACCOUNT_ID));
-  private static List<AttributeMapping> GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS =
+  private static final List<AttributeMapping> GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS =
       Arrays.asList(
           AttributeMapping.create("module_id", ResourceAttributes.FAAS_NAME),
           AttributeMapping.create("version_id", ResourceAttributes.FAAS_VERSION),
           AttributeMapping.create("instance_id", ResourceAttributes.FAAS_INSTANCE),
           AttributeMapping.create("location", ResourceAttributes.CLOUD_REGION));
-  private static List<AttributeMapping> GENERIC_TASK_LABELS =
+  private static final List<AttributeMapping> GENERIC_TASK_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
@@ -155,7 +156,7 @@ public class ResourceTranslator {
               Arrays.asList(
                   ResourceAttributes.SERVICE_INSTANCE_ID, ResourceAttributes.FAAS_INSTANCE),
               ""));
-  private static List<AttributeMapping> GENERIC_NODE_LABELS =
+  private static final List<AttributeMapping> GENERIC_NODE_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
@@ -168,22 +169,40 @@ public class ResourceTranslator {
               Arrays.asList(ResourceAttributes.HOST_ID, ResourceAttributes.HOST_NAME),
               ""));
 
+  public static final Function<Resource, GcpResource> DEFAULT_RESOURCE_MAPPER =
+      resource -> {
+        String platform = resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM);
+        if (platform == null) {
+          return mapK8sResourceOrGenericTaskOrNode(resource);
+        }
+        switch (platform) {
+          case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
+            return mapBase(resource, "gce_instance", GCE_INSTANCE_LABELS);
+          case ResourceAttributes.CloudPlatformValues.AWS_EC2:
+            return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
+          case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
+            return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
+          default:
+            return mapK8sResourceOrGenericTaskOrNode(resource);
+        }
+      };
+
   /** Converts a Java OpenTelemetry SDK resource into a GCP resource. */
   public static GcpResource mapResource(Resource resource) {
-    String platform = resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM);
-    if (platform == null) {
-      return mapK8sResourceOrGenericTaskOrNode(resource);
-    }
-    switch (platform) {
-      case ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE:
-        return mapBase(resource, "gce_instance", GCE_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.AWS_EC2:
-        return mapBase(resource, "aws_ec2_instance", AWS_EC2_INSTANCE_LABELS);
-      case ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE:
-        return mapBase(resource, "gae_instance", GOOGLE_CLOUD_APP_ENGINE_INSTANCE_LABELS);
-      default:
-        return mapK8sResourceOrGenericTaskOrNode(resource);
-    }
+    return mapResource(resource, DEFAULT_RESOURCE_MAPPER);
+  }
+
+  /**
+   * Converts a Java OpenTelemetry SDK resource into a GCP resource using a custom mapping function.
+   *
+   * @param resource the OpenTelemetry {@link Resource} that needs to be mapped.
+   * @param customMapper a {@link Function} that accepts an OpenTelemetry {@link Resource} and maps
+   *     it to an equivalent Google Cloud {@link GcpResource}.
+   * @return the mapped Google Cloud {@link GcpResource}.
+   */
+  public static GcpResource mapResource(
+      Resource resource, Function<Resource, GcpResource> customMapper) {
+    return customMapper.apply(resource);
   }
 
   private static GcpResource mapK8sResourceOrGenericTaskOrNode(Resource resource) {
