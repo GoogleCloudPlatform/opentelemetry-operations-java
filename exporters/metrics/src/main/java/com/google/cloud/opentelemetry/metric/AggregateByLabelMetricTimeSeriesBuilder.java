@@ -15,12 +15,6 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
-import static com.google.cloud.opentelemetry.metric.ResourceTranslator.mapResource;
-
 import com.google.api.MetricDescriptor;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.TimeSeries;
@@ -35,6 +29,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.resources.Resource;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +37,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 
 /**
  * Builds GCM TimeSeries from each OTEL metric point, creating metric descriptors based on the
@@ -59,19 +59,26 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final String projectId;
   private final String prefix;
   private final Predicate<AttributeKey<?>> resourceAttributeFilter;
+  private final ResourceMapper resourceMapper;
 
   @Deprecated
-  public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
-    this.projectId = projectId;
-    this.prefix = prefix;
-    this.resourceAttributeFilter = MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
-  }
-
   public AggregateByLabelMetricTimeSeriesBuilder(
       String projectId, String prefix, Predicate<AttributeKey<?>> resourceAttributeFilter) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;
+    this.resourceMapper = ResourceTranslator.getInstance();
+  }
+
+  public AggregateByLabelMetricTimeSeriesBuilder(
+      String projectId,
+      String prefix,
+      Predicate<AttributeKey<?>> resourceAttributeFilter,
+      ResourceMapper resourceMapper) {
+    this.projectId = projectId;
+    this.prefix = prefix;
+    this.resourceAttributeFilter = resourceAttributeFilter;
+    this.resourceMapper = resourceMapper;
   }
 
   @Override
@@ -135,7 +142,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     return TimeSeries.newBuilder()
         .setMetric(mapMetric(attributes, descriptor.getType()))
         .setMetricKind(descriptor.getMetricKind())
-        .setResource(mapResource(metric.getResource()));
+        .setResource(resourceMapper.mapResource(metric.getResource()));
   }
 
   private Attributes extraLabelsFromResource(Resource resource) {

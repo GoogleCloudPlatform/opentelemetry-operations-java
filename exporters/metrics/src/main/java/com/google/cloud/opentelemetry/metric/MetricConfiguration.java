@@ -55,6 +55,8 @@ public abstract class MetricConfiguration {
                   || attributeKey.equals(ResourceAttributes.SERVICE_INSTANCE_ID))
               && !attributeKey.getKey().isEmpty();
 
+  public static final ResourceMapper DEFAULT_RESOURCE_MAPPER = ResourceTranslator.getInstance();
+
   static final String DEFAULT_PREFIX = "workload.googleapis.com";
 
   private static final Duration DEFAULT_DEADLINE =
@@ -151,6 +153,8 @@ public abstract class MetricConfiguration {
    */
   public abstract boolean getUseServiceTimeSeries();
 
+  public abstract ResourceMapper getResourceMapper();
+
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
 
@@ -176,6 +180,7 @@ public abstract class MetricConfiguration {
         .setInsecureEndpoint(false)
         .setUseServiceTimeSeries(false)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
+        .setResourceMapper(DEFAULT_RESOURCE_MAPPER)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 
@@ -237,6 +242,8 @@ public abstract class MetricConfiguration {
      * @return this
      */
     public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
+
+    public abstract Builder setResourceMapper(ResourceMapper resourceMapper);
 
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By

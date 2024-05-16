@@ -15,8 +15,6 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
-import static com.google.api.client.util.Preconditions.checkNotNull;
-
 import com.google.api.MetricDescriptor;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -41,15 +39,18 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.google.api.client.util.Preconditions.checkNotNull;
 
 /**
  * This class encapsulates internal implementation details for exporting metrics to Google Cloud
@@ -68,6 +69,7 @@ class InternalMetricExporter implements MetricExporter {
   private final MetricDescriptorStrategy metricDescriptorStrategy;
   private final Predicate<AttributeKey<?>> resourceAttributesFilter;
   private final boolean useCreateServiceTimeSeries;
+  private final ResourceMapper resourceMapper;
 
   InternalMetricExporter(
       String projectId,
@@ -75,13 +77,15 @@ class InternalMetricExporter implements MetricExporter {
       CloudMetricClient client,
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
-      boolean useCreateServiceTimeSeries) {
+      boolean useCreateServiceTimeSeries,
+      ResourceMapper resourceMapper) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
     this.resourceAttributesFilter = resourceAttributesFilter;
     this.useCreateServiceTimeSeries = useCreateServiceTimeSeries;
+    this.resourceMapper = resourceMapper;
   }
 
   static InternalMetricExporter createWithConfiguration(MetricConfiguration configuration)
@@ -120,7 +124,8 @@ class InternalMetricExporter implements MetricExporter {
         new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
         configuration.getDescriptorStrategy(),
         configuration.getResourceAttributesFilter(),
-        configuration.getUseServiceTimeSeries());
+        configuration.getUseServiceTimeSeries(),
+        configuration.getResourceMapper());
   }
 
   @VisibleForTesting
@@ -130,14 +135,16 @@ class InternalMetricExporter implements MetricExporter {
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
-      boolean useCreateServiceTimeSeries) {
+      boolean useCreateServiceTimeSeries,
+      ResourceMapper resourceMapper) {
     return new InternalMetricExporter(
         projectId,
         prefix,
         metricServiceClient,
         descriptorStrategy,
         resourceAttributesFilter,
-        useCreateServiceTimeSeries);
+        useCreateServiceTimeSeries,
+        resourceMapper);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
@@ -161,7 +168,8 @@ class InternalMetricExporter implements MetricExporter {
     // 2. Attempt to register MetricDescriptors (using configured strategy)
     // 3. Fire the set of time series off.
     MetricTimeSeriesBuilder builder =
-        new AggregateByLabelMetricTimeSeriesBuilder(projectId, prefix, resourceAttributesFilter);
+        new AggregateByLabelMetricTimeSeriesBuilder(
+            projectId, prefix, resourceAttributesFilter, resourceMapper);
     for (final MetricData metricData : metrics) {
       // Extract all the underlying points.
       switch (metricData.getType()) {
