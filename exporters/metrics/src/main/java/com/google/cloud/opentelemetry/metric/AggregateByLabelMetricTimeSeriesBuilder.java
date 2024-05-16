@@ -16,7 +16,7 @@
 package com.google.cloud.opentelemetry.metric;
 
 import com.google.api.MetricDescriptor;
-import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceMapper;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final String projectId;
   private final String prefix;
   private final Predicate<AttributeKey<?>> resourceAttributeFilter;
-  private final Function<Resource, GcpResource> resourceMapper;
+  private final ResourceMapper resourceMapper;
 
   @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
@@ -86,7 +85,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
       String projectId,
       String prefix,
       Predicate<AttributeKey<?>> resourceAttributeFilter,
-      Function<Resource, GcpResource> resourceMapper) {
+      ResourceMapper resourceMapper) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;

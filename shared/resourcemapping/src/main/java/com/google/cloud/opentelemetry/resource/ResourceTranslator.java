@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 /** Translates from OpenTelemetry Resource into Google Cloud's notion of resource. */
 public class ResourceTranslator {
@@ -169,7 +168,7 @@ public class ResourceTranslator {
               Arrays.asList(ResourceAttributes.HOST_ID, ResourceAttributes.HOST_NAME),
               ""));
 
-  public static final Function<Resource, GcpResource> DEFAULT_RESOURCE_MAPPER =
+  public static final ResourceMapper DEFAULT_RESOURCE_MAPPER =
       resource -> {
         String platform = resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM);
         if (platform == null) {
@@ -196,13 +195,12 @@ public class ResourceTranslator {
    * Converts a Java OpenTelemetry SDK resource into a GCP resource using a custom mapping function.
    *
    * @param resource the OpenTelemetry {@link Resource} that needs to be mapped.
-   * @param customMapper a {@link Function} that accepts an OpenTelemetry {@link Resource} and maps
-   *     it to an equivalent Google Cloud {@link GcpResource}.
+   * @param customMapper a {@link ResourceMapper} object that accepts an OpenTelemetry {@link
+   *     Resource} and maps it to an equivalent Google Cloud {@link GcpResource}.
    * @return the mapped Google Cloud {@link GcpResource}.
    */
-  public static GcpResource mapResource(
-      Resource resource, Function<Resource, GcpResource> customMapper) {
-    return customMapper.apply(resource);
+  public static GcpResource mapResource(Resource resource, ResourceMapper customMapper) {
+    return customMapper.mapResource(resource);
   }
 
   private static GcpResource mapK8sResourceOrGenericTaskOrNode(Resource resource) {

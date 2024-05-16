@@ -24,7 +24,7 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.MetricServiceSettings;
-import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.monitoring.v3.CreateMetricDescriptorRequest;
@@ -40,7 +40,6 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
@@ -71,7 +69,7 @@ class InternalMetricExporter implements MetricExporter {
   private final String prefix;
   private final MetricDescriptorStrategy metricDescriptorStrategy;
   private final Predicate<AttributeKey<?>> resourceAttributesFilter;
-  private final Function<Resource, GcpResource> resourceMapper;
+  private final ResourceMapper resourceMapper;
   private final boolean useCreateServiceTimeSeries;
 
   InternalMetricExporter(
@@ -80,7 +78,7 @@ class InternalMetricExporter implements MetricExporter {
       CloudMetricClient client,
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
-      Function<Resource, GcpResource> resourceMapper,
+      ResourceMapper resourceMapper,
       boolean useCreateServiceTimeSeries) {
     this.projectId = projectId;
     this.prefix = prefix;
@@ -138,7 +136,7 @@ class InternalMetricExporter implements MetricExporter {
       CloudMetricClient metricServiceClient,
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
-      Function<Resource, GcpResource> resourceMapper,
+      ResourceMapper resourceMapper,
       boolean useCreateServiceTimeSeries) {
     return new InternalMetricExporter(
         projectId,

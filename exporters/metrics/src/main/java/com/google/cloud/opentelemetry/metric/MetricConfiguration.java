@@ -21,18 +21,16 @@ import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
-import com.google.cloud.opentelemetry.resource.GcpResource;
+import com.google.cloud.opentelemetry.resource.ResourceMapper;
 import com.google.cloud.opentelemetry.resource.ResourceTranslator;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ResourceAttributes;
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -155,7 +153,7 @@ public abstract class MetricConfiguration {
    */
   public abstract boolean getUseServiceTimeSeries();
 
-  public abstract Function<Resource, GcpResource> getResourceMapper();
+  public abstract ResourceMapper getResourceMapper();
 
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
@@ -245,7 +243,7 @@ public abstract class MetricConfiguration {
      */
     public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
 
-    public abstract Builder setResourceMapper(Function<Resource, GcpResource> resourceMapper);
+    public abstract Builder setResourceMapper(ResourceMapper resourceMapper);
 
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By
