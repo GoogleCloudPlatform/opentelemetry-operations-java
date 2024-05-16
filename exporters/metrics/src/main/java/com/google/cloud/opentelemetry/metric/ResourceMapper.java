@@ -18,6 +18,17 @@ package com.google.cloud.opentelemetry.metric;
 import com.google.api.MonitoredResource;
 import io.opentelemetry.sdk.resources.Resource;
 
+/**
+ * Specifies mapping rules to convert OpenTelemetry's {@link Resource} to Google's {@link
+ * MonitoredResource}.
+ */
 public interface ResourceMapper {
+  /**
+   * Method to convert a given OpenTelemetry {@link Resource} to Google specific {@link
+   * MonitoredResource}.
+   *
+   * @param resource The OpenTelemetry resource to convert.
+   * @return the converted {@link MonitoredResource}.
+   */
   MonitoredResource mapResource(Resource resource);
 }
