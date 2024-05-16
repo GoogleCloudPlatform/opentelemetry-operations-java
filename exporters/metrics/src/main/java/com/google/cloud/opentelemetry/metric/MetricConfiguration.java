@@ -153,6 +153,17 @@ public abstract class MetricConfiguration {
    */
   public abstract boolean getUseServiceTimeSeries();
 
+  /**
+   * Returns the {@link ResourceMapper} that maps the OpenTelemetry {@link
+   * io.opentelemetry.sdk.resources.Resource} to Google specific {@link
+   * com.google.cloud.opentelemetry.resource.GcpResource}.
+   *
+   * <p>This returns the {@link ResourceTranslator#DEFAULT_RESOURCE_MAPPER} if not set through
+   * exporter configuration.
+   *
+   * @return the {@link ResourceMapper} object responsible for mapping OpenTelemetry resource to GCP
+   *     resource.
+   */
   public abstract ResourceMapper getResourceMapper();
 
   @VisibleForTesting
@@ -243,6 +254,16 @@ public abstract class MetricConfiguration {
      */
     public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
 
+    /**
+     * Sets the {@link ResourceMapper} that is used to map OpenTelemetry {@link
+     * io.opentelemetry.sdk.resources.Resource}s to Google specific {@link
+     * com.google.cloud.opentelemetry.resource.GcpResource}s. This overrides the default resource
+     * mapping logic.
+     *
+     * @param resourceMapper the {@link ResourceMapper} object responsible for providing mapping
+     *     logic.
+     * @return this.
+     */
     public abstract Builder setResourceMapper(ResourceMapper resourceMapper);
 
     /**
