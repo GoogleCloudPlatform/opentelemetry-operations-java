@@ -26,6 +26,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
 import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
+import static com.google.cloud.opentelemetry.metric.FakeData.aMetricDataWithCustomResource;
 import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
@@ -72,6 +73,7 @@ import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.Any;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -80,9 +82,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -408,6 +412,138 @@ public class GoogleCloudMetricExporterTest {
     verify(mockClient, times(0)).createTimeSeries(any(ProjectName.class), any());
 
     assertFalse(result.isSuccess());
+  }
+
+  @Test
+  public void testExportWithCustomResourceMapperSucceeds() {
+    ResourceMapper customMRMapper =
+        resource ->
+            MonitoredResource.newBuilder()
+                .setType("custom_monitored_resource")
+                .putLabels(
+                    "instance_id",
+                    Objects.requireNonNull(
+                        resource.getAttribute(ResourceAttributes.SERVICE_INSTANCE_ID)))
+                .putLabels(
+                    "zone",
+                    Objects.requireNonNull(
+                        resource.getAttribute(ResourceAttributes.CLOUD_AVAILABILITY_ZONE)))
+                .putLabels(
+                    "api",
+                    Objects.requireNonNull(resource.getAttribute(AttributeKey.stringKey("api"))))
+                .putLabels(
+                    "host_id",
+                    Objects.requireNonNull(resource.getAttribute(ResourceAttributes.HOST_ID)))
+                .putLabels(
+                    "cloud_platform",
+                    Objects.requireNonNull(
+                        resource.getAttribute(ResourceAttributes.CLOUD_PLATFORM)))
+                .build();
+    MetricDescriptor expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aMetricDataWithCustomResource.getName())
+            .setType(DEFAULT_PREFIX + "/" + aMetricDataWithCustomResource.getName())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("service_instance_id")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("service_name")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("service_namespace")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("label1")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("label2")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.INT64)
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(aMetricDataWithCustomResource.getDescription())
+            .build();
+    TimeInterval expectedTimeInterval =
+        TimeInterval.newBuilder()
+            .setStartTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .setEndTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .build();
+    Point expectedPoint =
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setInt64Value(aLongPoint.getValue()))
+            .setInterval(expectedTimeInterval)
+            .build();
+    TimeSeries expectedTimeSeries =
+        TimeSeries.newBuilder()
+            .setMetric(
+                Metric.newBuilder()
+                    .setType(expectedDescriptor.getType())
+                    .putLabels("service_instance_id", "test-gcs-service-id")
+                    .putLabels("service_name", "test-gcs-service")
+                    .putLabels("service_namespace", "test-gcs-service-ns")
+                    .putLabels("label1", "value1")
+                    .putLabels("label2", "false")
+                    .putLabels(LABEL_INSTRUMENTATION_SOURCE, "instrumentName")
+                    .putLabels(LABEL_INSTRUMENTATION_VERSION, "0")
+                    .build())
+            .addPoints(expectedPoint)
+            .setMetricKind(expectedDescriptor.getMetricKind())
+            .setResource(
+                MonitoredResource.newBuilder()
+                    .setType("custom_monitored_resource")
+                    .putLabels("instance_id", "test-gcs-service-id")
+                    .putLabels("zone", aCloudZone)
+                    .putLabels("api", "grpc")
+                    .putLabels("host_id", aHostId)
+                    .putLabels(
+                        "cloud_platform", ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE)
+                    .build())
+            .build();
+    CreateMetricDescriptorRequest expectedRequest =
+        CreateMetricDescriptorRequest.newBuilder()
+            .setName("projects/" + aProjectId)
+            .setMetricDescriptor(expectedDescriptor)
+            .build();
+    ProjectName expectedProjectName = ProjectName.of(aProjectId);
+
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
+            aProjectId,
+            DEFAULT_PREFIX,
+            mockClient,
+            MetricDescriptorStrategy.ALWAYS_SEND,
+            DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
+            false,
+            customMRMapper);
+
+    CompletableResultCode result = exporter.export(ImmutableList.of(aMetricDataWithCustomResource));
+    verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
+    verify(mockClient, times(1))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+
+    assertTrue(result.isSuccess());
+    assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
+    assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
+    assertEquals(1, timeSeriesArgCaptor.getValue().size());
+    assertEquals(expectedTimeSeries, timeSeriesArgCaptor.getValue().get(0));
   }
 
   @Test
