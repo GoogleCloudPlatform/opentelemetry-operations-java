@@ -17,10 +17,12 @@ package com.google.cloud.opentelemetry.metric;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.MonitoredResource;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -51,22 +53,27 @@ public class MetricConfigurationTest {
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertFalse(configuration.getUseServiceTimeSeries());
+    assertNotNull(configuration.getResourceMapper());
+    assertNotNull(configuration.getResourceAttributesFilter());
   }
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
     Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
+    ResourceMapper emptyResourceMapper = resource -> MonitoredResource.newBuilder().build();
     MetricConfiguration configuration =
         MetricConfiguration.builder()
             .setProjectId(PROJECT_ID)
             .setCredentials(FAKE_CREDENTIALS)
             .setResourceAttributesFilter(allowAllPredicate)
+            .setResourceMapper(emptyResourceMapper)
             .setUseServiceTimeSeries(true)
             .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertEquals(allowAllPredicate, configuration.getResourceAttributesFilter());
+    assertEquals(emptyResourceMapper, configuration.getResourceMapper());
     assertTrue(configuration.getUseServiceTimeSeries());
   }
 
