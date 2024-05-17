@@ -15,6 +15,37 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_SOURCE;
+import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_VERSION;
+import static com.google.cloud.opentelemetry.metric.FakeData.aCloudZone;
+import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
+import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
+import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogram;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
+import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
+import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
+import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
+import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
+import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
+import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_MAPPER;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.api.Distribution;
 import com.google.api.Distribution.BucketOptions;
 import com.google.api.Distribution.BucketOptions.Explicit;
@@ -49,6 +80,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,43 +94,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_SOURCE;
-import static com.google.cloud.opentelemetry.metric.AggregateByLabelMetricTimeSeriesBuilder.LABEL_INSTRUMENTATION_VERSION;
-import static com.google.cloud.opentelemetry.metric.FakeData.aCloudZone;
-import static com.google.cloud.opentelemetry.metric.FakeData.aDoubleSummaryPoint;
-import static com.google.cloud.opentelemetry.metric.FakeData.aFakeCredential;
-import static com.google.cloud.opentelemetry.metric.FakeData.aGceResource;
-import static com.google.cloud.opentelemetry.metric.FakeData.aHistogram;
-import static com.google.cloud.opentelemetry.metric.FakeData.aHistogramPoint;
-import static com.google.cloud.opentelemetry.metric.FakeData.aHostId;
-import static com.google.cloud.opentelemetry.metric.FakeData.aLongPoint;
-import static com.google.cloud.opentelemetry.metric.FakeData.aMetricData;
-import static com.google.cloud.opentelemetry.metric.FakeData.aProjectId;
-import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
-import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
-import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
-import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
-import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
-import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
-import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_MAPPER;
-import static com.google.cloud.opentelemetry.metric.MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GoogleCloudMetricExporterTest {

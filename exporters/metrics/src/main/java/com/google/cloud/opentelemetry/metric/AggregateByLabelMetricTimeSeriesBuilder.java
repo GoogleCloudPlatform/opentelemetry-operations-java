@@ -15,6 +15,11 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
+import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
+
 import com.google.api.MetricDescriptor;
 import com.google.monitoring.v3.Point;
 import com.google.monitoring.v3.TimeSeries;
@@ -29,7 +34,6 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.resources.Resource;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,11 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapDistribution;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapInterval;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetric;
-import static com.google.cloud.opentelemetry.metric.MetricTranslator.mapMetricDescriptor;
 
 /**
  * Builds GCM TimeSeries from each OTEL metric point, creating metric descriptors based on the
