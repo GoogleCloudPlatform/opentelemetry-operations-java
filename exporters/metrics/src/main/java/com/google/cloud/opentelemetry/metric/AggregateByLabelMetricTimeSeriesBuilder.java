@@ -59,19 +59,34 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final String projectId;
   private final String prefix;
   private final Predicate<AttributeKey<?>> resourceAttributeFilter;
+  private final MonitoredResourceMapping monitoredResourceMapping;
 
   @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
+    this.monitoredResourceMapping = MetricConfiguration.DEFAULT_RESOURCE_MAPPING;
   }
 
+  @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(
       String projectId, String prefix, Predicate<AttributeKey<?>> resourceAttributeFilter) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;
+    this.monitoredResourceMapping = MetricConfiguration.DEFAULT_RESOURCE_MAPPING;
+  }
+
+  public AggregateByLabelMetricTimeSeriesBuilder(
+      String projectId,
+      String prefix,
+      Predicate<AttributeKey<?>> resourceAttributeFilter,
+      MonitoredResourceMapping monitoredResourceMapping) {
+    this.projectId = projectId;
+    this.prefix = prefix;
+    this.resourceAttributeFilter = resourceAttributeFilter;
+    this.monitoredResourceMapping = monitoredResourceMapping;
   }
 
   @Override
@@ -135,7 +150,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     return TimeSeries.newBuilder()
         .setMetric(mapMetric(attributes, descriptor.getType()))
         .setMetricKind(descriptor.getMetricKind())
-        .setResource(mapResource(metric.getResource()));
+        .setResource(mapResource(metric.getResource(), monitoredResourceMapping));
   }
 
   private Attributes extraLabelsFromResource(Resource resource) {

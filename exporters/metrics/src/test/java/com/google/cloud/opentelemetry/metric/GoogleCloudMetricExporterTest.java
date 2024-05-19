@@ -33,6 +33,7 @@ import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLi
 import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_MAPPING;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.METRIC_DESCRIPTOR_TIME_UNIT;
 import static com.google.cloud.opentelemetry.metric.MetricTranslator.NANO_PER_SECOND;
@@ -134,7 +135,8 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.SEND_ONCE,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
-            false);
+            false,
+            DEFAULT_RESOURCE_MAPPING);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
     CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -244,7 +246,8 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
-            false);
+            false,
+            DEFAULT_RESOURCE_MAPPING);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -366,7 +369,8 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
-            false);
+            false,
+            DEFAULT_RESOURCE_MAPPING);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1))
@@ -387,7 +391,8 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
-            false);
+            false,
+            DEFAULT_RESOURCE_MAPPING);
 
     MetricData metricData =
         ImmutableMetricData.createDoubleSummary(
@@ -466,7 +471,8 @@ public class GoogleCloudMetricExporterTest {
             mockClient,
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
-            true);
+            true,
+            DEFAULT_RESOURCE_MAPPING);
 
     CompletableResultCode result =
         exporter.export(ImmutableList.of(googleComputeServiceMetricData));
