@@ -19,20 +19,40 @@ import java.util.Collections;
 import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * This class holds the mapping between Google Cloud's monitored resource type and the labels for
+ * identifying the given monitored resource type.
+ */
 @Immutable
 public final class MonitoredResourceMapping {
   private final String mrType;
   private final Set<String> mrLabels;
 
+  /**
+   * Public constructor.
+   *
+   * @param mrType The monitored resource type for which the mapping is being specified.
+   * @param mrLabels A set of labels which uniquely identify a given monitored resource.
+   */
   public MonitoredResourceMapping(String mrType, Set<String> mrLabels) {
     this.mrType = mrType;
     this.mrLabels = mrLabels;
   }
 
+  /**
+   * Returns the set of labels used to identify the monitored resource represented in this mapping.
+   *
+   * @return Immutable set of labels that map to the specified monitored resource type.
+   */
   public Set<String> getMonitoredResourceLabels() {
     return Collections.unmodifiableSet(mrLabels);
   }
 
+  /**
+   * The type of the monitored resource for which mapping is defined.
+   *
+   * @return The type of the monitored resource.
+   */
   public String getMonitoredResourceType() {
     return this.mrType;
   }
