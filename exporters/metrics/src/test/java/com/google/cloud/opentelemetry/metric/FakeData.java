@@ -61,6 +61,16 @@ public class FakeData {
   static final Attributes someLabels =
       Attributes.builder().put("label1", "value1").put("label2", "False").build();
 
+  static final Attributes someCustomMRAttributes =
+      Attributes.builder()
+          .put("host_id", aHostId)
+          .put("location", aCloudZone)
+          .put("service_instance_id", "test-gcs-service-id")
+          .put("gcp.resource_type", "custom_mr_instance")
+          .build();
+
+  static final Resource aCustomMonitoredResource = Resource.create(someCustomMRAttributes);
+
   static final Attributes someGceAttributes =
       Attributes.builder()
           .put(
@@ -112,6 +122,16 @@ public class FakeData {
   static final MetricData aMetricData =
       ImmutableMetricData.createLongSum(
           aGceResource,
+          anInstrumentationLibraryInfo,
+          "opentelemetry/name",
+          "description",
+          "ns",
+          ImmutableSumData.create(
+              true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+
+  static final MetricData aMetricDataWithCustomResource =
+      ImmutableMetricData.createLongSum(
+          aCustomMonitoredResource,
           anInstrumentationLibraryInfo,
           "opentelemetry/name",
           "description",
