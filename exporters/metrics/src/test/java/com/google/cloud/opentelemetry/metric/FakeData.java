@@ -63,10 +63,11 @@ public class FakeData {
 
   static final Attributes someCustomMRAttributes =
       Attributes.builder()
+          .put("gcp.resource_type", "custom_mr_instance") // required to trigger platform mapping
           .put("host_id", aHostId)
           .put("location", aCloudZone)
           .put("service_instance_id", "test-gcs-service-id")
-          .put("gcp.resource_type", "custom_mr_instance")
+          .put("foo", "bar") // extra label, gets ignored
           .build();
 
   static final Resource aCustomMonitoredResource = Resource.create(someCustomMRAttributes);

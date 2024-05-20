@@ -417,8 +417,7 @@ public class GoogleCloudMetricExporterTest {
   public void testExportWithMonitoredResourceMappingSucceeds() {
     MonitoredResourceDescription monitoredResourceDescription =
         new MonitoredResourceDescription(
-            "custom_mr_instance",
-            Set.of("service_instance_id", "gcp.resource_type", "host_id", "location"));
+            "custom_mr_instance", Set.of("service_instance_id", "host_id", "location"));
 
     // controls which resource attributes end up in metric labels
     Predicate<AttributeKey<?>> customAttributesFilter =
@@ -486,7 +485,6 @@ public class GoogleCloudMetricExporterTest {
                     .putLabels("service_instance_id", "test-gcs-service-id")
                     .putLabels("location", aCloudZone)
                     .putLabels("host_id", aHostId)
-                    .putLabels("gcp.resource_type", "custom_mr_instance")
                     .build())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
