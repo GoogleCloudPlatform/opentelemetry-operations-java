@@ -46,8 +46,8 @@ public abstract class MetricConfiguration {
   /** Resource attribute filter that disables addition of resource attributes to metric labels. */
   public static final Predicate<AttributeKey<?>> NO_RESOURCE_ATTRIBUTES = attributeKey -> false;
 
-  public static final MonitoredResourceMapping DEFAULT_RESOURCE_MAPPING =
-      new MonitoredResourceMapping("", Collections.emptySet());
+  public static final MonitoredResourceDescription DEFAULT_MONITORED_RESOURCE_DESCRIPTION =
+      new MonitoredResourceDescription("", Collections.emptySet());
 
   /**
    * Default resource attribute filter that adds recommended resource attributes to metric labels.
@@ -156,17 +156,17 @@ public abstract class MetricConfiguration {
   public abstract boolean getUseServiceTimeSeries();
 
   /**
-   * Returns the custom {@link MonitoredResourceMapping} that is used to map the OpenTelemetry
+   * Returns the custom {@link MonitoredResourceDescription} that is used to map the OpenTelemetry
    * {@link io.opentelemetry.sdk.resources.Resource} to Google specific {@link
    * com.google.api.MonitoredResource}.
    *
-   * <p>This returns the {@link MetricConfiguration#DEFAULT_RESOURCE_MAPPING} if not set through
-   * exporter configuration.
+   * <p>This returns the {@link MetricConfiguration#DEFAULT_MONITORED_RESOURCE_DESCRIPTION} if not
+   * set through exporter configuration.
    *
-   * @return The {@link MonitoredResourceMapping} object containing mapping between
-   *     MonitoredResource type and the expected labels.
+   * @return The {@link MonitoredResourceDescription} object containing the MonitoredResource type
+   *     and its expected labels.
    */
-  public abstract MonitoredResourceMapping getMonitoredResourceMapping();
+  public abstract MonitoredResourceDescription getMonitoredResourceDescription();
 
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
@@ -193,7 +193,7 @@ public abstract class MetricConfiguration {
         .setInsecureEndpoint(false)
         .setUseServiceTimeSeries(false)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
-        .setMonitoredResourceMapping(DEFAULT_RESOURCE_MAPPING)
+        .setMonitoredResourceDescription(DEFAULT_MONITORED_RESOURCE_DESCRIPTION)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 
@@ -257,17 +257,17 @@ public abstract class MetricConfiguration {
     public abstract Builder setUseServiceTimeSeries(boolean useServiceTimeSeries);
 
     /**
-     * Sets the {@link MonitoredResourceMapping} that is used to map OpenTelemetry {@link
+     * Sets the {@link MonitoredResourceDescription} that is used to map OpenTelemetry {@link
      * io.opentelemetry.sdk.resources.Resource}s to Google specific {@link
      * com.google.api.MonitoredResource}s.
      *
-     * @param monitoredResourceMapping the {@link MonitoredResourceMapping} object responsible for
-     *     providing mapping between the custom {@link com.google.api.MonitoredResource} and the
-     *     expected labels.
+     * @param monitoredResourceDescription the {@link MonitoredResourceDescription} object
+     *     responsible for providing mapping between the custom {@link
+     *     com.google.api.MonitoredResource} and the expected labels.
      * @return this.
      */
-    public abstract Builder setMonitoredResourceMapping(
-        MonitoredResourceMapping monitoredResourceMapping);
+    public abstract Builder setMonitoredResourceDescription(
+        MonitoredResourceDescription monitoredResourceDescription);
 
     /**
      * Set a filter to determine which resource attributes to add to metrics as metric labels. By

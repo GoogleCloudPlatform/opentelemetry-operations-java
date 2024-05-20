@@ -54,14 +54,14 @@ public class MetricConfigurationTest {
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertFalse(configuration.getUseServiceTimeSeries());
     assertNotNull(configuration.getResourceAttributesFilter());
-    assertNotNull(configuration.getMonitoredResourceMapping());
+    assertNotNull(configuration.getMonitoredResourceDescription());
   }
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
     Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
-    MonitoredResourceMapping customMRMapping =
-        new MonitoredResourceMapping(
+    MonitoredResourceDescription customMRMapping =
+        new MonitoredResourceDescription(
             "custom_mr", Set.of("instance_id", "gcp.resource_type", "host_id"));
 
     MetricConfiguration configuration =
@@ -69,14 +69,14 @@ public class MetricConfigurationTest {
             .setProjectId(PROJECT_ID)
             .setCredentials(FAKE_CREDENTIALS)
             .setResourceAttributesFilter(allowAllPredicate)
-            .setMonitoredResourceMapping(customMRMapping)
+            .setMonitoredResourceDescription(customMRMapping)
             .setUseServiceTimeSeries(true)
             .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertEquals(allowAllPredicate, configuration.getResourceAttributesFilter());
-    assertEquals(customMRMapping, configuration.getMonitoredResourceMapping());
+    assertEquals(customMRMapping, configuration.getMonitoredResourceDescription());
     assertTrue(configuration.getUseServiceTimeSeries());
   }
 

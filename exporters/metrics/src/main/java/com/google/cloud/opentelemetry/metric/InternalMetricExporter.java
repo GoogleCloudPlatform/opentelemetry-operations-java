@@ -68,7 +68,7 @@ class InternalMetricExporter implements MetricExporter {
   private final MetricDescriptorStrategy metricDescriptorStrategy;
   private final Predicate<AttributeKey<?>> resourceAttributesFilter;
   private final boolean useCreateServiceTimeSeries;
-  private final MonitoredResourceMapping monitoredResourceMapping;
+  private final MonitoredResourceDescription monitoredResourceDescription;
 
   InternalMetricExporter(
       String projectId,
@@ -77,14 +77,14 @@ class InternalMetricExporter implements MetricExporter {
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
       boolean useCreateServiceTimeSeries,
-      MonitoredResourceMapping monitoredResourceMapping) {
+      MonitoredResourceDescription monitoredResourceDescription) {
     this.projectId = projectId;
     this.prefix = prefix;
     this.metricServiceClient = client;
     this.metricDescriptorStrategy = descriptorStrategy;
     this.resourceAttributesFilter = resourceAttributesFilter;
     this.useCreateServiceTimeSeries = useCreateServiceTimeSeries;
-    this.monitoredResourceMapping = monitoredResourceMapping;
+    this.monitoredResourceDescription = monitoredResourceDescription;
   }
 
   static InternalMetricExporter createWithConfiguration(MetricConfiguration configuration)
@@ -124,7 +124,7 @@ class InternalMetricExporter implements MetricExporter {
         configuration.getDescriptorStrategy(),
         configuration.getResourceAttributesFilter(),
         configuration.getUseServiceTimeSeries(),
-        configuration.getMonitoredResourceMapping());
+        configuration.getMonitoredResourceDescription());
   }
 
   @VisibleForTesting
@@ -135,7 +135,7 @@ class InternalMetricExporter implements MetricExporter {
       MetricDescriptorStrategy descriptorStrategy,
       Predicate<AttributeKey<?>> resourceAttributesFilter,
       boolean useCreateServiceTimeSeries,
-      MonitoredResourceMapping monitoredResourceMapping) {
+      MonitoredResourceDescription monitoredResourceDescription) {
     return new InternalMetricExporter(
         projectId,
         prefix,
@@ -143,7 +143,7 @@ class InternalMetricExporter implements MetricExporter {
         descriptorStrategy,
         resourceAttributesFilter,
         useCreateServiceTimeSeries,
-        monitoredResourceMapping);
+        monitoredResourceDescription);
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
@@ -168,7 +168,7 @@ class InternalMetricExporter implements MetricExporter {
     // 3. Fire the set of time series off.
     MetricTimeSeriesBuilder builder =
         new AggregateByLabelMetricTimeSeriesBuilder(
-            projectId, prefix, resourceAttributesFilter, monitoredResourceMapping);
+            projectId, prefix, resourceAttributesFilter, monitoredResourceDescription);
     for (final MetricData metricData : metrics) {
       // Extract all the underlying points.
       switch (metricData.getType()) {

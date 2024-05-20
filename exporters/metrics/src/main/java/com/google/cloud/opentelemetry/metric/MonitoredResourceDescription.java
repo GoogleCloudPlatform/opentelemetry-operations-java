@@ -24,7 +24,7 @@ import javax.annotation.concurrent.Immutable;
  * identifying the given monitored resource type.
  */
 @Immutable
-public final class MonitoredResourceMapping {
+public final class MonitoredResourceDescription {
   private final String mrType;
   private final Set<String> mrLabels;
 
@@ -34,7 +34,7 @@ public final class MonitoredResourceMapping {
    * @param mrType The monitored resource type for which the mapping is being specified.
    * @param mrLabels A set of labels which uniquely identify a given monitored resource.
    */
-  public MonitoredResourceMapping(String mrType, Set<String> mrLabels) {
+  public MonitoredResourceDescription(String mrType, Set<String> mrLabels) {
     this.mrType = mrType;
     this.mrLabels = mrLabels;
   }
