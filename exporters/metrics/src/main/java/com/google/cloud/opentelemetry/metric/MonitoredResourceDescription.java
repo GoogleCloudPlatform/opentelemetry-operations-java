@@ -36,7 +36,7 @@ public final class MonitoredResourceDescription {
    */
   public MonitoredResourceDescription(String mrType, Set<String> mrLabels) {
     this.mrType = mrType;
-    this.mrLabels = mrLabels;
+    this.mrLabels = Collections.unmodifiableSet(mrLabels);
   }
 
   /**
@@ -45,7 +45,7 @@ public final class MonitoredResourceDescription {
    * @return Immutable set of labels that map to the specified monitored resource type.
    */
   public Set<String> getMonitoredResourceLabels() {
-    return Collections.unmodifiableSet(mrLabels);
+    return mrLabels;
   }
 
   /**
