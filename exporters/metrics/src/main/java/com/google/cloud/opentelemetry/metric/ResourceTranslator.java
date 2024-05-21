@@ -22,11 +22,14 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /** Translates from OpenTelemetry Resource into Google Cloud Monitoring's MonitoredResource. */
 public class ResourceTranslator {
   private static final String CUSTOM_MR_KEY = "gcp.resource_type";
   private static final String BLANK_STRING = " ";
+  private static final Logger LOGGER =
+      Logger.getLogger(ResourceTranslator.class.getCanonicalName());
 
   private ResourceTranslator() {}
 
@@ -57,6 +60,12 @@ public class ResourceTranslator {
       Resource resource, MonitoredResourceDescription mrDescription) {
     String mrTypeToMap = resource.getAttributes().get(AttributeKey.stringKey(CUSTOM_MR_KEY));
     if (Strings.isNullOrEmpty(mrTypeToMap)) {
+      return mapResourceUsingCustomerMappings(resource);
+    } else if (!mrTypeToMap.equals(mrDescription.getMonitoredResourceType())) {
+      LOGGER.warning(
+          String.format(
+              "MonitoredResource type mismatch: Description provided for %s, but found %s in resource attributes. Defaulting to standard mappings.",
+              mrDescription.getMonitoredResourceType(), mrTypeToMap));
       return mapResourceUsingCustomerMappings(resource);
     } else {
       return mapResourceUsingPlatformMappings(resource, mrTypeToMap, mrDescription);
