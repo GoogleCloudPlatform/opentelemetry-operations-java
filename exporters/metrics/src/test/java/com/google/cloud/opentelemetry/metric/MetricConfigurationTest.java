@@ -61,8 +61,7 @@ public class MetricConfigurationTest {
   public void testSetAllConfigurationFieldsSucceeds() {
     Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
     MonitoredResourceDescription customMRMapping =
-        new MonitoredResourceDescription(
-            "custom_mr", Set.of("instance_id", "gcp.resource_type", "host_id"));
+        new MonitoredResourceDescription("custom_mr", Set.of("instance_id", "foo_bar", "host_id"));
 
     MetricConfiguration configuration =
         MetricConfiguration.builder()
