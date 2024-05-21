@@ -15,9 +15,9 @@
  */
 package com.google.cloud.opentelemetry.metric;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Collections;
 import java.util.Set;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * This class holds the mapping between Google Cloud's monitored resource type and the labels for
@@ -54,6 +54,6 @@ public final class MonitoredResourceDescription {
    * @return The type of the monitored resource.
    */
   public String getMonitoredResourceType() {
-    return this.mrType;
+    return mrType;
   }
 }
