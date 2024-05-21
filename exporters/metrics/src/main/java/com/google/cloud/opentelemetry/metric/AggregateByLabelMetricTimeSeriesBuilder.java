@@ -66,7 +66,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
-    this.monitoredResourceDescription = MetricConfiguration.DEFAULT_MONITORED_RESOURCE_DESCRIPTION;
+    this.monitoredResourceDescription = MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
   }
 
   @Deprecated
@@ -75,7 +75,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     this.projectId = projectId;
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;
-    this.monitoredResourceDescription = MetricConfiguration.DEFAULT_MONITORED_RESOURCE_DESCRIPTION;
+    this.monitoredResourceDescription = MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
   }
 
   public AggregateByLabelMetricTimeSeriesBuilder(

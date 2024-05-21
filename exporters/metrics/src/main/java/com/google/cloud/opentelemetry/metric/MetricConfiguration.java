@@ -46,7 +46,7 @@ public abstract class MetricConfiguration {
   /** Resource attribute filter that disables addition of resource attributes to metric labels. */
   public static final Predicate<AttributeKey<?>> NO_RESOURCE_ATTRIBUTES = attributeKey -> false;
 
-  public static final MonitoredResourceDescription DEFAULT_MONITORED_RESOURCE_DESCRIPTION =
+  public static final MonitoredResourceDescription EMPTY_MONITORED_RESOURCE_DESCRIPTION =
       new MonitoredResourceDescription("", Collections.emptySet());
 
   /**
@@ -160,8 +160,8 @@ public abstract class MetricConfiguration {
    * {@link io.opentelemetry.sdk.resources.Resource} to Google specific {@link
    * com.google.api.MonitoredResource}.
    *
-   * <p>This returns the {@link MetricConfiguration#DEFAULT_MONITORED_RESOURCE_DESCRIPTION} if not
-   * set through exporter configuration.
+   * <p>This returns the {@link MetricConfiguration#EMPTY_MONITORED_RESOURCE_DESCRIPTION} if not set
+   * through exporter configuration.
    *
    * @return The {@link MonitoredResourceDescription} object containing the MonitoredResource type
    *     and its expected labels.
@@ -193,7 +193,7 @@ public abstract class MetricConfiguration {
         .setInsecureEndpoint(false)
         .setUseServiceTimeSeries(false)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
-        .setMonitoredResourceDescription(DEFAULT_MONITORED_RESOURCE_DESCRIPTION)
+        .setMonitoredResourceDescription(EMPTY_MONITORED_RESOURCE_DESCRIPTION)
         .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
   }
 

@@ -52,7 +52,7 @@ public class ResourceTranslator {
    * @param mrDescription The {@link MonitoredResourceDescription} in case the OpenTelemetry SDK
    *     {@link Resource} needs to be converted to a custom {@link MonitoredResource}. For use-cases
    *     not requiring custom {@link MonitoredResource}s, use the {@link
-   *     MetricConfiguration#DEFAULT_MONITORED_RESOURCE_DESCRIPTION}.
+   *     MetricConfiguration#EMPTY_MONITORED_RESOURCE_DESCRIPTION}.
    * @return The converted {@link MonitoredResource} based on the provided {@link
    *     MonitoredResourceDescription}.
    */
