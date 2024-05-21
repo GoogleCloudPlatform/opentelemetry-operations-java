@@ -517,6 +517,102 @@ public class GoogleCloudMetricExporterTest {
   }
 
   @Test
+  public void testExportWithMonitoredResourceMappingSucceeds_NoLabels() {
+    MonitoredResourceDescription monitoredResourceDescription =
+        new MonitoredResourceDescription("custom_mr_instance", Collections.emptySet());
+
+    // controls which resource attributes end up in metric labels
+    Predicate<AttributeKey<?>> customAttributesFilter =
+        attributeKey ->
+            !attributeKey.getKey().isEmpty() && attributeKey.getKey().equals("service_instance_id");
+
+    MetricDescriptor expectedDescriptor =
+        MetricDescriptor.newBuilder()
+            .setDisplayName(aMetricDataWithCustomResource.getName())
+            .setType(DEFAULT_PREFIX + "/" + aMetricDataWithCustomResource.getName())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("service_instance_id")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("label1")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .addLabels(
+                LabelDescriptor.newBuilder()
+                    .setKey("label2")
+                    .setValueType(ValueType.STRING)
+                    .build())
+            .setMetricKind(MetricKind.CUMULATIVE)
+            .setValueType(MetricDescriptor.ValueType.INT64)
+            .setUnit(METRIC_DESCRIPTOR_TIME_UNIT)
+            .setDescription(aMetricDataWithCustomResource.getDescription())
+            .build();
+    TimeInterval expectedTimeInterval =
+        TimeInterval.newBuilder()
+            .setStartTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getStartEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .setEndTime(
+                Timestamp.newBuilder()
+                    .setSeconds(aLongPoint.getEpochNanos() / NANO_PER_SECOND)
+                    .setNanos(0)
+                    .build())
+            .build();
+    Point expectedPoint =
+        Point.newBuilder()
+            .setValue(TypedValue.newBuilder().setInt64Value(aLongPoint.getValue()))
+            .setInterval(expectedTimeInterval)
+            .build();
+    TimeSeries expectedTimeSeries =
+        TimeSeries.newBuilder()
+            .setMetric(
+                Metric.newBuilder()
+                    .setType(expectedDescriptor.getType())
+                    .putLabels("service_instance_id", "test-gcs-service-id")
+                    .putLabels("label1", "value1")
+                    .putLabels("label2", "false")
+                    .putLabels(LABEL_INSTRUMENTATION_SOURCE, "instrumentName")
+                    .putLabels(LABEL_INSTRUMENTATION_VERSION, "0")
+                    .build())
+            .addPoints(expectedPoint)
+            .setMetricKind(expectedDescriptor.getMetricKind())
+            .setResource(MonitoredResource.newBuilder().setType("custom_mr_instance").build())
+            .build();
+    CreateMetricDescriptorRequest expectedRequest =
+        CreateMetricDescriptorRequest.newBuilder()
+            .setName("projects/" + aProjectId)
+            .setMetricDescriptor(expectedDescriptor)
+            .build();
+    ProjectName expectedProjectName = ProjectName.of(aProjectId);
+
+    MetricExporter exporter =
+        InternalMetricExporter.createWithClient(
+            aProjectId,
+            DEFAULT_PREFIX,
+            mockClient,
+            MetricDescriptorStrategy.ALWAYS_SEND,
+            customAttributesFilter,
+            false,
+            monitoredResourceDescription);
+
+    CompletableResultCode result = exporter.export(ImmutableList.of(aMetricDataWithCustomResource));
+    verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
+    verify(mockClient, times(1))
+        .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+
+    assertTrue(result.isSuccess());
+    assertEquals(expectedRequest, metricDescriptorCaptor.getValue());
+    assertEquals(expectedProjectName, projectNameArgCaptor.getValue());
+    assertEquals(1, timeSeriesArgCaptor.getValue().size());
+    assertEquals(expectedTimeSeries, timeSeriesArgCaptor.getValue().get(0));
+  }
+
+  @Test
   public void verifyExporterWorksWithDefaultConfiguration() {
     try (MockedStatic<ServiceOptions> mockedServiceOptions =
             Mockito.mockStatic(ServiceOptions.class);
