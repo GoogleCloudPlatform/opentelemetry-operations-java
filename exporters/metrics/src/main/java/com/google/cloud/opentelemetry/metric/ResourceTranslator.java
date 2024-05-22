@@ -20,14 +20,12 @@ import com.google.cloud.opentelemetry.resource.GcpResource;
 import com.google.common.base.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
 /** Translates from OpenTelemetry Resource into Google Cloud Monitoring's MonitoredResource. */
 public class ResourceTranslator {
   private static final String CUSTOM_MR_KEY = "gcp.resource_type";
-  private static final String BLANK_STRING = " ";
   private static final Logger LOGGER =
       Logger.getLogger(ResourceTranslator.class.getCanonicalName());
 
@@ -82,7 +80,10 @@ public class ResourceTranslator {
     expectedMRLabels.forEach(
         expectedLabel -> {
           String foundValue = resource.getAttribute(AttributeKey.stringKey(expectedLabel));
-          mr.putLabels(expectedLabel, Objects.requireNonNullElse(foundValue, BLANK_STRING));
+          if (foundValue != null) {
+            // only put labels for found value
+            mr.putLabels(expectedLabel, foundValue);
+          }
         });
     return mr.build();
   }

@@ -674,13 +674,7 @@ public class GoogleCloudMetricExporterTest {
                     .build())
             .addPoints(expectedPoint)
             .setMetricKind(expectedDescriptor.getMetricKind())
-            .setResource(
-                MonitoredResource.newBuilder()
-                    .setType("custom_mr_instance")
-                    .putLabels("service_instance_id", " ")
-                    .putLabels("location", " ")
-                    .putLabels("host_id", " ")
-                    .build())
+            .setResource(MonitoredResource.newBuilder().setType("custom_mr_instance").build())
             .build();
     CreateMetricDescriptorRequest expectedRequest =
         CreateMetricDescriptorRequest.newBuilder()
