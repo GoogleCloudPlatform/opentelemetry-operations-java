@@ -17,6 +17,7 @@ package com.google.cloud.opentelemetry.metric;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +30,7 @@ import com.google.cloud.opentelemetry.metric.MetricConfiguration.Builder;
 import io.opentelemetry.api.common.AttributeKey;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,22 +53,29 @@ public class MetricConfigurationTest {
     assertNull(configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertFalse(configuration.getUseServiceTimeSeries());
+    assertNotNull(configuration.getResourceAttributesFilter());
+    assertNotNull(configuration.getMonitoredResourceDescription());
   }
 
   @Test
   public void testSetAllConfigurationFieldsSucceeds() {
     Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
+    MonitoredResourceDescription customMRMapping =
+        new MonitoredResourceDescription("custom_mr", Set.of("instance_id", "foo_bar", "host_id"));
+
     MetricConfiguration configuration =
         MetricConfiguration.builder()
             .setProjectId(PROJECT_ID)
             .setCredentials(FAKE_CREDENTIALS)
             .setResourceAttributesFilter(allowAllPredicate)
+            .setMonitoredResourceDescription(customMRMapping)
             .setUseServiceTimeSeries(true)
             .build();
 
     assertEquals(FAKE_CREDENTIALS, configuration.getCredentials());
     assertEquals(PROJECT_ID, configuration.getProjectId());
     assertEquals(allowAllPredicate, configuration.getResourceAttributesFilter());
+    assertEquals(customMRMapping, configuration.getMonitoredResourceDescription());
     assertTrue(configuration.getUseServiceTimeSeries());
   }
 

@@ -61,6 +61,20 @@ public class FakeData {
   static final Attributes someLabels =
       Attributes.builder().put("label1", "value1").put("label2", "False").build();
 
+  static final Attributes someCustomMRAttributes =
+      Attributes.builder()
+          .put("gcp.resource_type", "custom_mr_instance") // required to trigger platform mapping
+          .put("host_id", aHostId)
+          .put("location", aCloudZone)
+          .put("service_instance_id", "test-gcs-service-id")
+          .put("foo", "bar") // extra label, gets ignored
+          .build();
+
+  static final Resource aCustomMonitoredResource = Resource.create(someCustomMRAttributes);
+
+  static final Resource aCustomMonitoredResourceWithNoAttributes =
+      Resource.create(Attributes.builder().put("gcp.resource_type", "custom_mr_instance").build());
+
   static final Attributes someGceAttributes =
       Attributes.builder()
           .put(
@@ -112,6 +126,26 @@ public class FakeData {
   static final MetricData aMetricData =
       ImmutableMetricData.createLongSum(
           aGceResource,
+          anInstrumentationLibraryInfo,
+          "opentelemetry/name",
+          "description",
+          "ns",
+          ImmutableSumData.create(
+              true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+
+  static final MetricData aMetricDataWithCustomResource =
+      ImmutableMetricData.createLongSum(
+          aCustomMonitoredResource,
+          anInstrumentationLibraryInfo,
+          "opentelemetry/name",
+          "description",
+          "ns",
+          ImmutableSumData.create(
+              true, AggregationTemporality.CUMULATIVE, ImmutableList.of(aLongPoint)));
+
+  static final MetricData aMetricDataWithEmptyResourceAttributes =
+      ImmutableMetricData.createLongSum(
+          aCustomMonitoredResourceWithNoAttributes,
           anInstrumentationLibraryInfo,
           "opentelemetry/name",
           "description",
