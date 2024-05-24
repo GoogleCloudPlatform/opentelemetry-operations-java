@@ -130,5 +130,5 @@ TraceConfiguration.builder()
   - Learn more about Google Cloud Trace at https://cloud.google.com/trace
 
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace/badge.svg
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/exporter-trace?color=dark-green
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-trace

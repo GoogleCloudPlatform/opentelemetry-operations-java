@@ -75,5 +75,5 @@ MeterProvider provider = SdkMeterProvider.builder()
 
 
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-metrics/badge.svg
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/exporter-metrics?color=dark-green
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-metrics

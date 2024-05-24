@@ -75,5 +75,5 @@ java -javaagent:path/to/opentelemetry-javaagent.jar \
 
 [autooconf]: https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
 [auto-extensions]: https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/examples/extension/README.md
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-auto/badge.svg
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/exporter-auto?color=dark-green
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-auto
