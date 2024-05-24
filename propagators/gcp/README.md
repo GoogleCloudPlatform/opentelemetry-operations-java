@@ -39,5 +39,5 @@ public class MyMain {
 }
 ```
 
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/propagators-gcp/badge.svg
+[maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/propagators-gcp?color=dark-green
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/propagators-gcp
