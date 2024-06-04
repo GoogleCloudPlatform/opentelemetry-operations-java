@@ -94,6 +94,22 @@ public class PropagatorTest {
   }
 
   @Test
+  public void testExtractWithoutTraceFlags() {
+    Context context = Context.root();
+    Map<String, String> carrier = new HashMap<>();
+    carrier.put("x-cloud-trace-context", "00000000000000000000000000000010/15");
+    TextMapPropagator propagator = new XCloudTraceContextPropagator(false);
+
+    // Now try to extract the value.
+    Context updated = propagator.extract(context, carrier, GETTER);
+    Span span = Span.fromContext(updated);
+    Assert.assertNotNull(span);
+    Assert.assertEquals("00000000000000000000000000000010", span.getSpanContext().getTraceId());
+    Assert.assertEquals("000000000000000f", span.getSpanContext().getSpanId());
+    Assert.assertEquals(false, span.getSpanContext().getTraceFlags().isSampled());
+  }
+
+  @Test
   public void testNotInjectOneway() {
     Span span =
         Span.wrap(
