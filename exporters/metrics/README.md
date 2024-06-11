@@ -2,8 +2,6 @@
 
 [![Maven Central][maven-image]][maven-url]
 
-*NOTE: While Opentelemetry Metrics API is stable, the SDK is still Alpha in OpenTelemetry, and this exporter is not guaranteed to work across versions.*
-
 Opentelemetry Google Monitoring Metrics Exporter allows users to send collected metrics
 to Google Cloud.
 
@@ -15,13 +13,21 @@ Google Cloud Monitoring is a managed service provided by Google Cloud Platform. 
 
 ## Usage
 
-TODO(jsuereth): Write this.
-
 See [the code example](../../examples/metrics) for details.
 
 ## Authentication
 
-TODO(jsuereth): Write this section.
+If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.
+
+This exporter uses [google-cloud-java](https://github.com/googleapis/google-cloud-java), which uses the [google-auth-library-java](https://github.com/googleapis/google-auth-library-java) for authentication. For details about how to configure the authentication see [here](https://github.com/googleapis/google-cloud-java#authentication).
+
+If you prefer to manually set the credentials, they can be passed to the exporter using the [`setCredentials`](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/7a8dcf420f5551bf0df969f83928b18c443da5aa/exporters/metrics/src/main/java/com/google/cloud/opentelemetry/metric/MetricConfiguration.java) method:
+```java
+MetricConfiguration.builder()
+    .setCredentials(new GoogleCredentials(new AccessToken(accessToken, expirationTime)))
+    .setProjectId("MyProjectId")
+    .build();
+```
 
 ## Configuration
 
@@ -73,7 +79,8 @@ MeterProvider provider = SdkMeterProvider.builder()
 | deadline      | ??? | ??? | The deadline limit on export calls to Cloud Monitoring API | 12 seconds |
 | metricDescriptorStrategy | ??? | ??? | How to adapt OpenTelemetry metric definition into google cloud. `ALWAYS_SEND` will try to create metric descriptors on every export.  `SEND_ONCE` will try to create metric descriptors once per Java instance/classloader. `NEVER_SEND` will rely on Cloud Monitoring's auto-generated MetricDescriptors from time series. | `SEND_ONCE` |
 
-
+## Java Versions
+Java 8 or above is required for using this exporter.
 
 [maven-image]: https://img.shields.io/maven-central/v/com.google.cloud.opentelemetry/exporter-metrics?color=dark-green
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/com.google.cloud.opentelemetry/exporter-metrics

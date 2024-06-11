@@ -36,8 +36,6 @@ See [Tracing Readme](exporters/trace/README.md) for installation and usage instr
 
 ## Google Cloud Monitoring Exporter
 
-*Note: This is an alpha-release.*
-
 See [Metrics Readme](exporters/metrics/README.md) for installation and usage instructions.
 
 ## Google Cloud Autoconfigure module
