@@ -85,7 +85,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -419,7 +421,8 @@ public class GoogleCloudMetricExporterTest {
   public void testExportWithMonitoredResourceMappingSucceeds() {
     MonitoredResourceDescription monitoredResourceDescription =
         new MonitoredResourceDescription(
-            "custom_mr_instance", Set.of("service_instance_id", "host_id", "location"));
+            "custom_mr_instance",
+            new HashSet<>(Arrays.asList("service_instance_id", "host_id", "location")));
 
     // controls which resource attributes end up in metric labels
     Predicate<AttributeKey<?>> customAttributesFilter =
@@ -618,7 +621,8 @@ public class GoogleCloudMetricExporterTest {
   public void testExportWithMonitoredResourceMappingSucceeds_NoResourceLabels() {
     MonitoredResourceDescription monitoredResourceDescription =
         new MonitoredResourceDescription(
-            "custom_mr_instance", Set.of("service_instance_id", "host_id", "location"));
+            "custom_mr_instance",
+            new HashSet<>(Arrays.asList("service_instance_id", "host_id", "location")));
 
     // controls which resource attributes end up in metric labels
     Predicate<AttributeKey<?>> customAttributesFilter =
