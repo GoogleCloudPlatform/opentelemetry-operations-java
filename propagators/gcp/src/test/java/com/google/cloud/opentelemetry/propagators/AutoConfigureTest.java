@@ -15,16 +15,21 @@
  */
 package com.google.cloud.opentelemetry.propagators;
 
-import static org.junit.Assert.assertTrue;
-
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
-import java.util.Map;
-import java.util.ServiceLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class AutoConfigureTest {
@@ -33,19 +38,20 @@ public class AutoConfigureTest {
   public void findsWithServiceLoader() {
     ServiceLoader<ConfigurablePropagatorProvider> services =
         ServiceLoader.load(ConfigurablePropagatorProvider.class, getClass().getClassLoader());
+
+    List<ConfigurablePropagatorProvider> servicesList = new ArrayList<>();
+    services.iterator().forEachRemaining(servicesList::add);
+
     assertTrue(
         "Could not load gcp_oneway propagator using serviceloader, found: " + services,
-        services.stream()
+        servicesList.stream()
             .anyMatch(
-                provider ->
-                    provider.type().equals(OneWayXCloudTraceConfigurablePropagatorProvider.class)));
+                provider -> (provider instanceof OneWayXCloudTraceConfigurablePropagatorProvider)));
 
     assertTrue(
         "Could not load gcp propagator using serviceloader, found: " + services,
-        services.stream()
-            .anyMatch(
-                provider ->
-                    provider.type().equals(XCloudTraceConfigurablePropagatorProvider.class)));
+        servicesList.stream()
+            .anyMatch(provider -> (provider instanceof XCloudTraceConfigurablePropagatorProvider)));
   }
 
   @Test
@@ -64,15 +70,12 @@ public class AutoConfigureTest {
             .disableShutdownHook()
             .addPropertiesSupplier(
                 () ->
-                    Map.of(
-                        "otel.propagators",
-                        propagator,
-                        "otel.traces.exporter",
-                        "none",
-                        "otel.metrics.exporter",
-                        "none",
-                        "otel.logs.exporter",
-                        "none"))
+                    Stream.of(
+                            new SimpleEntry<>("otel.propagators", propagator),
+                            new SimpleEntry<>("otel.traces.exporter", "none"),
+                            new SimpleEntry<>("otel.metrics.exporter", "none"),
+                            new SimpleEntry<>("otel.logs.exporter", "none"))
+                        .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue)))
             .build();
     return sdk.getOpenTelemetrySdk().getPropagators();
   }
