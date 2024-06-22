@@ -15,12 +15,6 @@
  */
 description = 'Google Cloud resource provider for OpenTelemetry'
 
-afterEvaluate {
-	tasks.named("compileJava"){
-		options.release = 8
-	}
-}
-
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)

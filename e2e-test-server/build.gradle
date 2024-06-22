@@ -23,6 +23,11 @@ application {
 	mainClass.set('com.google.cloud.opentelemetry.endtoend.Server')
 }
 
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+}
 description = 'End-To-End integration testing server'
 
 shadowJar {

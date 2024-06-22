@@ -27,6 +27,12 @@ repositories {
 	mavenCentral()
 }
 
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+}
+
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
