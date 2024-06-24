@@ -6,7 +6,7 @@ GCP automagiks work and data flows into google cloud.
 
 ## Building a Docker image.
 
-From the *root* directory of the projet, run:
+From the *root* directory of the project, run:
 
 ```
 docker build . --file=e2e.Dockerfile
