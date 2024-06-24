@@ -29,9 +29,8 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.opentelemetry.metric.MetricConfiguration.Builder;
 import io.opentelemetry.api.common.AttributeKey;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,8 +61,7 @@ public class MetricConfigurationTest {
   public void testSetAllConfigurationFieldsSucceeds() {
     Predicate<AttributeKey<?>> allowAllPredicate = attributeKey -> true;
     MonitoredResourceDescription customMRMapping =
-        new MonitoredResourceDescription(
-            "custom_mr", new HashSet<>(Arrays.asList("instance_id", "foo_bar", "host_id")));
+        new MonitoredResourceDescription("custom_mr", Set.of("instance_id", "foo_bar", "host_id"));
 
     MetricConfiguration configuration =
         MetricConfiguration.builder()

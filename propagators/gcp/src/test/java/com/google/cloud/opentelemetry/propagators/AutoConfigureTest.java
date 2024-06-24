@@ -20,12 +20,8 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -37,20 +33,19 @@ public class AutoConfigureTest {
   public void findsWithServiceLoader() {
     ServiceLoader<ConfigurablePropagatorProvider> services =
         ServiceLoader.load(ConfigurablePropagatorProvider.class, getClass().getClassLoader());
-
-    List<ConfigurablePropagatorProvider> servicesList = new ArrayList<>();
-    services.iterator().forEachRemaining(servicesList::add);
-
     assertTrue(
         "Could not load gcp_oneway propagator using serviceloader, found: " + services,
-        servicesList.stream()
+        services.stream()
             .anyMatch(
-                provider -> (provider instanceof OneWayXCloudTraceConfigurablePropagatorProvider)));
+                provider ->
+                    provider.type().equals(OneWayXCloudTraceConfigurablePropagatorProvider.class)));
 
     assertTrue(
         "Could not load gcp propagator using serviceloader, found: " + services,
-        servicesList.stream()
-            .anyMatch(provider -> (provider instanceof XCloudTraceConfigurablePropagatorProvider)));
+        services.stream()
+            .anyMatch(
+                provider ->
+                    provider.type().equals(XCloudTraceConfigurablePropagatorProvider.class)));
   }
 
   @Test
@@ -69,12 +64,15 @@ public class AutoConfigureTest {
             .disableShutdownHook()
             .addPropertiesSupplier(
                 () ->
-                    Stream.of(
-                            new SimpleEntry<>("otel.propagators", propagator),
-                            new SimpleEntry<>("otel.traces.exporter", "none"),
-                            new SimpleEntry<>("otel.metrics.exporter", "none"),
-                            new SimpleEntry<>("otel.logs.exporter", "none"))
-                        .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue)))
+                    Map.of(
+                        "otel.propagators",
+                        propagator,
+                        "otel.traces.exporter",
+                        "none",
+                        "otel.metrics.exporter",
+                        "none",
+                        "otel.logs.exporter",
+                        "none"))
             .build();
     return sdk.getOpenTelemetrySdk().getPropagators();
   }

@@ -19,7 +19,6 @@ import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
@@ -38,7 +37,7 @@ public class GCPResourceTest {
   private static final String DUMMY_PROJECT_ID = "google-pid";
   private final ConfigProperties mockConfigProps = Mockito.mock(ConfigProperties.class);
   private final Map<String, String> mockGKECommonAttributes =
-      new HashMap<String, String>() {
+      new HashMap<>() {
         {
           put(GKE_CLUSTER_NAME, "gke-cluster");
           put(GKE_HOST_ID, "host1");
@@ -48,7 +47,7 @@ public class GCPResourceTest {
   // Mock Platforms
   private DetectedPlatform generateMockGCEPlatform() {
     Map<String, String> mockAttributes =
-        new HashMap<String, String>() {
+        new HashMap<>() {
           {
             put(GCE_CLOUD_REGION, "australia-southeast1");
             put(GCE_AVAILABILITY_ZONE, "australia-southeast1-b");
@@ -93,7 +92,7 @@ public class GCPResourceTest {
       throw new IllegalArgumentException();
     }
     Map<String, String> mockAttributes =
-        new HashMap<String, String>() {
+        new HashMap<>() {
           {
             put(SERVERLESS_COMPUTE_NAME, "serverless-app");
             put(SERVERLESS_COMPUTE_REVISION, "v2");
@@ -111,7 +110,7 @@ public class GCPResourceTest {
 
   private DetectedPlatform generateMockGAEPlatform() {
     Map<String, String> mockAttributes =
-        new HashMap<String, String>() {
+        new HashMap<>() {
           {
             put(GAE_MODULE_NAME, "gae-app");
             put(GAE_APP_VERSION, "v1");
@@ -130,7 +129,7 @@ public class GCPResourceTest {
 
   private DetectedPlatform generateMockUnknownPlatform() {
     Map<String, String> mockAttributes =
-        new HashMap<String, String>() {
+        new HashMap<>() {
           {
             put(GCE_INSTANCE_ID, "instance-id");
             put(GCE_CLOUD_REGION, "australia-southeast1");
@@ -386,12 +385,8 @@ public class GCPResourceTest {
   public void findsWithServiceLoader() {
     ServiceLoader<ResourceProvider> services =
         ServiceLoader.load(ResourceProvider.class, getClass().getClassLoader());
-    while (services.iterator().hasNext()) {
-      ResourceProvider provider = services.iterator().next();
-      if (provider instanceof GCPResource) {
-        return;
-      }
-    }
-    fail("Could not load GCP Resource detector using serviceloader");
+    assertTrue(
+        services.stream().anyMatch(provider -> provider.type().equals(GCPResource.class)),
+        "Could not load GCP Resource detector using serviceloader, found: " + services);
   }
 }
