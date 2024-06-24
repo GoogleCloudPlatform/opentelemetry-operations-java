@@ -23,6 +23,8 @@ application {
 	mainClass.set('com.google.cloud.opentelemetry.endtoend.Server')
 }
 
+// Java 11 required to build this module since it has a dependency on Cloud Functions.
+// Cloud Functions (Gen2) have Java 11 minimum requirement.
 afterEvaluate {
 	tasks.named("compileJava"){
 		// This is only possible since the toolchain guarantees Java 11 presence.
