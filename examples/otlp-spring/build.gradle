@@ -27,15 +27,6 @@ repositories {
 	mavenCentral()
 }
 
-// Uses built-in HTTP client and WebSocket APIs introduced in Java 11.
-afterEvaluate {
-	tasks.named("compileJava"){
-		// This is only possible since the toolchain guarantees Java 11 presence.
-		// Toolchain is set in the root build.gradle file.
-		options.release = 11
-	}
-}
-
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
