@@ -14,6 +14,7 @@
 
 # Build relative to root of repository i.e. `docker build --file e2e.Dockerfile --tag=$tag ..`
 FROM gradle:8.0.2-jdk11 as builder
+RUN apt-get update && apt-get install -y openjdk-8-jdk
 
 COPY --chown=gradle:gradle . /app/src
 WORKDIR /app/src
