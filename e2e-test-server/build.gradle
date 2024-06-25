@@ -25,12 +25,10 @@ application {
 
 // Java 11 required to build this module since it has a dependency on Cloud Functions.
 // Cloud Functions (Gen2) have Java 11 minimum requirement.
-afterEvaluate {
-	tasks.named("compileJava"){
-		// This is only possible since the toolchain guarantees Java 11 presence.
-		// Toolchain is set in the root build.gradle file.
-		options.release = 11
-	}
+compileJava{
+	// This is only possible since the toolchain guarantees Java 11 presence.
+	// Toolchain is set in the root build.gradle file.
+	it.options.release = 11
 }
 
 description = 'End-To-End integration testing server'

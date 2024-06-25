@@ -114,10 +114,8 @@ subprojects {
 	// This is equivalent of setting --release flag in Java compiler introduced in Java 9.
 	// Note that the toolchain used is Java 11 - which means Java 11 is required
 	// to build this project.
-	afterEvaluate {
-		tasks.named("compileJava"){
-			options.release = 8
-		}
+	compileJava {
+		it.options.release = 8
 	}
 
 	// Include license check and auto-format support.

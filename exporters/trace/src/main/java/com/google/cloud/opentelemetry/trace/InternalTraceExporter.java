@@ -16,7 +16,6 @@
 package com.google.cloud.opentelemetry.trace;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
-import static java.util.AbstractMap.SimpleEntry;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -39,10 +38,9 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class encapsulates internal implementation details for exporting spans to Google Cloud
@@ -56,10 +54,8 @@ class InternalTraceExporter implements SpanExporter {
   private final TraceTranslator translator;
 
   private static final Map<String, String> HEADERS =
-      Stream.of(
-              new SimpleEntry<>(
-                  "User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION))
-          .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
+      Collections.singletonMap(
+          "User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
   private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
 
   private static InternalTraceExporter createWithClient(
