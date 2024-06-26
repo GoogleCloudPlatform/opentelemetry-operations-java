@@ -6,7 +6,10 @@ Provides OpenTelemetry Exporters for Google Cloud Operations.
 
 ## Building
 
-This project requires a mock server for Google Cloud APIs.  To build and test, do the following:
+> [!IMPORTANT]
+> This project requires Java 11 to build and test. All artifacts published from this project support Java 8 or higher, unless otherwise noted.
+
+This project requires a mock server for Google Cloud APIs. To build and test, do the following:
 
 ```
 $ ./gradlew test

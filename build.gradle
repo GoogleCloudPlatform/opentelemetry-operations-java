@@ -85,9 +85,6 @@ subprojects {
 	group = "com.google.cloud.opentelemetry"
 	// Note: Version now comes from nebula plugin
 
-	sourceCompatibility = JavaVersion.VERSION_11
-	targetCompatibility = JavaVersion.VERSION_11
-
 	repositories {
 		mavenCentral()
 		mavenLocal()
@@ -101,6 +98,24 @@ subprojects {
 
 		// Configure our default module name for maven publishing
 		archivesBaseName = "${project.name}"
+	}
+
+	// Support for some higher language versions can only be achieved using Toolchains.
+	// Compatibility matrix at https://docs.gradle.org/current/userguide/compatibility.html#java
+	// See https://docs.gradle.org/current/userguide/toolchains.html#toolchains
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(11)
+		}
+	}
+
+	// This ensures bytecode compatibility with Java 8 by ensuring that symbols not
+	// available in Java 8 are not used in the source code.
+	// This is equivalent of setting --release flag in Java compiler introduced in Java 9.
+	// Note that the toolchain used is Java 11 - which means Java 11 is required
+	// to build this project.
+	compileJava {
+		it.options.release = 8
 	}
 
 	// Include license check and auto-format support.
@@ -232,12 +247,6 @@ subprojects {
 
 	artifacts {
 		archives javadocJar, sourcesJar
-	}
-
-	javadoc {
-		if(JavaVersion.current().isJava9Compatible()) {
-			options.addBooleanOption('html5', true)
-		}
 	}
 
 	java {

@@ -24,12 +24,6 @@ dependencies {
 	testRuntimeOnly(testLibraries.junit5_runtime)
 }
 
-afterEvaluate {
-	tasks.named("compileJava"){
-		options.release = 8
-	}
-}
-
 test {
 	// required for discovering JUnit 5 tests
 	useJUnitPlatform()

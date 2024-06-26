@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,8 @@ class InternalTraceExporter implements SpanExporter {
   private final TraceTranslator translator;
 
   private static final Map<String, String> HEADERS =
-      Map.of("User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
+      Collections.singletonMap(
+          "User-Agent", "opentelemetry-operations-java/" + TraceVersions.EXPORTER_VERSION);
   private static final HeaderProvider HEADER_PROVIDER = () -> HEADERS;
 
   private static InternalTraceExporter createWithClient(

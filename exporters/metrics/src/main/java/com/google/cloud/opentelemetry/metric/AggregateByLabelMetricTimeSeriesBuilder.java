@@ -39,7 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -167,7 +167,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
             instrumentationScopeInfo.getName())
         .put(
             AttributeKey.stringKey(LABEL_INSTRUMENTATION_VERSION),
-            Objects.requireNonNullElse(instrumentationScopeInfo.getVersion(), ""))
+            Optional.ofNullable(instrumentationScopeInfo.getVersion()).orElse(""))
         .build();
   }
 
