@@ -38,9 +38,13 @@ your OSSRH (OSS Repository Hosting) account and signing keys.
     checkstyle.ignoreFailures=false
     ```
 
-Note: If your key-generation is failing, checkout the [help section](#help-timeout-during-key-generation-process) at the bottom of this document.
+> [!TIP]
+> If your key-generation is failing, checkout the [help section](#help-timeout-during-key-generation-process) at the bottom of this document.
 
 ### Using GPG-Agent for artifact signing
+
+> [!NOTE]
+> These instructions are for modern linux where `gpg` refers to the 2.0 version.
 
 If you're running in linux and would like to use the GPG agent to remember your PGP key passwords instead of keeping them in a plain-text file on your home directory,
 you can configure the following in `<your-home-directory>/.gradle/gradle.properties`:
@@ -50,10 +54,13 @@ you can configure the following in `<your-home-directory>/.gradle/gradle.propert
     signing.gnupg.keyName=<secret key id (large hash)>
     signing.secretKeyRingFile=<your-home-directory>/.gnupg/pubring.kbx
     ```
+Note: This may not work so if after adding this, the `./gradlew candidate` task fails citing 401 errors, try adding back the `ossrhUsername` & `ossrhPassword` fields back.
 
-Note: these instructions are for modern linux where `gpg` refers to the 2.0 version. This may not work so if after adding this, the `./gradlew candidate` task fails citing 401 errors, try adding back the `ossrhUsername` & `ossrhPassword` fields back.
+> [!IMPORTANT]
+> Starting June 2024, due to a change to the OSSRH authentication backend, the maven publish plugin now requires [a user token](https://central.sonatype.org/publish/generate-token/) instead of a typical username and password used in the Nexus UI.
+> Follow the steps in the [link](https://central.sonatype.org/publish/generate-token/) to generate a user token, if not done already - this will provide you with a `tokenuser` and `tokenkey`. Replace the `ossrhUsername` and `ossrhPassword` with this `tokenuser` and `tokenkey` in your `gradle.properties` file to successfully publish artifacts.
 
-### Ensuring you can push tags to Github upstream
+### Ensuring you can push tags to GitHub upstream
 
 Before any push to the upstream repository you need to create a [personal access
 token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
@@ -143,12 +150,12 @@ and they include any custom release qualifiers (like 'alpha') which are set. Mak
 
 ## Announcement
 
-Once deployment finishes, go to Github [release
+Once deployment finishes, go to GitHub [release
 page](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/releases),
 press `Draft a new release` to write release notes about the new release.
 
 You can use `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x
---graph --first-parent` or the Github [compare
+--graph --first-parent` or the GitHub [compare
 tool](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/compare/)
 to view a summary of all commits since last release as a reference.
 
