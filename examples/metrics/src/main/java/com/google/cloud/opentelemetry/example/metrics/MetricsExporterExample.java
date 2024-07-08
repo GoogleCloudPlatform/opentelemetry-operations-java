@@ -15,12 +15,23 @@
  */
 package com.google.cloud.opentelemetry.example.metrics;
 
+import static com.google.api.client.util.Preconditions.checkNotNull;
+
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
+import com.google.cloud.opentelemetry.metric.MetricConfiguration;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import java.io.IOException;
 import java.util.Random;
 
 public class MetricsExporterExample {
@@ -29,8 +40,42 @@ public class MetricsExporterExample {
   private static Meter METER;
   private static final Random RANDOM = new Random();
 
-  private static void setupMetricExporter() {
-    MetricExporter metricExporter = GoogleCloudMetricExporter.createWithDefaultConfiguration();
+  private static MetricConfiguration generateMetricExporterConfig(boolean useDefaultConfig)
+      throws IOException {
+    if (useDefaultConfig) {
+      System.out.println("Using default exporter configuration");
+      return MetricConfiguration.builder().build();
+    }
+
+    System.out.println("Using custom configuration");
+    // Configuring exporter through MetricServiceSettings
+    Credentials credentials = GoogleCredentials.getApplicationDefault();
+    MetricServiceSettings.Builder metricServiceSettingsBuilder = MetricServiceSettings.newBuilder();
+    metricServiceSettingsBuilder
+        .setCredentialsProvider(
+            FixedCredentialsProvider.create(checkNotNull(credentials, "Credentials not provided.")))
+        .setTransportChannelProvider(
+            FixedTransportChannelProvider.create(
+                GrpcTransportChannel.create(
+                    ManagedChannelBuilder.forTarget(
+                            MetricConfiguration.DEFAULT_METRIC_SERVICE_ENDPOINT)
+                        // default 8 KiB
+                        .maxInboundMetadataSize(16 * 1000)
+                        .build())))
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(
+            org.threeten.bp.Duration.ofMillis(MetricConfiguration.DEFAULT_DEADLINE.toMillis()))
+        .build();
+
+    // Any properties not set would be retrieved from the default configuration of the exporter.
+    return MetricConfiguration.builder()
+        .setMetricServiceSettings(metricServiceSettingsBuilder.build())
+        .build();
+  }
+
+  private static void setupMetricExporter(MetricConfiguration metricConfiguration) {
+    MetricExporter metricExporter =
+        GoogleCloudMetricExporter.createWithConfiguration(metricConfiguration);
     METER_PROVIDER =
         SdkMeterProvider.builder()
             .registerMetricReader(
@@ -68,9 +113,16 @@ public class MetricsExporterExample {
   }
 
   // to run this from command line, execute `gradle run`
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, IOException {
     System.out.println("Starting the metrics-example application");
-    setupMetricExporter();
+    boolean useDefaultConfig = true;
+    if (args.length > 0) {
+      if (args[0].equals("--custom-config")) {
+        useDefaultConfig = false;
+      }
+    }
+    setupMetricExporter(generateMetricExporterConfig(useDefaultConfig));
+
     try {
       int i = 0;
       while (i < 2) {
