@@ -33,6 +33,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_DEADLINE;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_METRIC_SERVICE_ENDPOINT;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
@@ -180,6 +182,33 @@ public class GoogleCloudMetricExporterTest {
       verify(mockMetricServiceClient, times(1))
           .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
     }
+  }
+
+  @Test
+  public void testCreateWithMetricServiceSettingRespectsDefaults() throws IOException {
+    MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
+    builder
+        .setCredentialsProvider(FixedCredentialsProvider.create(aFakeCredential))
+        .setEndpoint("http://custom-endpoint/")
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(Duration.ofMillis(5000));
+    MetricServiceSettings serviceSettings = builder.build();
+
+    MetricConfiguration configuration =
+        MetricConfiguration.builder()
+            .setProjectId(aProjectId)
+            .setMetricServiceSettings(serviceSettings)
+            .setMetricServiceEndpoint(DEFAULT_METRIC_SERVICE_ENDPOINT)
+            .build();
+
+    // expect the following property values of configuration object to not be affected by setting
+    // MetricServiceSettings.
+    assertEquals(DEFAULT_METRIC_SERVICE_ENDPOINT, configuration.getMetricServiceEndpoint());
+    assertEquals(DEFAULT_RESOURCE_ATTRIBUTES_FILTER, configuration.getResourceAttributesFilter());
+    assertEquals(DEFAULT_DEADLINE, configuration.getDeadline());
+    assertEquals(MetricDescriptorStrategy.SEND_ONCE, configuration.getDescriptorStrategy());
+    assertEquals(DEFAULT_METRIC_SERVICE_ENDPOINT, configuration.getMetricServiceEndpoint());
+    assertFalse(configuration.getUseServiceTimeSeries());
   }
 
   @Test
