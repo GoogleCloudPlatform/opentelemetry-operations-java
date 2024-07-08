@@ -32,7 +32,6 @@ dependencies {
 	testImplementation(testLibraries.slf4j_simple)
 	testImplementation(testLibraries.test_containers)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)
-	testImplementation(testLibraries.opencensus_shim)
 }
 
 test.dependsOn ':shared-resourcemapping:shadowJar'

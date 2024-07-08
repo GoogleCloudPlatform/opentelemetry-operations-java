@@ -174,7 +174,6 @@ subprojects {
 		springOtelVersion = '1.0.0-M8'
 		cloudEventsCoreVersion = '2.5.0'
 		cloudFunctionsFrameworkApiVersion = '1.0.4'
-		opencensusShimVersion = '1.23.1'
 
 		agentLibraries = [
 			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
@@ -222,7 +221,6 @@ subprojects {
 			opentelemetry_sdk_testing: "io.opentelemetry:opentelemetry-sdk-testing:${openTelemetryVersion}",
 			test_containers: "org.testcontainers:testcontainers:${testContainersVersion}",
 			wiremock    : "com.github.tomakehurst:wiremock-jre8:${wiremockVersion}",
-			opencensus_shim: "io.opentelemetry:opentelemetry-opencensus-shim:${opencensusShimVersion}-alpha",
 		]
 	}
 
