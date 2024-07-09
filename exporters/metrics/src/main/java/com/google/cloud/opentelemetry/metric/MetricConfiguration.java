@@ -77,8 +77,8 @@ public abstract class MetricConfiguration {
    * MetricConfiguration.Builder#setProjectId(String)}, this method returns a {@link Supplier} that
    * supplies the default Project ID.
    *
-   * @see ServiceOptions#getDefaultProjectId()
    * @return a {@link Supplier} for the GCP project ID.
+   * @see ServiceOptions#getDefaultProjectId()
    */
   abstract Supplier<String> getProjectIdSupplier();
 
@@ -104,10 +104,10 @@ public abstract class MetricConfiguration {
   /**
    * Returns the prefix prepended to metric names.
    *
+   * @return the prefix to attach to metrics.
    * @see <a href="https://cloud.google.com/monitoring/custom-metrics#identifier">Custom Metrics
    *     Identifiers</a>
    *     <p>Defaults to workload.googleapis.com.
-   * @return the prefix to attach to metrics.
    */
   public abstract String getPrefix();
 
@@ -182,6 +182,15 @@ public abstract class MetricConfiguration {
   @Nullable
   public abstract MetricServiceSettings getMetricServiceSettings();
 
+  /**
+   * Returns a boolean indicating if the {@link MetricConfiguration} is configured to add
+   * instrumentation library labels to the metric attributes during export.
+   *
+   * @return true if the {@link MetricConfiguration} is configured to add instrumentation library
+   *     lab els to metrics, false otherwise.
+   */
+  public abstract boolean getInstrumentationLibraryLabelsEnabled();
+
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
 
@@ -206,6 +215,7 @@ public abstract class MetricConfiguration {
         .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
         .setInsecureEndpoint(false)
         .setUseServiceTimeSeries(false)
+        .setInstrumentationLibraryLabelsEnabled(true)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
         .setMonitoredResourceDescription(EMPTY_MONITORED_RESOURCE_DESCRIPTION)
         .setMetricServiceEndpoint(DEFAULT_METRIC_SERVICE_ENDPOINT);
@@ -310,14 +320,36 @@ public abstract class MetricConfiguration {
      *   <li>{@link MetricConfiguration.Builder#setMetricServiceEndpoint(String)}
      * </ul>
      *
-     * The intended effect of setting these values in the configuration should instead be achieved
-     * by configuring the {@link MetricServiceSettings} object.
+     * <p>The intended effect of setting these values in the configuration should instead be
+     * achieved by configuring the {@link MetricServiceSettings} object.
      *
      * @param metricServiceSettings the {@link MetricServiceSettings} containing the configured
      *     options.
      * @return this.
      */
     public abstract Builder setMetricServiceSettings(MetricServiceSettings metricServiceSettings);
+
+    /**
+     * Sets the {@link MetricConfiguration} to configure the exporter to add instrumentation library
+     * labels as metric attributes during export.
+     *
+     * <p>Enabling instrumentation library labels adds the following metric attributes to exported
+     * metric data points:
+     *
+     * <ul>
+     *   <li>instrumentation_source
+     *   <li>instrumentation_version
+     * </ul>
+     *
+     * The value for these metric attributes is retrieved from {@link
+     * io.opentelemetry.sdk.common.InstrumentationScopeInfo}.
+     *
+     * @param instrumentationLibraryLabelsEnabled boolean indicating whether to add instrumentation
+     *     library labels.
+     * @return this.
+     */
+    public abstract Builder setInstrumentationLibraryLabelsEnabled(
+        boolean instrumentationLibraryLabelsEnabled);
 
     @VisibleForTesting
     abstract Builder setInsecureEndpoint(boolean value);
