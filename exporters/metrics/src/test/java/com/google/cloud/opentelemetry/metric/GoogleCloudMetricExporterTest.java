@@ -33,6 +33,8 @@ import static com.google.cloud.opentelemetry.metric.FakeData.aSpanId;
 import static com.google.cloud.opentelemetry.metric.FakeData.aTraceId;
 import static com.google.cloud.opentelemetry.metric.FakeData.anInstrumentationLibraryInfo;
 import static com.google.cloud.opentelemetry.metric.FakeData.googleComputeServiceMetricData;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_DEADLINE;
+import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_METRIC_SERVICE_ENDPOINT;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_PREFIX;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.DEFAULT_RESOURCE_ATTRIBUTES_FILTER;
 import static com.google.cloud.opentelemetry.metric.MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
@@ -44,6 +46,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +62,7 @@ import com.google.api.Metric;
 import com.google.api.MetricDescriptor;
 import com.google.api.MetricDescriptor.MetricKind;
 import com.google.api.MonitoredResource;
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
@@ -98,6 +103,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.threeten.bp.Duration;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GoogleCloudMetricExporterTest {
@@ -120,7 +126,7 @@ public class GoogleCloudMetricExporterTest {
   }
 
   @Test
-  public void testCreateWithConfigurationSucceeds() throws IOException {
+  public void testCreateWithConfigurationSucceeds() {
     MetricConfiguration configuration =
         MetricConfiguration.builder()
             .setProjectId(aProjectId)
@@ -128,6 +134,81 @@ public class GoogleCloudMetricExporterTest {
             .build();
     MetricExporter exporter = GoogleCloudMetricExporter.createWithConfiguration(configuration);
     assertNotNull(exporter);
+  }
+
+  @Test
+  public void testCreateWithMetricServiceSettingExportSucceeds() throws IOException {
+    try (MockedStatic<MetricServiceClient> mockedServiceClientClass =
+        mockStatic(MetricServiceClient.class)) {
+      MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
+      builder
+          .setCredentialsProvider(FixedCredentialsProvider.create(aFakeCredential))
+          .setEndpoint(MetricConfiguration.DEFAULT_METRIC_SERVICE_ENDPOINT)
+          .createMetricDescriptorSettings()
+          .setSimpleTimeoutNoRetries(
+              Duration.ofMillis(MetricConfiguration.DEFAULT_DEADLINE.toMillis()));
+      MetricServiceSettings serviceSettings = builder.build();
+
+      MetricConfiguration configuration =
+          MetricConfiguration.builder()
+              .setProjectId(aProjectId)
+              .setMetricServiceEndpoint("https://fake-endpoint")
+              .setInsecureEndpoint(true)
+              .setCredentials(null)
+              .setMetricServiceSettings(serviceSettings)
+              .setDescriptorStrategy(MetricDescriptorStrategy.SEND_ONCE)
+              .build();
+      assertNotNull(configuration.getMetricServiceSettings());
+
+      // Mock the static method to create a MetricServiceClient to return a mocked object
+      mockedServiceClientClass
+          .when(() -> MetricServiceClient.create(eq(configuration.getMetricServiceSettings())))
+          .thenReturn(mockMetricServiceClient);
+
+      MetricExporter exporter = InternalMetricExporter.createWithConfiguration(configuration);
+      assertNotNull(exporter);
+
+      // verify that the MetricServiceClient used in the exporter was created using the
+      // MetricServiceSettings provided in configuration
+      mockedServiceClientClass.verify(
+          times(1), () -> MetricServiceClient.create(eq(configuration.getMetricServiceSettings())));
+
+      // verify that export operation on the resulting exporter can still be called
+      CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
+      assertTrue(result.isSuccess());
+
+      // verify that the CreateTimeseries call was invoked on the client generated from the supplied
+      // MetricServiceSettings object
+      verify(mockMetricServiceClient, times(1))
+          .createTimeSeries(projectNameArgCaptor.capture(), timeSeriesArgCaptor.capture());
+    }
+  }
+
+  @Test
+  public void testCreateWithMetricServiceSettingRespectsDefaults() throws IOException {
+    MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
+    builder
+        .setCredentialsProvider(FixedCredentialsProvider.create(aFakeCredential))
+        .setEndpoint("http://custom-endpoint/")
+        .createMetricDescriptorSettings()
+        .setSimpleTimeoutNoRetries(Duration.ofMillis(5000));
+    MetricServiceSettings serviceSettings = builder.build();
+
+    MetricConfiguration configuration =
+        MetricConfiguration.builder()
+            .setProjectId(aProjectId)
+            .setMetricServiceSettings(serviceSettings)
+            .setMetricServiceEndpoint(DEFAULT_METRIC_SERVICE_ENDPOINT)
+            .build();
+
+    // expect the following property values of configuration object to not be affected by setting
+    // MetricServiceSettings.
+    assertEquals(DEFAULT_METRIC_SERVICE_ENDPOINT, configuration.getMetricServiceEndpoint());
+    assertEquals(DEFAULT_RESOURCE_ATTRIBUTES_FILTER, configuration.getResourceAttributesFilter());
+    assertEquals(DEFAULT_DEADLINE, configuration.getDeadline());
+    assertEquals(MetricDescriptorStrategy.SEND_ONCE, configuration.getDescriptorStrategy());
+    assertEquals(DEFAULT_METRIC_SERVICE_ENDPOINT, configuration.getMetricServiceEndpoint());
+    assertFalse(configuration.getUseServiceTimeSeries());
   }
 
   @Test

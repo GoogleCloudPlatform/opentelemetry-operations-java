@@ -20,6 +20,7 @@ import static java.time.Duration.ZERO;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -43,6 +44,14 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class MetricConfiguration {
+  static final String DEFAULT_PREFIX = "workload.googleapis.com";
+
+  public static final Duration DEFAULT_DEADLINE =
+      Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
+
+  public static final String DEFAULT_METRIC_SERVICE_ENDPOINT =
+      MetricServiceStubSettings.getDefaultEndpoint();
+
   /** Resource attribute filter that disables addition of resource attributes to metric labels. */
   public static final Predicate<AttributeKey<?>> NO_RESOURCE_ATTRIBUTES = attributeKey -> false;
 
@@ -58,11 +67,6 @@ public abstract class MetricConfiguration {
                   || attributeKey.equals(ResourceAttributes.SERVICE_NAMESPACE)
                   || attributeKey.equals(ResourceAttributes.SERVICE_INSTANCE_ID))
               && !attributeKey.getKey().isEmpty();
-
-  static final String DEFAULT_PREFIX = "workload.googleapis.com";
-
-  private static final Duration DEFAULT_DEADLINE =
-      Duration.ofSeconds(12, 0); // Consistent with Cloud Monitoring's timeout
 
   MetricConfiguration() {}
 
@@ -168,6 +172,16 @@ public abstract class MetricConfiguration {
    */
   public abstract MonitoredResourceDescription getMonitoredResourceDescription();
 
+  /**
+   * Returns the {@link MetricServiceSettings} instance used to configure the service client used to
+   * connect to Monitoring API.
+   *
+   * @return The {@link MetricServiceSettings} object that is used to configure the internal service
+   *     client.
+   */
+  @Nullable
+  public abstract MetricServiceSettings getMetricServiceSettings();
+
   @VisibleForTesting
   abstract boolean getInsecureEndpoint();
 
@@ -194,7 +208,7 @@ public abstract class MetricConfiguration {
         .setUseServiceTimeSeries(false)
         .setResourceAttributesFilter(DEFAULT_RESOURCE_ATTRIBUTES_FILTER)
         .setMonitoredResourceDescription(EMPTY_MONITORED_RESOURCE_DESCRIPTION)
-        .setMetricServiceEndpoint(MetricServiceStubSettings.getDefaultEndpoint());
+        .setMetricServiceEndpoint(DEFAULT_METRIC_SERVICE_ENDPOINT);
   }
 
   /** Builder for {@link MetricConfiguration}. */
@@ -281,6 +295,29 @@ public abstract class MetricConfiguration {
      * @return this.
      */
     public abstract Builder setResourceAttributesFilter(Predicate<AttributeKey<?>> filter);
+
+    /**
+     * Sets the options used to configure the {@link
+     * com.google.cloud.monitoring.v3.MetricServiceClient} used to interact with the Cloud
+     * Monitoring API. This is for advanced usage and must be configured carefully.
+     *
+     * <p>Providing MetricServiceSettings will cause the exporter to ignore the values configured
+     * using:
+     *
+     * <ul>
+     *   <li>{@link MetricConfiguration.Builder#setInsecureEndpoint(boolean)}
+     *   <li>{@link MetricConfiguration.Builder#setCredentials(Credentials)}
+     *   <li>{@link MetricConfiguration.Builder#setMetricServiceEndpoint(String)}
+     * </ul>
+     *
+     * The intended effect of setting these values in the configuration should instead be achieved
+     * by configuring the {@link MetricServiceSettings} object.
+     *
+     * @param metricServiceSettings the {@link MetricServiceSettings} containing the configured
+     *     options.
+     * @return this.
+     */
+    public abstract Builder setMetricServiceSettings(MetricServiceSettings metricServiceSettings);
 
     @VisibleForTesting
     abstract Builder setInsecureEndpoint(boolean value);

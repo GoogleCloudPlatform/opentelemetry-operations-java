@@ -32,7 +32,11 @@ export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 You can run the example application via gradle. From the project root:
 
 ```shell
+# Running with default exporter config
 cd examples/metrics/ && gradle run 
+
+# Running with custom exporter config
+cd examples/metrics/ && gradle run --args='--custom-config'
 ```
 
 #### Run the example as a Cloud Run Job

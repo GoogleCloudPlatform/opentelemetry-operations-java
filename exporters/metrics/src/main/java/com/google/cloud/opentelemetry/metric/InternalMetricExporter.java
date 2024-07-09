@@ -91,6 +91,42 @@ class InternalMetricExporter implements MetricExporter {
       throws IOException {
     String projectId = configuration.getProjectId();
     String prefix = configuration.getPrefix();
+    MetricServiceSettings serviceClientSettings =
+        configuration.getMetricServiceSettings() == null
+            ? generateMetricServiceSettings(configuration)
+            : configuration.getMetricServiceSettings();
+
+    return new InternalMetricExporter(
+        projectId,
+        prefix,
+        new CloudMetricClientImpl(MetricServiceClient.create(serviceClientSettings)),
+        configuration.getDescriptorStrategy(),
+        configuration.getResourceAttributesFilter(),
+        configuration.getUseServiceTimeSeries(),
+        configuration.getMonitoredResourceDescription());
+  }
+
+  @VisibleForTesting
+  static InternalMetricExporter createWithClient(
+      String projectId,
+      String prefix,
+      CloudMetricClient metricServiceClient,
+      MetricDescriptorStrategy descriptorStrategy,
+      Predicate<AttributeKey<?>> resourceAttributesFilter,
+      boolean useCreateServiceTimeSeries,
+      MonitoredResourceDescription monitoredResourceDescription) {
+    return new InternalMetricExporter(
+        projectId,
+        prefix,
+        metricServiceClient,
+        descriptorStrategy,
+        resourceAttributesFilter,
+        useCreateServiceTimeSeries,
+        monitoredResourceDescription);
+  }
+
+  private static MetricServiceSettings generateMetricServiceSettings(
+      MetricConfiguration configuration) throws IOException {
     MetricServiceSettings.Builder builder = MetricServiceSettings.newBuilder();
     // For testing, we need to hack around our gRPC config.
     if (configuration.getInsecureEndpoint()) {
@@ -116,34 +152,7 @@ class InternalMetricExporter implements MetricExporter {
         .createMetricDescriptorSettings()
         .setSimpleTimeoutNoRetries(
             org.threeten.bp.Duration.ofMillis(configuration.getDeadline().toMillis()));
-
-    return new InternalMetricExporter(
-        projectId,
-        prefix,
-        new CloudMetricClientImpl(MetricServiceClient.create(builder.build())),
-        configuration.getDescriptorStrategy(),
-        configuration.getResourceAttributesFilter(),
-        configuration.getUseServiceTimeSeries(),
-        configuration.getMonitoredResourceDescription());
-  }
-
-  @VisibleForTesting
-  static InternalMetricExporter createWithClient(
-      String projectId,
-      String prefix,
-      CloudMetricClient metricServiceClient,
-      MetricDescriptorStrategy descriptorStrategy,
-      Predicate<AttributeKey<?>> resourceAttributesFilter,
-      boolean useCreateServiceTimeSeries,
-      MonitoredResourceDescription monitoredResourceDescription) {
-    return new InternalMetricExporter(
-        projectId,
-        prefix,
-        metricServiceClient,
-        descriptorStrategy,
-        resourceAttributesFilter,
-        useCreateServiceTimeSeries,
-        monitoredResourceDescription);
+    return builder.build();
   }
 
   private void exportDescriptor(MetricDescriptor descriptor) {
