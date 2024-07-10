@@ -187,7 +187,7 @@ public abstract class MetricConfiguration {
    * instrumentation library labels to the metric attributes during export.
    *
    * @return true if the {@link MetricConfiguration} is configured to add instrumentation library
-   *     lab els to metrics, false otherwise.
+   *     labels to metrics, false otherwise.
    */
   public abstract boolean getInstrumentationLibraryLabelsEnabled();
 
