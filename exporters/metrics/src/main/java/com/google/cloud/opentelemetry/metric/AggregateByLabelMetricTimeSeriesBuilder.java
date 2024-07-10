@@ -60,6 +60,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
   private final String prefix;
   private final Predicate<AttributeKey<?>> resourceAttributeFilter;
   private final MonitoredResourceDescription monitoredResourceDescription;
+  private final boolean instrumentationLibraryLabelsEnabled;
 
   @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(String projectId, String prefix) {
@@ -67,6 +68,7 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     this.prefix = prefix;
     this.resourceAttributeFilter = MetricConfiguration.NO_RESOURCE_ATTRIBUTES;
     this.monitoredResourceDescription = MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
+    this.instrumentationLibraryLabelsEnabled = true;
   }
 
   @Deprecated
@@ -76,8 +78,10 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;
     this.monitoredResourceDescription = MetricConfiguration.EMPTY_MONITORED_RESOURCE_DESCRIPTION;
+    this.instrumentationLibraryLabelsEnabled = true;
   }
 
+  @Deprecated
   public AggregateByLabelMetricTimeSeriesBuilder(
       String projectId,
       String prefix,
@@ -87,6 +91,20 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
     this.prefix = prefix;
     this.resourceAttributeFilter = resourceAttributeFilter;
     this.monitoredResourceDescription = monitoredResourceDescription;
+    this.instrumentationLibraryLabelsEnabled = true;
+  }
+
+  public AggregateByLabelMetricTimeSeriesBuilder(
+      String projectId,
+      String prefix,
+      Predicate<AttributeKey<?>> resourceAttributeFilter,
+      MonitoredResourceDescription monitoredResourceDescription,
+      boolean instrumentationLibraryLabelsEnabled) {
+    this.projectId = projectId;
+    this.prefix = prefix;
+    this.resourceAttributeFilter = resourceAttributeFilter;
+    this.monitoredResourceDescription = monitoredResourceDescription;
+    this.instrumentationLibraryLabelsEnabled = instrumentationLibraryLabelsEnabled;
   }
 
   @Override
@@ -161,6 +179,9 @@ public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTime
 
   private Attributes instrumentationLibraryLabels(
       Attributes attributes, InstrumentationScopeInfo instrumentationScopeInfo) {
+    if (!instrumentationLibraryLabelsEnabled) {
+      return attributes;
+    }
     return attributes.toBuilder()
         .put(
             AttributeKey.stringKey(LABEL_INSTRUMENTATION_SOURCE),

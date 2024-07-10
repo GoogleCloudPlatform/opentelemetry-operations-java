@@ -221,7 +221,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.SEND_ONCE,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
             false,
-            EMPTY_MONITORED_RESOURCE_DESCRIPTION);
+            EMPTY_MONITORED_RESOURCE_DESCRIPTION,
+            true);
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
     assertTrue(result.isSuccess());
     CompletableResultCode result2 = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -332,7 +333,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
             false,
-            EMPTY_MONITORED_RESOURCE_DESCRIPTION);
+            EMPTY_MONITORED_RESOURCE_DESCRIPTION,
+            true);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -455,7 +457,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             DEFAULT_RESOURCE_ATTRIBUTES_FILTER,
             false,
-            EMPTY_MONITORED_RESOURCE_DESCRIPTION);
+            EMPTY_MONITORED_RESOURCE_DESCRIPTION,
+            true);
     CompletableResultCode result = exporter.export(ImmutableList.of(aHistogram));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
     verify(mockClient, times(1))
@@ -477,7 +480,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
             false,
-            EMPTY_MONITORED_RESOURCE_DESCRIPTION);
+            EMPTY_MONITORED_RESOURCE_DESCRIPTION,
+            true);
 
     MetricData metricData =
         ImmutableMetricData.createDoubleSummary(
@@ -585,7 +589,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             customAttributesFilter,
             false,
-            monitoredResourceDescription);
+            monitoredResourceDescription,
+            true);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricDataWithCustomResource));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -681,7 +686,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             customAttributesFilter,
             false,
-            monitoredResourceDescription);
+            monitoredResourceDescription,
+            true);
 
     CompletableResultCode result = exporter.export(ImmutableList.of(aMetricDataWithCustomResource));
     verify(mockClient, times(1)).createMetricDescriptor(metricDescriptorCaptor.capture());
@@ -696,7 +702,8 @@ public class GoogleCloudMetricExporterTest {
   }
 
   @Test
-  public void testExportWithMonitoredResourceMappingSucceeds_NoResourceLabels() {
+  public void
+      testExportWithMonitoredResourceMappingSucceeds_NoResourceLabels_NoInstrumentationLabels() {
     MonitoredResourceDescription monitoredResourceDescription =
         new MonitoredResourceDescription(
             "custom_mr_instance", Set.of("service_instance_id", "host_id", "location"));
@@ -743,6 +750,7 @@ public class GoogleCloudMetricExporterTest {
             .setValue(TypedValue.newBuilder().setInt64Value(aLongPoint.getValue()))
             .setInterval(expectedTimeInterval)
             .build();
+    // expected timeseries metric does not have the instrumentation library labels
     TimeSeries expectedTimeSeries =
         TimeSeries.newBuilder()
             .setMetric(
@@ -750,8 +758,6 @@ public class GoogleCloudMetricExporterTest {
                     .setType(expectedDescriptor.getType())
                     .putLabels("label1", "value1")
                     .putLabels("label2", "false")
-                    .putLabels(LABEL_INSTRUMENTATION_SOURCE, "instrumentName")
-                    .putLabels(LABEL_INSTRUMENTATION_VERSION, "0")
                     .build())
             .addPoints(expectedPoint)
             .setMetricKind(expectedDescriptor.getMetricKind())
@@ -772,7 +778,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             customAttributesFilter,
             false,
-            monitoredResourceDescription);
+            monitoredResourceDescription,
+            false); // disable instrumentationLibrary labels generation
 
     CompletableResultCode result =
         exporter.export(ImmutableList.of(aMetricDataWithEmptyResourceAttributes));
@@ -849,7 +856,8 @@ public class GoogleCloudMetricExporterTest {
             MetricDescriptorStrategy.ALWAYS_SEND,
             NO_RESOURCE_ATTRIBUTES,
             true,
-            EMPTY_MONITORED_RESOURCE_DESCRIPTION);
+            EMPTY_MONITORED_RESOURCE_DESCRIPTION,
+            true);
 
     CompletableResultCode result =
         exporter.export(ImmutableList.of(googleComputeServiceMetricData));

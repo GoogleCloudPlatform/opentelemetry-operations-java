@@ -70,6 +70,7 @@ public class MetricsExporterExample {
     // Any properties not set would be retrieved from the default configuration of the exporter.
     return MetricConfiguration.builder()
         .setMetricServiceSettings(metricServiceSettingsBuilder.build())
+        .setInstrumentationLibraryLabelsEnabled(false)
         .build();
   }
 
