@@ -13,9 +13,15 @@
 # limitations under the License.
 
 steps:
-  - name: eclipse-temurin:17-jdk-alpine
-    id: integration-test
-    dir: examples/instrumentation-quickstart
-    script: ./gradlew integrationTest -i -DcomposeOverrideFile=docker-compose.test.yaml
+  - name: golang:1.23
+    dir: examples/instrumentation-quickstart/integration_test
+    env:
+      - COMPOSE_OVERRIDE_FILE=../docker-compose.cloudbuild.yaml
+      # https://github.com/testcontainers/testcontainers-go/issues/2754
+      - TESTCONTAINERS_RYUK_CONNECTION_TIMEOUT=10m
+      - TESTCONTAINERS_RYUK_RECONNECTION_TIMEOUT=10m
+    script: go test -v
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
+options:
+  machineType: E2_HIGHCPU_8

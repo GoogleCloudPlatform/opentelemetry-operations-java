@@ -25,3 +25,5 @@ Dockerfile
 docker-compose*.yaml
 otel-collector-config.yaml
 cloudbuild-integration.yaml
+
+integration_test/
