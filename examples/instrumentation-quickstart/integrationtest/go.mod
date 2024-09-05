@@ -1,4 +1,4 @@
-module integration_test
+module integrationtest
 
 go 1.23
 
