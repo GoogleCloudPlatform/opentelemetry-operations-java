@@ -2,10 +2,7 @@ module integrationtest
 
 go 1.23
 
-// TODO: remove once https://github.com/GoogleCloudPlatform/opentelemetry-operations-e2e-testing/pull/58 is merged
-replace github.com/GoogleCloudPlatform/opentelemetry-operations-e2e-testing/quickstarttest => github.com/aabmass/opentelemetry-operations-e2e-testing/quickstarttest v0.0.0-20240905042341-6d888f67e59d
-
-require github.com/GoogleCloudPlatform/opentelemetry-operations-e2e-testing/quickstarttest v1.0.0
+require github.com/GoogleCloudPlatform/opentelemetry-operations-e2e-testing/quickstarttest v0.0.0-20240906192831-0f115162e7ee
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
