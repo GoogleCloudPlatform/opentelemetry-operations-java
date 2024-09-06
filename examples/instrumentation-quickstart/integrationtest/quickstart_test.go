@@ -13,10 +13,11 @@
 // limitations under the License.
 
 // Tests that docker compose services come up and that metrics, logs, and traces are
-// successfully sent from the collector to GCP. The COMPOSE_OVERRIDE_FILE environment variable
-// accepts a comma-separated list of paths to additional compose files to include.
+// successfully sent from the collector to GCP. See
+// https://github.com/GoogleCloudPlatform/opentelemetry-operations-e2e-testing/blob/main/quickstarttest/README.md
+// for details
 
-package integration_test
+package integrationtest
 
 import (
 	"testing"
