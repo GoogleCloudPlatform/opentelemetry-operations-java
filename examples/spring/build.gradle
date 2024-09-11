@@ -1,0 +1,82 @@
+/*
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'org.springframework.boot' version '2.4.5'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'application'
+	id 'com.google.cloud.tools.jib'
+}
+
+repositories {
+	mavenCentral()
+}
+
+description = 'Java Spring application instrumented with OpenTelemetry and enabled resource detection'
+
+jar {
+	manifest {
+		attributes(
+				'Main-Class': 'com.google.cloud.opentelemetry.example.spring.Main'
+				)
+	}
+}
+
+def autoconf_config = [
+	'-Dotel.resource.attributes=gcp.project_id=otel-test-sharmapranav',
+	'-Dotel.traces.exporter=google_cloud_trace',
+	'-Dotel.metrics.exporter=google_cloud_monitoring,logging',
+	'-Dotel.logs.exporter=none',
+	'-Dotel.java.global-autoconfigure.enabled=true',
+	'-Dotel.service.name=spring-example-service',
+]
+
+jib {
+	from.image = "gcr.io/distroless/java-debian10:11"
+	containerizingMode = "packaged"
+	container.ports = ["8080"]
+	container.jvmFlags = autoconf_config as List
+}
+
+tasks.register('bootRun', JavaExec) {
+	group = "Execution"
+	description = "Builds and runs the spring application's execuable JAR"
+
+	dependsOn tasks.bootJar
+	classpath = files('build/libs/examples-spring-0.1.0-SNAPSHOT.jar')
+	jvmArgs = autoconf_config
+}
+
+dependencies {
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.google_cloud_trace)
+	implementation(libraries.spring_boot_starter_web)
+	// using autoconfigure to detect resources
+	implementation(libraries.opentelemetry_sdk_autoconf)
+	implementation(libraries.opentelemetry_autoconfigure_spi)
+	runtimeOnly(libraries.opentelemetry_gcp_resources)
+	//	exporter dependencies
+	implementation project(':exporter-trace')
+	implementation project(':exporter-metrics')
+	implementation project(':exporter-auto')
+	// this helps in debugging as it outputs all export to std out
+	implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.33.0'
+}
+
+test {
+	useJUnitPlatform()
+}
