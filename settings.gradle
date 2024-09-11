@@ -37,7 +37,7 @@ include ":examples-resource"
 include ":detector-resources"
 include ":detector-resources-support"
 include ":e2e-test-server"
-include ":examples-spring"
+include ":examples-spring-sleuth"
 include ":propagators-gcp"
 include ":shared-resourcemapping"
 
@@ -71,8 +71,8 @@ project(':examples-resource').projectDir =
 project(':e2e-test-server').projectDir =
 		"$rootDir/e2e-test-server" as File
 
-project(':examples-spring').projectDir =
-		"$rootDir/examples/spring" as File
+project(':examples-spring-sleuth').projectDir =
+		"$rootDir/examples/spring-sleuth" as File
 
 project(':examples-autoinstrument').projectDir =
 		"$rootDir/examples/autoinstrument" as File
