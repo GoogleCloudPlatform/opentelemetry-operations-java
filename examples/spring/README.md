@@ -60,3 +60,12 @@ http://localhost:8080/greeting
 ```
 
 The metrics and traces from this example can be viewed in Google Cloud Console.
+
+##### Cleaning up
+
+Keeping services running in Cloud Run can incur costs. Services deployed on Cloud Run can either
+be deleted from the GCP console or you can run the following `gcloud` command:
+
+```shell
+gcloud run services delete spring-java-cloud-run
+```
