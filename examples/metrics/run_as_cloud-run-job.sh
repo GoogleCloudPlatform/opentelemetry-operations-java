@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-CONTAINER_REGISTRY=cloud-run-applications
-REGISTRY_LOCATION=us-central1
+ARTIFACT_REPOSITORY=cloud-run-applications
+JOB_NAME=job-metrics-export
 
 if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
   echo "GOOGLE_CLOUD_PROJECT environment variable not set"
@@ -34,19 +34,32 @@ fi
 
 echo "ENVIRONMENT VARIABLES VERIFIED"
 
-echo "CREATING CLOUD ARTIFACT REPOSITORY"
-gcloud artifacts repositories create ${CONTAINER_REGISTRY} --repository-format=docker --location=${REGISTRY_LOCATION} --description="Sample applications to run on Google Cloud Run"
-echo "CREATED ${CONTAINER_REGISTRY} in ${REGISTRY_LOCATION}"
+# Safety check to verify if repository already exists.
+if gcloud artifacts repositories describe ${ARTIFACT_REPOSITORY} \
+  --location="${GOOGLE_CLOUD_RUN_REGION}"
+then
+  echo "Repository ${ARTIFACT_REPOSITORY} already exists."
+else
+  echo "CREATING CLOUD ARTIFACT REPOSITORY"
+  gcloud artifacts repositories create ${ARTIFACT_REPOSITORY} --repository-format=docker --location=${GOOGLE_CLOUD_RUN_REGION} --description="Sample applications to run on Google Cloud Run"
+  echo "CREATED ${ARTIFACT_REPOSITORY} in ${GOOGLE_CLOUD_RUN_REGION}"
+fi
 
 echo "BUILDING SAMPLE APP IMAGE"
-gradle clean jib --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/metrics-export-java"
+gradle clean jib --image "${GOOGLE_CLOUD_RUN_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REPOSITORY}/metrics-export-java"
 
-echo "CREATING A CLOUD RUN JOB TO RUN THE CONTAINER"
-gcloud run jobs create job-metrics-export \
-    --image "${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/metrics-export-java" \
-    --max-retries 5 \
-    --region ${GOOGLE_CLOUD_RUN_REGION} \
-    --project="${GOOGLE_CLOUD_PROJECT}"
+# Safety check to verify if the job already exists
+if gcloud run jobs describe ${JOB_NAME} --region="${GOOGLE_CLOUD_RUN_REGION}"
+then
+  echo "Job ${JOB_NAME} already exists"
+else
+  echo "CREATING A CLOUD RUN JOB TO RUN THE CONTAINER"
+  gcloud run jobs create job-metrics-export \
+      --image "${GOOGLE_CLOUD_RUN_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REPOSITORY}/metrics-export-java" \
+      --max-retries 5 \
+      --region ${GOOGLE_CLOUD_RUN_REGION} \
+      --project="${GOOGLE_CLOUD_PROJECT}"
+fi
 
 echo "SETTING CLOUD RUN JOB REGION"
 gcloud config set run/region "${GOOGLE_CLOUD_RUN_REGION}"
