@@ -78,7 +78,7 @@ dependencies {
 	// auto exporter makes Google Cloud exporters available to autoconfigure module
 	implementation project(':exporter-auto')
 	// this helps in debugging as it outputs all export to std out
-	implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.33.0'
+	implementation(libraries.opentelemetry_logging_exporter)
 }
 
 test {
