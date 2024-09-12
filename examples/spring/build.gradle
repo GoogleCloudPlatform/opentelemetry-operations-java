@@ -35,6 +35,7 @@ jar {
 	}
 }
 
+// OpenTelemetry Autoconfigure module can be configured using system properties
 def autoconf_config = [
 	'-Dotel.resource.attributes=gcp.project_id=otel-test-sharmapranav',
 	'-Dotel.traces.exporter=google_cloud_trace',
@@ -51,6 +52,7 @@ jib {
 	container.jvmFlags = autoconf_config as List
 }
 
+// convenience task to build and run app with correct system properties
 tasks.register('runApp', JavaExec) {
 	group = "Execution"
 	description = "Builds and runs the spring application's execuable JAR"
@@ -68,10 +70,12 @@ dependencies {
 	// using autoconfigure to detect resources
 	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_autoconfigure_spi)
+	// resource detection module
 	runtimeOnly(libraries.opentelemetry_gcp_resources)
 	//	exporter dependencies
 	implementation project(':exporter-trace')
 	implementation project(':exporter-metrics')
+	// auto exporter makes Google Cloud exporters available to autoconfigure module
 	implementation project(':exporter-auto')
 	// this helps in debugging as it outputs all export to std out
 	implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.33.0'
