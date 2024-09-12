@@ -35,5 +35,9 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk_metrics)
 	implementation(libraries.google_cloud_monitoring)
 	implementation project(':exporter-metrics')
-	runtimeOnly(libraries.opentelemetry_gcp_resources)
+	implementation(libraries.opentelemetry_gcp_resources)
+	// required by resource detection
+	implementation(libraries.opentelemetry_autoconfigure_spi)
+	// this helps in debugging as it outputs all export to std out
+	implementation(libraries.opentelemetry_logging_exporter)
 }

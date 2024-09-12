@@ -28,10 +28,14 @@ import com.google.cloud.opentelemetry.metric.MetricConfiguration;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.contrib.gcp.resource.GCPResourceProvider;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Random;
 
 public class MetricsExporterExample {
@@ -75,13 +79,20 @@ public class MetricsExporterExample {
   }
 
   private static void setupMetricExporter(MetricConfiguration metricConfiguration) {
+    GCPResourceProvider resourceProvider = new GCPResourceProvider();
     MetricExporter metricExporter =
         GoogleCloudMetricExporter.createWithConfiguration(metricConfiguration);
+    MetricExporter metricDebugExporter = LoggingMetricExporter.create();
     METER_PROVIDER =
         SdkMeterProvider.builder()
+            .setResource(Resource.create(resourceProvider.getAttributes()))
             .registerMetricReader(
                 PeriodicMetricReader.builder(metricExporter)
-                    .setInterval(java.time.Duration.ofSeconds(30))
+                    .setInterval(Duration.ofSeconds(30))
+                    .build())
+            .registerMetricReader(
+                PeriodicMetricReader.builder(metricDebugExporter)
+                    .setInterval(Duration.ofSeconds(30))
                     .build())
             .build();
 
