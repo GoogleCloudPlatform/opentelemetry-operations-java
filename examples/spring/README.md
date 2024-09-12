@@ -27,7 +27,7 @@ You can run the example application via gradle. From the project root:
 ##### Build and run the executable JAR
 
 ```shell
-cd examples/spring && gradle bootRun
+cd examples/spring && gradle runApp
 ```
 
 The application is now running. To generate traces, head to `http://localhost:8080` in your browser.

@@ -51,7 +51,7 @@ jib {
 	container.jvmFlags = autoconf_config as List
 }
 
-tasks.register('bootRun', JavaExec) {
+tasks.register('runApp', JavaExec) {
 	group = "Execution"
 	description = "Builds and runs the spring application's execuable JAR"
 
