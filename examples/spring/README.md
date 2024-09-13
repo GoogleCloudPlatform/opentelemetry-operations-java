@@ -67,5 +67,9 @@ Keeping services running in Cloud Run can incur costs. Services deployed on Clou
 be deleted from the GCP console or you can run the following `gcloud` command:
 
 ```shell
+# Delete the Cloud Run Service
 gcloud run services delete spring-java-cloud-run
+
+# Delete Artifact Registry
+gcloud artifacts repositories delete cloud-run-applications --location=$GOOGLE_CLOUD_RUN_REGION
 ```
