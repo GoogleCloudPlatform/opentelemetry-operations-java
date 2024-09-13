@@ -26,19 +26,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AppController {
-  private final LongCounter counter_greeting;
-  private final LongCounter counter_home;
+  private final LongCounter counterGreeting;
+  private final LongCounter counterHome;
   private final Tracer tracer;
 
   @Autowired
   public AppController(Meter meter, Tracer tracer) {
-    counter_greeting =
+    counterGreeting =
         meter
             .counterBuilder("greeting_counter")
             .setDescription("Hit /greeting endpoint")
             .setUnit("1")
             .build();
-    counter_home =
+    counterHome =
         meter
             .counterBuilder("home_counter")
             .setDescription("Hit root endpoint")
@@ -53,7 +53,7 @@ public class AppController {
     try (Scope scope = span.makeCurrent()) {
       span.addEvent("Event A");
       span.setAttribute("test_api", true);
-      counter_greeting.add(1);
+      counterGreeting.add(1);
     } finally {
       span.end();
     }
@@ -62,7 +62,7 @@ public class AppController {
 
   @GetMapping("/")
   public String home() {
-    counter_home.add(1);
+    counterHome.add(1);
     return "Welcome to Spring Demo";
   }
 }

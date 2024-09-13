@@ -52,4 +52,5 @@ gcloud run deploy spring-java-cloud-run \
         --min-instances=3
 
 echo "ENABLING SAMPLE APP ON PORT 8080 VIA PROXY"
+echo "VISIT http://localhost:8080 TO ACCESS THE APPLICATION OR PRESS CTRL+C TO EXIT"
 gcloud beta run services proxy spring-java-cloud-run --port=8080
