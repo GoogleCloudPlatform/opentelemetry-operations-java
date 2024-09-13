@@ -16,21 +16,12 @@
 #
 CONTAINER_REGISTRY=cloud-run-applications
 REGISTRY_LOCATION=us-central1
+UNSET_WARNING="Environment variable not set, please set the environment variable"
 
-if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
-  echo "GOOGLE_CLOUD_PROJECT environment variable not set"
-  exit 1
-fi
-
-if [[ -z "${GOOGLE_APPLICATION_CREDENTIALS}" ]]; then
-  echo "GOOGLE_APPLICATION_CREDENTIALS environment variable not set"
-  exit 1
-fi
-
-if [[ -z "${GOOGLE_CLOUD_RUN_REGION}" ]]; then
-  echo "GOOGLE_CLOUD_RUN_REGION environment variable not set"
-  exit 1
-fi
+# Verify necessary environment variables are set
+echo "${GOOGLE_CLOUD_PROJECT:?${UNSET_WARNING}}"
+echo "${GOOGLE_APPLICATION_CREDENTIALS:?${UNSET_WARNING}}"
+echo "${GOOGLE_CLOUD_RUN_REGION:?${UNSET_WARNING}}"
 
 echo "ENVIRONMENT VARIABLES VERIFIED"
 set -x
