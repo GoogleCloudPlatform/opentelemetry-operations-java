@@ -30,6 +30,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.contrib.gcp.resource.GCPResourceProvider;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -37,6 +38,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class MetricsExporterExample {
   private static SdkMeterProvider METER_PROVIDER;
@@ -146,9 +148,16 @@ public class MetricsExporterExample {
     } finally {
       System.out.println("Shutting down the metrics-example application");
 
-      METER_PROVIDER.shutdown();
+      CompletableResultCode resultCode = METER_PROVIDER.shutdown();
+      // Wait upto 60 seconds for job to complete
+      resultCode.join(60, TimeUnit.SECONDS);
+      if (resultCode.isSuccess()) {
+        System.out.println("Shutdown completed successfully!");
+      } else {
+        System.out.println("Unable to shutdown gracefully!");
+      }
 
-      System.out.println("Shutdown complete");
+      System.out.println("Exiting job");
     }
   }
 }
