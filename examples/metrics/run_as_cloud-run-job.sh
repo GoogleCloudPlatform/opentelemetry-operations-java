@@ -17,20 +17,10 @@
 ARTIFACT_REPOSITORY=cloud-run-applications
 JOB_NAME=job-metrics-export
 
-if [[ -z "${GOOGLE_CLOUD_PROJECT}" ]]; then
-  echo "GOOGLE_CLOUD_PROJECT environment variable not set"
-  exit 1
-fi
-
-if [[ -z "${GOOGLE_APPLICATION_CREDENTIALS}" ]]; then
-  echo "GOOGLE_APPLICATION_CREDENTIALS environment variable not set"
-  exit 1
-fi
-
-if [[ -z "${GOOGLE_CLOUD_RUN_REGION}" ]]; then
-  echo "GOOGLE_CLOUD_RUN_REGION environment variable not set"
-  exit 1
-fi
+# Verify necessary environment variables are set
+echo "${GOOGLE_CLOUD_PROJECT:?${UNSET_WARNING}}"
+echo "${GOOGLE_APPLICATION_CREDENTIALS:?${UNSET_WARNING}}"
+echo "${GOOGLE_CLOUD_RUN_REGION:?${UNSET_WARNING}}"
 
 echo "ENVIRONMENT VARIABLES VERIFIED"
 
@@ -55,9 +45,9 @@ then
 else
   echo "CREATING A CLOUD RUN JOB TO RUN THE CONTAINER"
   gcloud run jobs create job-metrics-export \
-      --image "${GOOGLE_CLOUD_RUN_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REPOSITORY}/metrics-export-java" \
-      --max-retries 5 \
-      --region ${GOOGLE_CLOUD_RUN_REGION} \
+      --image="${GOOGLE_CLOUD_RUN_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REPOSITORY}/metrics-export-java" \
+      --max-retries=5 \
+      --region="${GOOGLE_CLOUD_RUN_REGION}" \
       --project="${GOOGLE_CLOUD_PROJECT}"
 fi
 
