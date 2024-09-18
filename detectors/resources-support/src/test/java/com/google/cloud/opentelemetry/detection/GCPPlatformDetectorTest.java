@@ -15,19 +15,7 @@
  */
 package com.google.cloud.opentelemetry.detection;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,6 +24,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.google.cloud.opentelemetry.detection.AttributeKeys.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @WireMockTest(httpPort = 8089)
 public class GCPPlatformDetectorTest {
@@ -274,10 +275,10 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getAttributes());
   }
 
-  /** Google Cloud Run Tests * */
+  /** Google Cloud Run Tests (Service) * */
   @Test
   public void testGCFResourceWithCloudRunAttributesSucceeds() {
-    // Setup GCR required env vars
+    // Setup GCR service required env vars
     envVars.put("K_SERVICE", "cloud-run-hello");
     envVars.put("K_REVISION", "cloud-run-hello.1");
     envVars.put("K_CONFIGURATION", "cloud-run-hello");
@@ -304,6 +305,37 @@ public class GCPPlatformDetectorTest {
         "country-region-zone", detectedAttributes.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE));
     assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
     assertEquals("GCR-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
+  }
+
+  /** Google Cloud Run Tests (Jobs) * */
+  @Test
+  public void testCloudRunJobResourceWithAttributesSucceeds() {
+    // Setup GCR Job required env vars
+    envVars.put("CLOUD_RUN_JOB", "cloud-run-hello-job");
+    envVars.put("CLOUD_RUN_EXECUTION", "cloud-run-hello-job-1a2b3c");
+    envVars.put("CLOUD_RUN_TASK_INDEX", "0");
+
+    TestUtils.stubEndpoint("/project/project-id", "GCR-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/id", "GCR-job-instance-id");
+
+    EnvironmentVariables mockEnv = new EnvVarMock(envVars);
+    GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
+
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
+    assertEquals(
+        GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN_JOB,
+        detector.detectPlatform().getSupportedPlatform());
+    assertEquals(
+        new GoogleCloudRunJob(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GCR-pid", detector.detectPlatform().getProjectId());
+    assertEquals(5, detectedAttributes.size());
+
+    assertEquals("cloud-run-hello-job-1a2b3c", detectedAttributes.get(GCR_JOB_EXECUTION_KEY));
+    assertEquals("0", detectedAttributes.get(GCR_JOB_TASK_INDEX));
+    assertEquals("cloud-run-hello-job", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
+    assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
+    assertEquals("GCR-job-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
   }
 
   /** Google App Engine Tests * */
