@@ -52,6 +52,10 @@ public final class AttributeKeys {
   public static final String SERVERLESS_COMPUTE_CLOUD_REGION = AttributeKeys.CLOUD_REGION;
   public static final String SERVERLESS_COMPUTE_INSTANCE_ID = AttributeKeys.INSTANCE_ID;
 
+  // Cloud Run Job Specific Attributes
+  public static final String GCR_JOB_EXECUTION_KEY = "gcr_job_execution_key";
+  public static final String GCR_JOB_TASK_INDEX = "gcr_job_task_index";
+
   static final String AVAILABILITY_ZONE = "availability_zone";
   static final String CLOUD_REGION = "cloud_region";
   static final String INSTANCE_ID = "instance_id";
