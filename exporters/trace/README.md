@@ -29,28 +29,39 @@ config:
 <dependency>
   <groupId>com.google.cloud.opentelemetry</groupId>
   <artifactId>exporter-trace</artifactId>
-  <version>0.20.0</version>
+  <version>0.31.0</version>
 </dependency>
 ```
 
 ### Usage
-  If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.  
+If you are running in a GCP environment, the exporter will automatically authenticate using the environment's service account. If not, you will need to follow the instructions in Authentication.
+
+See [the code example](../../examples/trace) for details.
 
 #### Create the exporter
 
-You can create exporter and register it in the OpenTelemetry SDK using the default configuration as follows:
+You can create exporter using the default configuration as follows:
 
 ```java
-    TraceExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
-    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
+    SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration(); 
 ```
 
 You can also customize the configuration using a TraceConfiguration object
 ```java
-    TraceExporter traceExporter = TraceExporter.createWithConfiguration(
+    SpanExporter traceExporter = TraceExporter.createWithConfiguration(
       TraceConfiguration.builder().setProjectId("myCoolGcpProject").build()
     );
-    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(traceExporter).build());
+```
+
+You can register a `SpanExporter` with your OpenTelemetry instance as follows:
+
+```java
+  OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
+                .build())
+        .build();
 ```
 
 #### Specifying a project ID
