@@ -274,10 +274,10 @@ public class GCPPlatformDetectorTest {
         detector.detectPlatform().getAttributes());
   }
 
-  /** Google Cloud Run Tests * */
+  /** Google Cloud Run Tests (Service) * */
   @Test
   public void testGCFResourceWithCloudRunAttributesSucceeds() {
-    // Setup GCR required env vars
+    // Setup GCR service required env vars
     envVars.put("K_SERVICE", "cloud-run-hello");
     envVars.put("K_REVISION", "cloud-run-hello.1");
     envVars.put("K_CONFIGURATION", "cloud-run-hello");
@@ -304,6 +304,37 @@ public class GCPPlatformDetectorTest {
         "country-region-zone", detectedAttributes.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE));
     assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
     assertEquals("GCR-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
+  }
+
+  /** Google Cloud Run Tests (Jobs) * */
+  @Test
+  public void testCloudRunJobResourceWithAttributesSucceeds() {
+    // Setup GCR Job required env vars
+    envVars.put("CLOUD_RUN_JOB", "cloud-run-hello-job");
+    envVars.put("CLOUD_RUN_EXECUTION", "cloud-run-hello-job-1a2b3c");
+    envVars.put("CLOUD_RUN_TASK_INDEX", "0");
+
+    TestUtils.stubEndpoint("/project/project-id", "GCR-pid");
+    TestUtils.stubEndpoint("/instance/zone", "country-region-zone");
+    TestUtils.stubEndpoint("/instance/id", "GCR-job-instance-id");
+
+    EnvironmentVariables mockEnv = new EnvVarMock(envVars);
+    GCPPlatformDetector detector = new GCPPlatformDetector(mockMetadataConfig, mockEnv);
+
+    Map<String, String> detectedAttributes = detector.detectPlatform().getAttributes();
+    assertEquals(
+        GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN_JOB,
+        detector.detectPlatform().getSupportedPlatform());
+    assertEquals(
+        new GoogleCloudRunJob(mockEnv, mockMetadataConfig).getAttributes(), detectedAttributes);
+    assertEquals("GCR-pid", detector.detectPlatform().getProjectId());
+    assertEquals(5, detectedAttributes.size());
+
+    assertEquals("cloud-run-hello-job-1a2b3c", detectedAttributes.get(GCR_JOB_EXECUTION_KEY));
+    assertEquals("0", detectedAttributes.get(GCR_JOB_TASK_INDEX));
+    assertEquals("cloud-run-hello-job", detectedAttributes.get(SERVERLESS_COMPUTE_NAME));
+    assertEquals("country-region", detectedAttributes.get(SERVERLESS_COMPUTE_CLOUD_REGION));
+    assertEquals("GCR-job-instance-id", detectedAttributes.get(SERVERLESS_COMPUTE_INSTANCE_ID));
   }
 
   /** Google App Engine Tests * */
