@@ -106,9 +106,10 @@ $ ./gradlew candidate -Prelease.version=0.14.0
 $ git push origin v0.14.0
 ```
 
-*Note: if you do not have a CredentialsProvider registered for GitHub, the `candidate` task may fail to upload tags to the GitHub repository and the overall command will report a failure. In this case, before retrying the command - check if the staging repository is created on the [nexus repository manager](https://oss.sonatype.org/#stagingRepositories). If the repository is already created, manually push the tag on GitHub, and continue with the next steps.*
+*Note: If you do not have a CredentialsProvider registered for GitHub, the `candidate` task may fail to upload tags to the GitHub repository and the overall command may take a long time to report completion on the task. In this case, before moving forward - check if tags were pushed to GitHub. If not, manually push the tags before continuing.*\
+*Next, check if the staging repository is created on the [nexus repository manager](https://oss.sonatype.org/#stagingRepositories). If the repository is already created, continue with the next steps.*
 
-Next follow [Releasing on Maven Central](#releasing-on-maven-central) to close + publish the
+Follow [Releasing on Maven Central](#releasing-on-maven-central) to close + publish the
 [repository on OSSRH](https://oss.sonatype.org/#stagingRepositories).
 
 After this, follow the [Announcment](#Announcement) documentation to advertise the release and update README files.
