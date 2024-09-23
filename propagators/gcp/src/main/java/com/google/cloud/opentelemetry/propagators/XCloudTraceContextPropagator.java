@@ -90,7 +90,6 @@ public final class XCloudTraceContextPropagator implements TextMapPropagator {
     if (Span.fromContext(context).getSpanContext().isRemote()) {
       return context;
     }
-    // TODO - Do we need to iterate over keys and lowercase them, or is java doing that for us?
     String value = getter.get(carrier, FIELD);
     if (value == null) {
       return context;
