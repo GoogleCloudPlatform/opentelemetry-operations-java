@@ -27,7 +27,7 @@ public class HelloWorld implements HttpFunction {
       openTelemetryConfig
           .getMeterProvider()
           .get("sample-function-library")
-          .counterBuilder("function_counter_psx")
+          .counterBuilder("function_counter_gmp")
           .setDescription("random counter")
           .build();
   private static final Random random = new Random();
