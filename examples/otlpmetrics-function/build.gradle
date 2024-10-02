@@ -1,0 +1,81 @@
+/*
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'java'
+	id "com.github.johnrengelman.shadow"
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+group 'org.example'
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	invoker
+}
+
+dependencies {
+	implementation 'com.google.cloud.functions:functions-framework-api:1.0.4'
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk_metrics)
+
+	// required by resource detection
+	implementation(libraries.opentelemetry_autoconfigure_spi)
+	// resource detection module
+	implementation(libraries.opentelemetry_gcp_resources)
+
+	implementation(libraries.opentelemetry_otlp_exporter)
+	implementation(libraries.opentelemetry_logging_exporter)
+
+	// For testing functions locally
+	invoker 'com.google.cloud.functions.invoker:java-function-invoker:1.1.1'
+}
+
+jar {
+	manifest {
+		doFirst {
+			attributes 'Class-Path': files(configurations.runtimeClasspath).asPath
+		}
+	}
+}
+
+tasks.named('shadowJar', ShadowJar) {
+	archivesBaseName = 'hello-world-function'
+	archiveClassifier = ''
+	archiveVersion = ''
+	destinationDirectory.set(file('out/deployment/'))
+}
+
+// Task only used to test the function locally
+tasks.register('runFunction', JavaExec) {
+	mainClass = 'com.google.cloud.functions.invoker.runner.Invoker'
+	classpath(configurations.invoker)
+	inputs.files(configurations.runtimeClasspath, sourceSets.main.output)
+	args(
+			'--target', project.findProperty('run.functionTarget'),
+			'--port', project.findProperty('run.port') ?: 8080
+			)
+	doFirst {
+		args('--classpath', files(configurations.runtimeClasspath, sourceSets.main.output).asPath)
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
