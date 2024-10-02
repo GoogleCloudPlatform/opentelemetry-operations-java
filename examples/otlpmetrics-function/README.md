@@ -89,7 +89,7 @@ gcloud beta run services proxy cloud-func-helloworld --port=8080
 
 This example is configured to export metrics via `debug` and `googlemanagedprometheus` exporters in the OpenTelemetry Collector.
 
- - The output of the debug exporter can be viewed on std out or the logs in Google Cloud Run Function logs, but it is mostly used for debugging any issues with your export.
+ - The exported metrics from the `debug` exporter can be viewed on standard out through the logs explorer in GCP.
  - The exported metrics from `googlemanagedprometheus` can be viewed in [metrics explorer](https://cloud.google.com/monitoring/charts/metrics-selector). You can search for the metric named `function_counter_gmp` and it should be listed under the resource `Prometheus Target`.
 
 ### Cleanup
