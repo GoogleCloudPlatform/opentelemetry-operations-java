@@ -4,6 +4,13 @@
 
 Provides OpenTelemetry Exporters for Google Cloud Operations. 
 
+To get started with instrumentation in Google Cloud, see [Generate traces and metrics with
+Java](https://cloud.google.com/stackdriver/docs/instrumentation/setup/java).
+
+To learn more about instrumentation and observability, including opinionated recommendations
+for Google Cloud Observability, visit [Instrumentation and
+observability](https://cloud.google.com/stackdriver/docs/instrumentation/overview).
+
 ## Building
 
 > [!IMPORTANT]
