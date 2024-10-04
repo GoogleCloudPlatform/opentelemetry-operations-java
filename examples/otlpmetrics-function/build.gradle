@@ -62,6 +62,13 @@ tasks.named('shadowJar', ShadowJar) {
 	destinationDirectory.set(file('out/deployment/'))
 }
 
+clean {
+	doLast {
+		println "Deleting previous output..."
+		project.delete(files('out'))
+	}
+}
+
 // Task only used to test the function locally
 tasks.register('runFunction', JavaExec) {
 	mainClass = 'com.google.cloud.functions.invoker.runner.Invoker'
