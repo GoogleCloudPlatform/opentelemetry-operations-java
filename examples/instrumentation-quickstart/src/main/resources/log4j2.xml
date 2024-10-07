@@ -27,7 +27,10 @@
       https://logging.apache.org/log4j/2.x/manual/json-template-layout.html#event-templates -->
       <JsonTemplateLayout eventTemplateUri="classpath:GcpLayout.json">
         <!-- Extend the included GcpLayout to include the trace and span IDs from Mapped
-        Diagnostic Context (MDC) so that Cloud Logging can correlate Logs and Spans -->
+        Diagnostic Context (MDC) so that Cloud Logging can correlate Logs and Spans
+
+        Since log4j2 2.24.0, GcpLayout.json already includes trace context logging from MDC and
+        the below additional fields are no longer needed -->
         <EventTemplateAdditionalField
           key="logging.googleapis.com/trace"
           format="JSON"
