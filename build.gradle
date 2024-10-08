@@ -153,12 +153,12 @@ subprojects {
 		autoServiceVersion = '1.1.1'
 		autoValueVersion = '1.10.4'
 		slf4jVersion = '2.0.9'
-		googleAuthVersion = '1.23.0'
-		googleCloudVersion = '2.27.0'
-		googleTraceVersion = '2.30.0'
-		googleCloudBom = '26.26.0'
-		cloudMonitoringVersion = '3.31.0'
-		openTelemetryBom = '1.42.1'
+		googleAuthVersion = '1.27.0'
+		googleCloudVersion = '2.44.1'
+		googleTraceVersion = '2.51.0'
+		googleCloudBomVersion = '26.48.0'
+		cloudMonitoringVersion = '3.52.0'
+		openTelemetryBomVersion = '1.42.1'
 		openTelemetryVersion = '1.42.1'
 		openTelemetryInstrumentationVersion = '2.8.0'
 		openTelemetrySemconvVersion = '1.27.0'
@@ -166,14 +166,14 @@ subprojects {
 		junitVersion = '4.13'
 		junit5Version = '5.10.0'
 		mockitoVersion = '3.5.10'
-		pubSubVersion = '1.125.11'
+		pubSubVersion = '1.133.0'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.35.0'
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
 		cloudEventsCoreVersion = '2.5.0'
-		cloudFunctionsFrameworkApiVersion = '1.0.4'
+		cloudFunctionsFrameworkApiVersion = '1.1.0'
 
 		agentLibraries = [
 			agent: "io.opentelemetry.javaagent:opentelemetry-javaagent:${openTelemetryInstrumentationVersion}",
@@ -192,10 +192,10 @@ subprojects {
 			google_cloud_monitoring_grpc     : "com.google.cloud:grpc-google-cloud-monitoring-v3:${cloudMonitoringVersion}",
 			google_cloud_pubsub              : "com.google.cloud:google-cloud-pubsub:${pubSubVersion}",
 			google_cloud_functions_framework : "com.google.cloud.functions:functions-framework-api:${cloudFunctionsFrameworkApiVersion}",
-			google_cloud_bom                 : "com.google.cloud:libraries-bom:${googleCloudBom}",
+			google_cloud_bom                 : "com.google.cloud:libraries-bom:${googleCloudBomVersion}",
 			slf4j                            : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api                : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
-			opentelemetry_bom                : "io.opentelemetry:opentelemetry-bom:${openTelemetryBom}",
+			opentelemetry_bom                : "io.opentelemetry:opentelemetry-bom:${openTelemetryBomVersion}",
 			opentelemetry_context            : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
