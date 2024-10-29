@@ -21,8 +21,6 @@ plugins {
 
 description = 'Example showcasing OTLP trace ingest on GCP and Google Auth in a Spring Boot App'
 
-group 'com.google.cloud.opentelemetry.examples'
-
 // examples are not published, so version can be hardcoded
 version = '1.0.0'
 
