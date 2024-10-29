@@ -20,6 +20,8 @@ plugins {
 	id 'application'
 	id 'com.google.cloud.tools.jib'
 }
+// examples are not published, so version can be hardcoded
+version = '1.0.0'
 
 repositories {
 	mavenCentral()
@@ -37,7 +39,7 @@ jar {
 
 // OpenTelemetry Autoconfigure module can be configured using system properties
 def autoconf_config = [
-	'-Dotel.resource.attributes=gcp.project_id=otel-test-sharmapranav',
+	'-Dotel.resource.attributes=gcp.project_id=<your-awesome-gcp-project>',
 	'-Dotel.traces.exporter=google_cloud_trace',
 	'-Dotel.metrics.exporter=google_cloud_monitoring,logging',
 	'-Dotel.logs.exporter=none',
@@ -58,7 +60,7 @@ tasks.register('runApp', JavaExec) {
 	description = "Builds and runs the spring application's execuable JAR"
 
 	dependsOn tasks.bootJar
-	classpath = files('build/libs/examples-spring-0.1.0-SNAPSHOT.jar')
+	classpath = files('build/libs/examples-spring-1.0.0.jar')
 	jvmArgs = autoconf_config
 }
 
