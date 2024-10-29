@@ -19,6 +19,9 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 }
 
+// examples are not published, so version can be hardcoded
+version = '1.0.0'
+
 // Set Docker image path here, e.g. using Google Container Registry or Docker Hub
 // https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin#configuration
 jib {
