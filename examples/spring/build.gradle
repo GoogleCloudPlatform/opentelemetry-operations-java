@@ -39,7 +39,7 @@ jar {
 
 // OpenTelemetry Autoconfigure module can be configured using system properties
 def autoconf_config = [
-	'-Dotel.resource.attributes=gcp.project_id=<your-awesome-gcp-project>',
+	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT>',
 	'-Dotel.traces.exporter=google_cloud_trace',
 	'-Dotel.metrics.exporter=google_cloud_monitoring,logging',
 	'-Dotel.logs.exporter=none',
