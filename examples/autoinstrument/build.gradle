@@ -22,6 +22,9 @@ plugins {
 
 description = 'Examples for using java auto instrumentation and Google Cloud Operations'
 
+// examples are not published, so version can be hardcoded
+version = '1.0.0'
+
 configurations {
 	agent
 }
