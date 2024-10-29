@@ -17,6 +17,8 @@ plugins {
 	id 'java'
 	id 'application'
 }
+// examples are not published, so version can be hardcoded
+version = '1.0.0'
 
 mainClassName = 'com.google.cloud.opentelemetry.example.otlptrace.OTLPTraceExample'
 
