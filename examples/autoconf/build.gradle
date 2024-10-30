@@ -19,8 +19,10 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 }
 
-
 description = 'Examples for using java autoconfiguration and Google Cloud Operations'
+
+// examples are not published, so version can be hardcoded
+version = '0.1.0'
 
 dependencies {
 	implementation(libraries.opentelemetry_api)

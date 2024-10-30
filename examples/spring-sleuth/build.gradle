@@ -18,6 +18,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
+// examples are not published, so version can be hardcoded
+version = '0.1.0'
 
 jar {
 	manifest {

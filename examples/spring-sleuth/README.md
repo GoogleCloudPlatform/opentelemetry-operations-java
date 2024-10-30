@@ -35,7 +35,7 @@ cd examples/spring-sleuth/ && gradle bootJar
 The JAR built from the previous command typically ends up in `build/libs` -
 
 ```shell
-java -jar build/libs/examples-spring-sleuth-0.1.0-SNAPSHOT.jar
+java -jar build/libs/examples-spring-sleuth-0.1.0.jar
 ```
 
 The application is now running. To generate traces, head to `http://localhost:8080` in your browser.

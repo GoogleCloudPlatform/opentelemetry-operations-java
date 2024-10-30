@@ -18,6 +18,8 @@ plugins {
 	id 'application'
 	id 'com.google.cloud.tools.jib'
 }
+// examples are not published, so version can be hardcoded
+version = '0.1.0'
 
 description = 'Examples for showing resource detection in various GCP environments.'
 
