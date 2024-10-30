@@ -22,7 +22,7 @@ plugins {
 description = 'Example showcasing OTLP trace ingest on GCP and Google Auth in a Spring Boot App'
 
 // examples are not published, so version can be hardcoded
-version = '1.0.0'
+version = '0.1.0'
 
 repositories {
 	mavenCentral()

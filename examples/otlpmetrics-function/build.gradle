@@ -21,7 +21,7 @@ plugins {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 // examples are not published, so version can be hardcoded
-version = '1.0.0'
+version = '0.1.0'
 
 repositories {
 	mavenCentral()

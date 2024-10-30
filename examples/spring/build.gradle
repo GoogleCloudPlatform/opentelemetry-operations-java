@@ -21,7 +21,7 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 }
 // examples are not published, so version can be hardcoded
-version = '1.0.0'
+version = '0.1.0'
 
 repositories {
 	mavenCentral()
@@ -60,7 +60,7 @@ tasks.register('runApp', JavaExec) {
 	description = "Builds and runs the spring application's execuable JAR"
 
 	dependsOn tasks.bootJar
-	classpath = files('build/libs/examples-spring-1.0.0.jar')
+	classpath = files('build/libs/examples-spring-0.1.0.jar')
 	jvmArgs = autoconf_config
 }
 
