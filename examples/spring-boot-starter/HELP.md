@@ -38,7 +38,7 @@ $ ./gradlew bootBuildImage
 Then, you can run the app like any other container:
 
 ```
-$ docker run --rm spring-boot-starter:0.1.0
+$ docker run --rm examples-spring-boot-starter:0.1.0
 ```
 
 ### Executable with Native Build Tools

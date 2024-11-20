@@ -17,9 +17,9 @@ plugins {
 	id 'java'
 
 	id 'org.springframework.boot' version '2.7.18'
-	id 'io.spring.dependency-management' version '1.1.6'
 	id 'org.graalvm.buildtools.native' version '0.10.3'
 }
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 group = 'com.google.cloud.opentelemetry.example'
 // examples are not published, so version can be hardcoded
@@ -31,18 +31,23 @@ repositories {
 
 description = 'Java Spring Boot application running as GraalVM Native Image, instrumented using OpenTelemetry Spring Boot Starter'
 
-//java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(11)
-//    }
-//}
-
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-	implementation(libraries.spring_boot_starter)
+	implementation platform(SpringBootPlugin.BOM_COORDINATES)
+	implementation platform(libraries.opentelemetry_instrumetation_bom)
+	implementation(libraries.spring_boot_starter_web)
+	implementation(libraries.spring_boot_starter_actuator)
+	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+	//	exporter dependencies
+	//	implementation project(':exporter-trace')
+	//	implementation project(':exporter-metrics')
+	//	// auto exporter makes Google Cloud exporters available to autoconfigure module
+	//	runtimeOnly project(':exporter-auto')
+	//	// resource detection module
+	//	runtimeOnly(libraries.opentelemetry_gcp_resources)
 }
 
 test {
