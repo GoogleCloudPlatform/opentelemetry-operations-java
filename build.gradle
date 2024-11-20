@@ -169,6 +169,7 @@ subprojects {
 		pubSubVersion = '1.133.0'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.35.0'
+		springVersion = '2.7.18'
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
@@ -207,6 +208,7 @@ subprojects {
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			opentelemetry_logging_exporter   : "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}",
 			opentelemetry_gcp_resources      : "io.opentelemetry.contrib:opentelemetry-gcp-resources:${openTelemetryContribVersion}-alpha",
+			spring_boot_starter              : "org.springframework.boot:spring-boot-starter:${springVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",

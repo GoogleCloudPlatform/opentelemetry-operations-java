@@ -40,6 +40,7 @@ include ":detector-resources-support"
 include ":e2e-test-server"
 include ":examples-spring-sleuth"
 include ":examples-spring"
+include ":examples-spring-boot-starter"
 include ":propagators-gcp"
 include ":shared-resourcemapping"
 
@@ -96,3 +97,6 @@ project(':examples-spring').projectDir =
 
 project(':examples-otlpmetrics-function').projectDir =
 		"$rootDir/examples/otlpmetrics-function" as File
+
+project(':examples-spring-boot-starter').projectDir =
+		"$rootDir/examples/spring-boot-starter" as File
