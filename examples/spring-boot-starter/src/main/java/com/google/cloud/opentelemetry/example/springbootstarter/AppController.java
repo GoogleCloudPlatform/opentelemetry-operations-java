@@ -21,8 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AppController {
 
+  private static final String DESCRIPTION_MESSAGE =
+      "Sample Spring Boot Application instrumented with OpenTelemetry Spring Boot Starter";
+
   @GetMapping("/ping")
   public String ping() {
     return "Hello World!";
+  }
+
+  @GetMapping("/")
+  public String home() {
+    return DESCRIPTION_MESSAGE;
   }
 }

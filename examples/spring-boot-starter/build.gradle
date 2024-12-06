@@ -55,15 +55,17 @@ graalvmNative {
 }
 
 dependencies {
-	implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+	// Spring dependencies
+	implementation platform(SpringBootPlugin.BOM_COORDINATES)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	//implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
-	//	exporter dependencie[s
-	//	implementation project(':exporter-trace')
-	//	implementation project(':exporter-metrics')
-	//	// auto exporter makes Google Cloud exporters available to autoconfigure module
-	//	runtimeOnly project(':exporter-auto')
-	//	// resource detection module
-	//	runtimeOnly(libraries.opentelemetry_gcp_resources)
+
+	// OpenTelemetry dependencies
+	implementation platform(libraries.opentelemetry_instrumetation_bom)
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+
+	// auto exporter makes Google Cloud exporters available to autoconfigure module
+	implementation project(':exporter-auto')
+	implementation project(':exporter-trace')
+	implementation project(':exporter-metrics')
 }
