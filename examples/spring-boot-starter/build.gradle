@@ -15,9 +15,8 @@
  */
 plugins {
 	id 'java'
-
-	id 'org.springframework.boot' version '2.7.18'
-	id 'org.graalvm.buildtools.native' version '0.10.3'
+	id 'org.springframework.boot' version '3.4.0'
+	id 'org.graalvm.buildtools.native' version '0.10.4'
 }
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
@@ -31,25 +30,40 @@ repositories {
 
 description = 'Java Spring Boot application running as GraalVM Native Image, instrumented using OpenTelemetry Spring Boot Starter'
 
-repositories {
-	mavenCentral()
+java {
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+compileJava {
+	// This is only possible since the toolchain guarantees Java 17 presence.
+	// Toolchain is set in the root build.gradle file.
+	it.options.release = 17
+}
+
+graalvmNative {
+	binaries {
+		main {
+			imageName = 'spring-native-example'
+			mainClass = 'com.google.cloud.opentelemetry.example.springbootstarter.SpringBootStarterApplication'
+			// generates executable instead of shared-library
+			// graalvm native buildtools plugin sets this to false by default if 'java-library' plugin is not
+			// included, but it seems like spring boot plugin is implicitly importing the 'java-library' plugin
+			// removing this will cause nativeCompile task to generate a .so file instead.
+			sharedLibrary = false
+		}
+	}
 }
 
 dependencies {
-	implementation platform(SpringBootPlugin.BOM_COORDINATES)
-	implementation platform(libraries.opentelemetry_instrumetation_bom)
-	implementation(libraries.spring_boot_starter_web)
-	implementation(libraries.spring_boot_starter_actuator)
-	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
-	//	exporter dependencies
+	implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	//implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+	//	exporter dependencie[s
 	//	implementation project(':exporter-trace')
 	//	implementation project(':exporter-metrics')
 	//	// auto exporter makes Google Cloud exporters available to autoconfigure module
 	//	runtimeOnly project(':exporter-auto')
 	//	// resource detection module
 	//	runtimeOnly(libraries.opentelemetry_gcp_resources)
-}
-
-test {
-	useJUnitPlatform()
 }
