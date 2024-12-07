@@ -171,7 +171,7 @@ public class GoogleCloudMetricExporterTest {
       // verify that the MetricServiceClient used in the exporter was created using the
       // MetricServiceSettings provided in configuration
       mockedServiceClientClass.verify(
-          times(1), () -> MetricServiceClient.create(eq(configuration.getMetricServiceSettings())));
+          () -> MetricServiceClient.create(eq(configuration.getMetricServiceSettings())), times(1));
 
       // verify that export operation on the resulting exporter can still be called
       CompletableResultCode result = exporter.export(ImmutableList.of(aMetricData, aHistogram));
@@ -816,9 +816,9 @@ public class GoogleCloudMetricExporterTest {
       simulateExport(metricExporter);
 
       mockedMetricServiceClient.verify(
-          Mockito.times(1),
-          () -> MetricServiceClient.create((MetricServiceSettings) Mockito.any()));
-      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
+          () -> MetricServiceClient.create((MetricServiceSettings) Mockito.any()),
+          Mockito.times(1));
+      mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId, Mockito.times(1));
       Mockito.verify(this.mockMetricServiceClient)
           .createTimeSeries((ProjectName) Mockito.any(), Mockito.anyList());
     } finally {

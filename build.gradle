@@ -165,7 +165,7 @@ subprojects {
 		openTelemetryContribVersion = '1.39.0'
 		junitVersion = '4.13'
 		junit5Version = '5.10.0'
-		mockitoVersion = '3.5.10'
+		mockitoVersion = '5.2.0'
 		pubSubVersion = '1.133.0'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.35.0'

@@ -101,8 +101,8 @@ public class TraceExporterTest {
       simulateExport(exporter);
 
       mockedTraceServiceClient.verify(
-          Mockito.times(1), () -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()));
-      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
+          () -> TraceServiceClient.create((TraceServiceSettings) Mockito.any()), Mockito.times(1));
+      mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId, Mockito.times(1));
       Mockito.verify(this.mockedTraceServiceClient)
           .batchWriteSpans((ProjectName) Mockito.any(), Mockito.anyList());
     }
