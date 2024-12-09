@@ -34,6 +34,13 @@ java {
 	targetCompatibility = JavaVersion.VERSION_17
 }
 
+// Required for fixing CodeQL issues - CodeQL is configured to run with Java 17.
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
 compileJava {
 	// This is only possible since the toolchain guarantees Java 17 presence.
 	// Toolchain is set in the root build.gradle file.
