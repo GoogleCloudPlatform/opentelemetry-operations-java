@@ -98,7 +98,7 @@ public class TraceConfigurationTest {
       TraceConfiguration traceConfiguration = TraceConfiguration.builder().build();
       assertEquals(PROJECT_ID, traceConfiguration.getProjectId());
 
-      mockedServiceOptions.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
+      mockedServiceOptions.verify(ServiceOptions::getDefaultProjectId, Mockito.times(1));
     }
   }
 
@@ -164,7 +164,7 @@ public class TraceConfigurationTest {
       traceConfiguration2.getProjectId();
 
       // ServiceOptions#getDefaultProjectId should only be called once per TraceConfiguration object
-      serviceOptionsMockedStatic.verify(Mockito.times(2), ServiceOptions::getDefaultProjectId);
+      serviceOptionsMockedStatic.verify(ServiceOptions::getDefaultProjectId, Mockito.times(2));
     }
   }
 }

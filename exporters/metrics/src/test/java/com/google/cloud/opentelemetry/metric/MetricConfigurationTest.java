@@ -107,7 +107,7 @@ public class MetricConfigurationTest {
 
       MetricConfiguration configuration = MetricConfiguration.builder().build();
       assertEquals(PROJECT_ID, configuration.getProjectId());
-      serviceOptionsMockedStatic.verify(Mockito.times(1), ServiceOptions::getDefaultProjectId);
+      serviceOptionsMockedStatic.verify(ServiceOptions::getDefaultProjectId, Mockito.times(1));
     }
   }
 
@@ -127,7 +127,7 @@ public class MetricConfigurationTest {
       metricConfiguration2.getProjectId();
 
       // ServiceOptions#getDefaultProjectId should only be called once per TraceConfiguration object
-      serviceOptionsMockedStatic.verify(Mockito.times(2), ServiceOptions::getDefaultProjectId);
+      serviceOptionsMockedStatic.verify(ServiceOptions::getDefaultProjectId, Mockito.times(2));
     }
   }
 }
