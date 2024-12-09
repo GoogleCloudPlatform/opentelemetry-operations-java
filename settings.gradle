@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.gradle.internal.jvm.Jvm
 pluginManagement {
 	plugins {
 		id "com.diffplug.spotless" version "6.18.0"
@@ -40,9 +41,18 @@ include ":detector-resources-support"
 include ":e2e-test-server"
 include ":examples-spring-sleuth"
 include ":examples-spring"
-include ":examples-spring-boot-starter"
 include ":propagators-gcp"
 include ":shared-resourcemapping"
+
+def javaVersion = Jvm.current().javaVersion
+
+if (javaVersion.isCompatibleWith(JavaVersion.VERSION_17)) {
+	include ":examples-spring-boot-starter"
+	project(':examples-spring-boot-starter').projectDir =
+			"$rootDir/examples/spring-boot-starter" as File
+} else {
+	println "Excluding subproject ':examples-spring-boot-starter' because Java version is less than 17"
+}
 
 project(':exporter-trace').projectDir =
 		"$rootDir/exporters/trace" as File
@@ -97,6 +107,3 @@ project(':examples-spring').projectDir =
 
 project(':examples-otlpmetrics-function').projectDir =
 		"$rootDir/examples/otlpmetrics-function" as File
-
-project(':examples-spring-boot-starter').projectDir =
-		"$rootDir/examples/spring-boot-starter" as File

@@ -14,7 +14,7 @@ observability](https://cloud.google.com/stackdriver/docs/instrumentation/overvie
 ## Building
 
 > [!IMPORTANT]
-> This project requires Java 17 to build and test. All artifacts published from this project support Java 8 or higher, unless otherwise noted.
+> This project requires Java 11 to build and test. All artifacts published from this project support Java 8 or higher, unless otherwise noted.
 
 This project requires a mock server for Google Cloud APIs. To build and test, do the following:
 
