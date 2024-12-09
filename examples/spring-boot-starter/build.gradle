@@ -47,8 +47,9 @@ graalvmNative {
 			mainClass = 'com.google.cloud.opentelemetry.example.springbootstarter.SpringBootStarterApplication'
 			// generates executable instead of shared-library
 			// graalvm native buildtools plugin sets this to false by default if 'java-library' plugin is not
-			// included, but it seems like spring boot plugin is implicitly importing the 'java-library' plugin
-			// removing this will cause nativeCompile task to generate a .so file instead.
+			// included. This project is configured to apply java-library plugin to all subprojects by default.
+			// This configuration is supplied in the project level build.gradle file.
+			// Removing this will cause nativeCompile task to generate a .so file instead.
 			sharedLibrary = false
 		}
 	}
