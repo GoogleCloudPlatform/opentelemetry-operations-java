@@ -105,14 +105,14 @@ subprojects {
 	// See https://docs.gradle.org/current/userguide/toolchains.html#toolchains
 	java {
 		toolchain {
-			languageVersion = JavaLanguageVersion.of(11)
+			languageVersion = JavaLanguageVersion.of(17)
 		}
 	}
 
 	// This ensures bytecode compatibility with Java 8 by ensuring that symbols not
 	// available in Java 8 are not used in the source code.
 	// This is equivalent of setting --release flag in Java compiler introduced in Java 9.
-	// Note that the toolchain used is Java 11 - which means Java 11 is required
+	// Note that the toolchain used is Java 17 - which means Java 17 is required
 	// to build this project.
 	compileJava {
 		it.options.release = 8
@@ -123,6 +123,8 @@ subprojects {
 		java {
 			googleJavaFormat("1.10.0")
 			licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+			// ignore generated code for spotlessCheck & spotlessApply
+			targetExclude '**/build/generated/**/*.*'
 		}
 		groovyGradle {
 			target '*.gradle' // default target of groovyGradle
