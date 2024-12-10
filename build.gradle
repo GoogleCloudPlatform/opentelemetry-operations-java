@@ -123,6 +123,8 @@ subprojects {
 		java {
 			googleJavaFormat("1.10.0")
 			licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+			// ignore generated code for spotlessCheck & spotlessApply
+			targetExclude '**/build/generated/**/*.*'
 		}
 		groovyGradle {
 			target '*.gradle' // default target of groovyGradle
@@ -160,6 +162,7 @@ subprojects {
 		cloudMonitoringVersion = '3.52.0'
 		openTelemetryBomVersion = '1.42.1'
 		openTelemetryVersion = '1.42.1'
+		openTelemetryInstrumentationBomVersion = '2.8.0'
 		openTelemetryInstrumentationVersion = '2.8.0'
 		openTelemetrySemconvVersion = '1.27.0'
 		openTelemetryContribVersion = '1.39.0'
@@ -169,6 +172,7 @@ subprojects {
 		pubSubVersion = '1.133.0'
 		testContainersVersion = '1.15.1'
 		wiremockVersion = '2.35.0'
+		springVersion = '2.7.18'
 		springWebVersion = '2.4.5'
 		springOpenFeignVersion = '3.0.0'
 		springOtelVersion = '1.0.0-M8'
@@ -196,6 +200,7 @@ subprojects {
 			slf4j                            : "org.slf4j:slf4j-api:${slf4jVersion}",
 			opentelemetry_api                : "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}",
 			opentelemetry_bom                : "io.opentelemetry:opentelemetry-bom:${openTelemetryBomVersion}",
+			opentelemetry_instrumetation_bom : "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${openTelemetryInstrumentationBomVersion}",
 			opentelemetry_context            : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
@@ -207,7 +212,9 @@ subprojects {
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			opentelemetry_logging_exporter   : "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}",
 			opentelemetry_gcp_resources      : "io.opentelemetry.contrib:opentelemetry-gcp-resources:${openTelemetryContribVersion}-alpha",
+			spring_boot_starter              : "org.springframework.boot:spring-boot-starter:${springVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
+			spring_boot_starter_actuator     : "org.springframework.boot:spring-boot-starter-actuator:${springVersion}",
 			spring_cloud_starter_openfeign   : "org.springframework.cloud:spring-cloud-starter-openfeign:${springOpenFeignVersion}",
 			spring_cloud_sleuth_otel_autoconf: "org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:${springOtelVersion}",
 		]

@@ -1,0 +1,79 @@
+/*
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.0'
+	id 'org.graalvm.buildtools.native' version '0.10.4'
+}
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+group = 'com.google.cloud.opentelemetry.example'
+// examples are not published, so version can be hardcoded
+version = '0.1.0'
+
+repositories {
+	mavenCentral()
+}
+
+description = 'Java Spring Boot application running as GraalVM Native Image, instrumented using OpenTelemetry Spring Boot Starter'
+
+java {
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+// Required for fixing CodeQL issues - CodeQL is configured to run with Java 17.
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+compileJava {
+	// This is only possible since the toolchain guarantees Java 17 presence.
+	// Toolchain is set in the root build.gradle file.
+	it.options.release = 17
+}
+
+graalvmNative {
+	binaries {
+		main {
+			imageName = 'spring-native-example'
+			mainClass = 'com.google.cloud.opentelemetry.example.springbootstarter.SpringBootStarterApplication'
+			// generates executable instead of shared-library
+			// graalvm native buildtools plugin sets this to false by default if 'java-library' plugin is not
+			// included. This project is configured to apply java-library plugin to all subprojects by default.
+			// This configuration is supplied in the project level build.gradle file.
+			// Removing this will cause nativeCompile task to generate a .so file instead.
+			sharedLibrary = false
+		}
+	}
+}
+
+dependencies {
+	// Spring dependencies
+	implementation platform(SpringBootPlugin.BOM_COORDINATES)
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// OpenTelemetry dependencies
+	implementation platform(libraries.opentelemetry_instrumetation_bom)
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+
+	// auto exporter makes Google Cloud exporters available to autoconfigure module
+	implementation project(':exporter-auto')
+	implementation project(':exporter-trace')
+	implementation project(':exporter-metrics')
+}
