@@ -32,6 +32,7 @@ import com.google.protobuf.BoolValue;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -120,11 +121,14 @@ class TraceTranslator {
       spanBuilder.setEndTime(toTimestampProto(end));
     }
     spanBuilder.setLinks(toLinksProto(spanData.getLinks(), spanData.getTotalRecordedLinks()));
-    if (spanData.getParentSpanContext().isValid()) {
-      spanBuilder.setParentSpanId(spanData.getParentSpanId());
+
+    SpanContext parent = spanData.getParentSpanContext();
+    if (parent.isValid()) {
+      spanBuilder
+          .setParentSpanId(parent.getSpanId())
+          .setSameProcessAsParentSpan(BoolValue.of(!parent.isRemote()));
     }
-    boolean hasRemoteParent = spanData.getParentSpanContext().isRemote();
-    spanBuilder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
+
     return spanBuilder.build();
   }
 
