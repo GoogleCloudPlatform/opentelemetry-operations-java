@@ -16,23 +16,22 @@
 package com.google.cloud.opentelemetry.example.otlpmetric;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import io.opentelemetry.api.metric.Metric;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.http.metric.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metric.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.exporter.otlp.metric.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metric.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metric.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class OTLPMetricExample {
   private static final String INSTRUMENTATION_SCOPE_NAME = OTLPMetricExample.class.getName();
-  private static final Random random = new Random();
+  private static final Random RANDOM = new Random();
 
   private static OpenTelemetrySdk openTelemetrySdk;
 
@@ -40,6 +39,7 @@ public class OTLPMetricExample {
     GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
 
     // Update the SDK configured using environment variables and system properties
+    // TODO: Replace this with the use of gcp-auth-extension
     AutoConfiguredOpenTelemetrySdk autoConfOTelSdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addMetricExporterCustomizer(
@@ -84,7 +84,8 @@ public class OTLPMetricExample {
 
   private static void myUseCase() {
     LongCounter counter =
-        METER
+        openTelemetrySdk
+            .getMeter(INSTRUMENTATION_SCOPE_NAME)
             .counterBuilder("example_counter")
             .setDescription("Processed jobs")
             .setUnit("1")
@@ -108,12 +109,11 @@ public class OTLPMetricExample {
     openTelemetrySdk = setupMetricExporter();
 
     // Application-specific logic
-    myUseCase("One");
-    myUseCase("Two");
+    myUseCase();
+    myUseCase();
 
     // Flush all buffered metrics
-    CompletableResultCode completableResultCode =
-        openTelemetrySdk.getSdkMeterProvider().shutdown();
+    CompletableResultCode completableResultCode = openTelemetrySdk.getSdkMeterProvider().shutdown();
     // wait till export finishes
     completableResultCode.join(10000, TimeUnit.MILLISECONDS);
   }

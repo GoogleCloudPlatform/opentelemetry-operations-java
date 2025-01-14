@@ -29,6 +29,7 @@ include ":exporter-trace"
 include ":examples-trace"
 include ":examples-otlp-spring"
 include ":examples-otlptrace"
+include ":examples-otlpmetric"
 include ":examples-otlpmetrics-function"
 include ":exporter-metrics"
 include ":examples-metrics"
@@ -107,3 +108,6 @@ project(':examples-spring').projectDir =
 
 project(':examples-otlpmetrics-function').projectDir =
 		"$rootDir/examples/otlpmetrics-function" as File
+
+project(':examples-otlpmetric').projectDir =
+		"$rootDir/examples/otlpmetric" as File
