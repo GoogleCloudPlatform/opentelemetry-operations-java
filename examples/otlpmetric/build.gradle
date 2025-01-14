@@ -1,0 +1,47 @@
+/*
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+	id 'java'
+	id 'application'
+}
+// examples are not published, so version can be hardcoded
+version = '0.1.0'
+
+mainClassName = 'com.google.cloud.opentelemetry.example.otlpmetric.OTLPMetricExample'
+
+description = 'Example for OTLP Metric exporter'
+
+dependencies {
+	implementation(libraries.opentelemetry_api)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.opentelemetry_otlp_exporter)
+	implementation(libraries.opentelemetry_sdk_autoconf)
+	implementation(libraries.google_auth)
+}
+
+// Provide headers from env variable
+// export OTEL_EXPORTER_OTLP_ENDPOINT="http://path/to/yourendpoint:port"
+def autoconf_config = [
+	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT>',
+	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
+	'-Dotel.metrics.exporter=otlp',
+	'-Dotel.exporter.otlp.protocol=http/protobuf',
+	'-Dotel.java.global-autoconfigure.enabled=true',
+]
+
+application {
+	applicationDefaultJvmArgs = autoconf_config
+}
