@@ -93,7 +93,6 @@ public class OTLPTraceExample {
         String work = String.format("%s - Work #%d", description, (i + 1));
         doWork(work);
       }
-
       span.addEvent("Event B");
     } finally {
       span.end();
@@ -106,7 +105,9 @@ public class OTLPTraceExample {
         openTelemetrySdk.getTracer(INSTRUMENTATION_SCOPE_NAME).spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       // Simulate work: this could be simulating a network request or an expensive disk operation
-      Thread.sleep(100 + random.nextInt(5) * 100);
+      int randomSleep = random.nextInt(5) * 100;
+      span.setAttribute("RandomSleep", randomSleep);
+      Thread.sleep(100 + randomSleep);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } finally {
