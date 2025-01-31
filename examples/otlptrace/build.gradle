@@ -20,28 +20,33 @@ plugins {
 // examples are not published, so version can be hardcoded
 version = '0.1.0'
 
-mainClassName = 'com.google.cloud.opentelemetry.example.otlptrace.OTLPTraceExample'
-
 description = 'Example for OTLP exporter'
+
+// the shaded variant name for gcp auth extension is an empty string
+def gcp_auth_extension_shaded_classifier = ''
 
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_otlp_exporter)
 	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.google_auth)
+	implementation("${libraries.opentelemetry_gcp_auth_extension}:${gcp_auth_extension_shaded_classifier}")
+	implementation(libraries.opentelemetry_gcp_resources)
 }
 
 // Provide headers from env variable
-// export OTEL_EXPORTER_OTLP_ENDPOINT="http://path/to/yourendpoint:port"
 def autoconf_config = [
-	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT>',
-	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
+	'-Dgoogle.cloud.project=your-gcp-project-id',
+	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
 	'-Dotel.traces.exporter=otlp',
+	'-Dotel.logs.exporter=none',
+	'-Dotel.metrics.exporter=none',
+	'-Dotel.service.name=otlptrace-example',
 	'-Dotel.exporter.otlp.protocol=http/protobuf',
 	'-Dotel.java.global-autoconfigure.enabled=true',
 ]
 
 application {
+	mainClassName = 'com.google.cloud.opentelemetry.example.otlptrace.OTLPTraceExample'
 	applicationDefaultJvmArgs = autoconf_config
 }
