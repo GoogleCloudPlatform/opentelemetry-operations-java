@@ -15,17 +15,11 @@
  */
 package com.google.cloud.opentelemetry.example.otlptrace;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -35,52 +29,6 @@ public class OTLPTraceExample {
   private static final Random random = new Random();
 
   private static OpenTelemetrySdk openTelemetrySdk;
-
-  private static OpenTelemetrySdk setupTraceExporter() throws IOException {
-    GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-
-    // Update the SDK configured using environment variables and system properties
-    AutoConfiguredOpenTelemetrySdk autoConfOTelSdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .addSpanExporterCustomizer(
-                (exporter, configProperties) -> addAuthorizationHeaders(exporter, credentials))
-            .build();
-    return autoConfOTelSdk.getOpenTelemetrySdk();
-  }
-
-  // Modifies the span exporter initially auto-configured using environment variables
-  // Note: This adds static authorization headers which are set only at initialization time.
-  // This will stop working after the token expires, since the token is not refreshed.
-  private static SpanExporter addAuthorizationHeaders(
-      SpanExporter exporter, GoogleCredentials credentials) {
-    if (exporter instanceof OtlpHttpSpanExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpHttpSpanExporterBuilder builder =
-            ((OtlpHttpSpanExporter) exporter)
-                .toBuilder()
-                    .addHeader(
-                        "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
-
-        return builder.build();
-      } catch (IOException e) {
-        System.out.println("error:" + e.getMessage());
-      }
-    } else if (exporter instanceof OtlpGrpcSpanExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpGrpcSpanExporterBuilder builder =
-            ((OtlpGrpcSpanExporter) exporter)
-                .toBuilder()
-                    .addHeader(
-                        "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
-        return builder.build();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return exporter;
-  }
 
   private static void myUseCase(String description) {
     // Generate a span
@@ -117,7 +65,7 @@ public class OTLPTraceExample {
 
   public static void main(String[] args) throws IOException {
     // Configure the OpenTelemetry pipeline with CloudTrace exporter
-    openTelemetrySdk = setupTraceExporter();
+    openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
 
     // Application-specific logic
     myUseCase("One");

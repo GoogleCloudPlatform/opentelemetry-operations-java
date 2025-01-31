@@ -27,17 +27,16 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_otlp_exporter)
 	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation(libraries.google_auth)
-	implementation(libraries.opentelemetry_gcp_auth_extension)
+	// the shaded variant name is empty
+	implementation("${libraries.opentelemetry_gcp_auth_extension}:")
 	implementation(libraries.opentelemetry_gcp_resources)
-	implementation(libraries.opentelemetry_logging_exporter)
 }
 
 // Provide headers from env variable
 def autoconf_config = [
-	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT>',
-	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
-	'-Dotel.traces.exporter=otlp,console',
+	'-Dgoogle.cloud.project=your-gcp-project-id',
+	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
+	'-Dotel.traces.exporter=otlp',
 	'-Dotel.logs.exporter=none',
 	'-Dotel.metrics.exporter=none',
 	'-Dotel.service.name=otlptrace-example',

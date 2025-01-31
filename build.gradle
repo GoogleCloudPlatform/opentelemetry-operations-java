@@ -165,7 +165,7 @@ subprojects {
 		openTelemetryInstrumentationBomVersion = '2.8.0'
 		openTelemetryInstrumentationVersion = '2.8.0'
 		openTelemetrySemconvVersion = '1.27.0'
-		openTelemetryContribVersion = '1.39.0'
+		openTelemetryContribVersion = '1.43.0'
 		junitVersion = '4.13'
 		junit5Version = '5.10.0'
 		mockitoVersion = '5.2.0'
@@ -212,6 +212,7 @@ subprojects {
 			opentelemetry_otlp_exporter      : "io.opentelemetry:opentelemetry-exporter-otlp:${openTelemetryVersion}",
 			opentelemetry_logging_exporter   : "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}",
 			opentelemetry_gcp_resources      : "io.opentelemetry.contrib:opentelemetry-gcp-resources:${openTelemetryContribVersion}-alpha",
+			opentelemetry_gcp_auth_extension : "io.opentelemetry.contrib:opentelemetry-gcp-auth-extension:${openTelemetryContribVersion}-alpha",
 			spring_boot_starter              : "org.springframework.boot:spring-boot-starter:${springVersion}",
 			spring_boot_starter_web          : "org.springframework.boot:spring-boot-starter-web:${springWebVersion}",
 			spring_boot_starter_actuator     : "org.springframework.boot:spring-boot-starter-actuator:${springVersion}",
