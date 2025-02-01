@@ -15,17 +15,8 @@
  */
 package com.google.cloud.opentelemetry.examples.otlpspring.configuration;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -40,74 +31,8 @@ public class OpenTelemetryConfiguration {
   @Bean
   @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
   public OpenTelemetrySdk getOpenTelemetrySdk() {
-    GoogleCredentials googleCredentials = getCredentials();
-    AutoConfiguredOpenTelemetrySdk autoConfOTelSdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .addSpanExporterCustomizer(
-                (exporter, configProperties) ->
-                    addAuthorizationHeaders(exporter, googleCredentials))
-            .build();
+    logger.info("Initializing Autoconfigured OpenTelemetry SDK");
+    AutoConfiguredOpenTelemetrySdk autoConfOTelSdk = AutoConfiguredOpenTelemetrySdk.initialize();
     return autoConfOTelSdk.getOpenTelemetrySdk();
-  }
-
-  private GoogleCredentials getCredentials() {
-    try {
-      return GoogleCredentials.getApplicationDefault();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private SpanExporter addAuthorizationHeaders(
-      SpanExporter exporter, GoogleCredentials credentials) {
-    Map<String, String> authHeaders = new ConcurrentHashMap<>();
-    if (exporter instanceof OtlpHttpSpanExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpHttpSpanExporterBuilder builder =
-            ((OtlpHttpSpanExporter) exporter)
-                .toBuilder()
-                    .setHeaders(
-                        () -> {
-                          authHeaders.put("Authorization", refreshToken(credentials));
-                          return authHeaders;
-                        });
-        return builder.build();
-      } catch (IOException e) {
-        logger.error("Error while adding headers : {}", e.getMessage());
-        throw new RuntimeException(e);
-      }
-    } else if (exporter instanceof OtlpGrpcSpanExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpGrpcSpanExporterBuilder builder =
-            ((OtlpGrpcSpanExporter) exporter)
-                .toBuilder()
-                    .setHeaders(
-                        () -> {
-                          authHeaders.put("Authorization", refreshToken(credentials));
-                          return authHeaders;
-                        });
-        return builder.build();
-      } catch (IOException e) {
-        logger.error("Error while adding headers: {}", e.getMessage());
-        throw new RuntimeException(e);
-      }
-    }
-    return exporter;
-  }
-
-  private String refreshToken(GoogleCredentials credentials) {
-    logger.info("Refreshing Google Credentials");
-    try {
-      logger.info(
-          "Current access token expires at {}", credentials.getAccessToken().getExpirationTime());
-      credentials.refreshIfExpired();
-      logger.info("Credential refresh check complete");
-      return String.format("Bearer %s", credentials.getAccessToken().getTokenValue());
-    } catch (IOException e) {
-      logger.error("Error while refreshing credentials: {}", e.getMessage());
-      throw new RuntimeException(e);
-    }
   }
 }

@@ -60,9 +60,11 @@ public class ApplicationController {
       span.addEvent("Event A");
       // Do some work for the use case
       // Simulate work: this could be simulating a network request or an expensive disk operation
-      workDurationMillis = 100 + random.nextInt(5) * 100;
+      int randomSleepDuration = random.nextInt(5) * 100;
+      workDurationMillis = 100 + randomSleepDuration;
       Thread.sleep(workDurationMillis);
       span.addEvent("Event B");
+      span.setAttribute("RandomSleep", randomSleepDuration);
     } catch (InterruptedException e) {
       logger.debug("Error while sleeping: {}", e.getMessage());
       throw new RuntimeException(e);
