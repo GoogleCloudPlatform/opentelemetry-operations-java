@@ -12,6 +12,8 @@ gcloud auth application-default login
 
 ##### Export the Google Cloud Project ID to `GOOGLE_CLOUD_PROJECT` environment variable:
 
+This comes in handy when creating resources for deployment on Google Cloud.
+
 ```shell
 export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 ```
@@ -21,19 +23,11 @@ export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 Update [`build.gradle`](build.grade) to set the following:
 
 ```
-	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT_ID>,
-	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
-	# Optional - if you want to export using gRPC protocol
-	'-Dotel.exporter.otlp.protocol=grpc',
+	'-Dgoogle.cloud.project=your-gcp-project-id',
+	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',,
 ```
 
 ## Running Locally on your machine
-
-Setup your endpoint with the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable:
-
-```shell
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://your-endpoint:port"
-```
 
 To run the spring boot application from project root:
 
@@ -61,7 +55,7 @@ gcloud auth configure-docker us-central1-docker.pkg.dev
 
 Build and push your image to the Artifact Registry.
 ```shell
-./gradlew :examples:otlp-spring:jib --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/otlp-samples/spring-otlp-trace-example:v1"
+./gradlew :examples-otlp-spring:jib --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/otlp-samples/spring-otlp-trace-example:v1"
 ```
 
 Deploy the image on your Kubernetes cluster and setup port forwarding to interact with your cluster:
