@@ -11,10 +11,14 @@ Executing this command will save your application credentials to default path wh
  - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
  - Windows: `%APPDATA%\gcloud\application_default_credentials.json`
 
-Next, set your endpoint with the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable:
+Next, update the `build.gradle` file to modify required JVM arguments:
 
-```shell
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://your-endpoint:port"
+```groovy
+def autoconf_config = [
+    '-Dgoogle.cloud.project=your-gcp-project-id',
+	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
+    // other arguments
+    ]
 ```
 
 Finally, to run the sample from the project root:

@@ -12,6 +12,8 @@ gcloud auth application-default login
 
 ##### Export the Google Cloud Project ID to `GOOGLE_CLOUD_PROJECT` environment variable:
 
+This comes in handy when creating resources for deployment on Google Cloud.
+
 ```shell
 export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 ```
@@ -21,19 +23,11 @@ export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 Update [`build.gradle`](build.grade) to set the following:
 
 ```
-	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT_ID>,
-	'-Dotel.exporter.otlp.headers=X-Goog-User-Project=<YOUR_QUOTA_PROJECT>',
-	# Optional - if you want to export using gRPC protocol
-	'-Dotel.exporter.otlp.protocol=grpc',
+	'-Dgoogle.cloud.project=your-gcp-project-id',
+	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',,
 ```
 
 ## Running Locally on your machine
-
-Setup your endpoint with the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable:
-
-```shell
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://your-endpoint:port"
-```
 
 To run the spring boot application from project root:
 
@@ -61,7 +55,7 @@ gcloud auth configure-docker us-central1-docker.pkg.dev
 
 Build and push your image to the Artifact Registry.
 ```shell
-./gradlew :examples:otlp-spring:jib --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/otlp-samples/spring-otlp-trace-example:v1"
+./gradlew :examples-otlp-spring:jib --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/otlp-samples/spring-otlp-trace-example:v1"
 ```
 
 Deploy the image on your Kubernetes cluster and setup port forwarding to interact with your cluster:
@@ -76,6 +70,21 @@ kubectl port-forward service/spring-otlp-service 8080:60000
 After successfully setting up port-forwarding, you can send requests to your cluster via `curl` or some similar tool: 
 ```shell
 curl http://localhost:8080/work?desc=test
+```
+
+> [!IMPORTANT]
+> If your cluster has GKE Workload Identity enabled, you will need to grant the `telemetry.traces.write` permission to the service account used by
+> the application deployment.
+
+This running this command will bind the `telemetry-export` service account used by the application deployment to the `telemetry.tracesWriter` role that grants the `telemetry.traces.write`
+permission required to export traces to Google Cloud.
+
+```shell
+# Replace the <GCP-PROJECT-NUMBER> with the project number of your GCP Project ID.
+gcloud projects add-iam-policy-binding projects/$GOOGLE_CLOUD_PROJECT \
+    --role=roles/telemetry.tracesWriter \
+    --member=principal://iam.googleapis.com/projects/<GCP-PROJECT-NUMBER>/locations/global/workloadIdentityPools/$GOOGLE_CLOUD_PROJECT.svc.id.goog/subject/ns/default/sa/telemetry-export \
+    --condition=None
 ```
 
 ### Sending continuous requests
