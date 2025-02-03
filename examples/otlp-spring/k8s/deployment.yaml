@@ -1,3 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telemetry-export
+  namespace: default
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,6 +23,7 @@ spec:
         app: spring-otlp-trace-example
         tier: backend
     spec:
+      serviceAccountName: telemetry-export
       containers:
         - name: spring-otlp-trace-example
           image: us-central1-docker.pkg.dev/%GOOGLE_CLOUD_PROJECT%/otlp-samples/spring-otlp-trace-example:v1

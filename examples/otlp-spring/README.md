@@ -72,6 +72,21 @@ After successfully setting up port-forwarding, you can send requests to your clu
 curl http://localhost:8080/work?desc=test
 ```
 
+> [!IMPORTANT]
+> If your cluster has GKE Workload Identity enabled, you will need to grant the `telemetry.traces.write` permission to the service account used by
+> the application deployment.
+
+This running this command will bind the `telemetry-export` service account used by the application deployment to the `telemetry.tracesWriter` role that grants the `telemetry.traces.write`
+permission required to export traces to Google Cloud.
+
+```shell
+# Replace the <GCP-PROJECT-NUMBER> with the project number of your GCP Project ID.
+gcloud projects add-iam-policy-binding projects/$GOOGLE_CLOUD_PROJECT \
+    --role=roles/telemetry.tracesWriter \
+    --member=principal://iam.googleapis.com/projects/<GCP-PROJECT-NUMBER>/locations/global/workloadIdentityPools/$GOOGLE_CLOUD_PROJECT.svc.id.goog/subject/ns/default/sa/telemetry-export \
+    --condition=None
+```
+
 ### Sending continuous requests
 
 The sample comes with a [client program](src/test/java/com/google/cloud/opentelemetry/examples/otlpspring/MainClient.java) which sends requests to deployed application on your cluster at a fixed rate.
