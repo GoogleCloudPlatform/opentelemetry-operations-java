@@ -15,9 +15,9 @@ Next, update the `build.gradle` file to modify required JVM arguments:
 
 ```groovy
 def autoconf_config = [
-    '-Dgoogle.cloud.project=your-gcp-project-id',
-	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
-    // other arguments
+        '-Dgoogle.cloud.project=your-gcp-project-id',
+        '-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
+        // other arguments
     ]
 ```
 
