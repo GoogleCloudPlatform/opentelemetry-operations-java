@@ -71,6 +71,8 @@ jib {
 		// Configure auto instrumentation.
 		'-Dotel.traces.exporter=google_cloud_trace',
 		'-Dotel.metrics.exporter=google_cloud_monitoring',
+		'-Dotel.logs.exporter=none',
+		'-Dotel.resource.providers.gcp.enabled=true'
 	]
 }
 

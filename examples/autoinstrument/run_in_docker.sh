@@ -26,7 +26,7 @@ fi
 echo "ENVIRONMENT VARIABLES VERIFIED"
 
 echo "BUILDING SAMPLE APP IMAGE"
-gradle clean jib --image "gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-autoinstrument-java"
+gradle clean jibDockerBuild --image "hello-autoinstrument-java-local:latest"
 
 
 echo "RUNNING SAMPLE APP ON PORT 8080"
@@ -36,4 +36,4 @@ docker run \
       -e "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}" \
       -v "${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS}:ro" \
       -p 8080:8080 \
-      "gcr.io/${GOOGLE_CLOUD_PROJECT}/hello-autoinstrument-java"
+      "hello-autoinstrument-java-local:latest"
