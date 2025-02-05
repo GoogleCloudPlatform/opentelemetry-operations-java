@@ -27,8 +27,8 @@ version = '0.1.0'
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk_metrics)
-	runtimeOnly(libraries.opentelemetry_sdk_autoconf)
-	runtimeOnly(libraries.opentelemetry_sdk)
+	implementation(libraries.opentelemetry_sdk_autoconf)
+	implementation(libraries.opentelemetry_sdk)
 	runtimeOnly project(':exporter-auto')
 	// Provides resources to the autoconfiguration module
 	runtimeOnly(libraries.opentelemetry_gcp_resources)
@@ -44,10 +44,9 @@ def autoconf_config = [
 	'-Dotel.service.name=example-autoconf-service',
 ]
 
-mainClassName = 'com.google.cloud.opentelemetry.example.autoconf.AutoconfExample'
-
 application {
 	applicationDefaultJvmArgs = autoconf_config
+	mainClassName = 'com.google.cloud.opentelemetry.example.autoconf.AutoconfExample'
 }
 
 

@@ -15,7 +15,6 @@
  */
 package com.google.cloud.opentelemetry.example.autoconf;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
@@ -24,19 +23,22 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class AutoconfExample {
   private static final Random random = new Random();
   private static final AttributeKey<String> DESCRIPTION_KEY = AttributeKey.stringKey("description");
 
-  private final Tracer tracer = GlobalOpenTelemetry.get().tracerBuilder("example-auto").build();
-  private final Meter meter = GlobalOpenTelemetry.get().meterBuilder("example-auto").build();
-  private final LongCounter useCaseCount = meter.counterBuilder("use_case").build();
-  private final DoubleHistogram fakeLatency = meter.histogramBuilder("fakeLatency").build();
+  private static Tracer tracer;
+  private static LongCounter useCaseCount;
+  private static DoubleHistogram fakeLatency;
 
-  private void myUseCase(String description) {
+  private static void myUseCase(String description) {
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
       useCaseCount.add(1, Attributes.of(DESCRIPTION_KEY, description));
@@ -54,7 +56,7 @@ public class AutoconfExample {
     }
   }
 
-  private void doWork(String description) {
+  private static void doWork(String description) {
     // Child span
     Span span = tracer.spanBuilder(description).startSpan();
     try (Scope scope = span.makeCurrent()) {
@@ -71,11 +73,24 @@ public class AutoconfExample {
 
   public static void main(String[] args) {
     // First, make sure we've configured opentelemetry with autoconfigure module.
-    Objects.requireNonNull(GlobalOpenTelemetry.get(), "Failed to autoconfigure opentelemetry");
+    OpenTelemetrySdk openTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
+    Objects.requireNonNull(openTelemetrySdk, "Failed to autoconfigure opentelemetry");
 
-    AutoconfExample example = new AutoconfExample();
+    // Initialize instruments
+    tracer = openTelemetrySdk.tracerBuilder("example-auto").build();
+    Meter meter = openTelemetrySdk.meterBuilder("example-auto").build();
+
+    // Initialize meters
+    useCaseCount = meter.counterBuilder("use_case").build();
+    fakeLatency = meter.histogramBuilder("fakeLatency").build();
+
     // Application-specific logic
-    example.myUseCase("One");
-    example.myUseCase("Two");
+    myUseCase("One");
+    myUseCase("Two");
+
+    // Shutdown the OpenTelemetry instance
+    CompletableResultCode completableResultCode = openTelemetrySdk.shutdown();
+    completableResultCode.join(10, TimeUnit.SECONDS);
   }
 }
