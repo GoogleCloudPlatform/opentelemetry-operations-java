@@ -29,11 +29,13 @@ configurations {
 	agent
 }
 
-mainClassName = 'com.google.example.TestMain'
+// the shaded variant name for gcp auth extension is an empty string
+def gcp_auth_extension_shaded_classifier = ''
 
 dependencies {
 	agent agentLibraries.agent
 	agent project(path: ':exporter-auto', configuration: 'shadow')
+	agent "${libraries.opentelemetry_gcp_auth_extension}:${gcp_auth_extension_shaded_classifier}"
 
 	implementation(libraries.spring_boot_starter_web)
 	implementation(libraries.spring_cloud_starter_openfeign)
@@ -46,7 +48,8 @@ task copyAgent(type: Copy) {
 	into layout.buildDirectory.dir("otelagent")
 	from configurations.agent {
 		rename "opentelemetry-javaagent(.*).jar", "otel_agent.jar"
-		rename "exporter-auto(.*).jar", "gcp_ext.jar"
+		rename "exporter-auto(.*).jar", "gcp_exporter_ext.jar"
+		rename "opentelemetry-gcp-auth-extension(.*).jar", "gcp_auth_ext.jar"
 	}
 }
 
@@ -67,13 +70,21 @@ jib {
 		// Use the downloaded java agent.
 		'-javaagent:/otelagent/otel_agent.jar',
 		// Use the GCP exporter extensions.
-		'-Dotel.javaagent.extensions=/otelagent/gcp_ext.jar',
+		'-Dotel.javaagent.extensions=/otelagent/gcp_exporter_ext.jar,/otelagent/gcp_auth_ext.jar',
 		// Configure auto instrumentation.
-		'-Dotel.traces.exporter=google_cloud_trace',
+		// Configure traces to be exported via OTLP exporters
+		'-Dotel.traces.exporter=otlp',
+		'-Dotel.exporter.otlp.endpoint=https://telemetry.googleapis.com',
+		'-Dotel.exporter.otlp.traces.protocol=http/protobuf',
+		// Configure metrics to be exported via Google cloud exporters
 		'-Dotel.metrics.exporter=google_cloud_monitoring',
 		'-Dotel.logs.exporter=none',
 		'-Dotel.resource.providers.gcp.enabled=true'
 	]
+}
+
+application {
+	mainClassName = 'com.google.example.TestMain'
 }
 
 tasks.named('jib').configure {
