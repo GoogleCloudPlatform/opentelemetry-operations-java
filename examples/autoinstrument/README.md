@@ -32,14 +32,17 @@ export GOOGLE_CLOUD_PROJECT="my-awesome-gcp-project-id"
 
 To spin it up on your own GKE cluster, run the following:
 ```bash
-./gradlew :examples-autoinstrument:jib --image="gcr.io/$GOOGLE_CLOUD_PROJECT/hello-autoinstrument-java"
+# Create an artifact repository to upload the containerized application image.
+# Skip this step if you wish to re-use an existing artifact repository.
+gcloud artifacts repositories create opentelemetry-sample-apps --repository-format=docker --location=us-central1 --description="OpenTelemetry auto-instrumentation sample applications"
+
+./gradlew :examples-autoinstrument:jib --image="us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/opentelemetry-sample-apps/hello-autoinstrument-java"
 
 sed s/%GOOGLE_CLOUD_PROJECT%/$GOOGLE_CLOUD_PROJECT/g \
  examples/autoinstrument/deployment.yaml | kubectl apply -f -
 
 kubectl expose deployment  hello-autoinstrument-java --type LoadBalancer --port 80 --target-port 8080
 ```
-
 
 This will expose the simple http server at port 80.   You can try out the tracing instrumentation via:
 
@@ -52,6 +55,9 @@ Or, if you'd like to synthesize a parent trace:
 ```bash
 curl -H "traceparent:  00-ff000000000000000000000000000041-ff00000000000041-01" ${cluster_ip}
 ```
+
+> ![IMPORTANT]
+> Make sure that your cluster has the necessary permissions to write metrics and traces to your selected project.
 
 ## Running in Google Cloud Run
 

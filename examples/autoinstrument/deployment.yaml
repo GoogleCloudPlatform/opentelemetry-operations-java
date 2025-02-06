@@ -29,14 +29,20 @@ spec:
     spec:
       containers:
         - name: hello-autoinstrument-java
-          image: gcr.io/%GOOGLE_CLOUD_PROJECT%/hello-autoinstrument-java:latest
+          image: us-central1-docker.pkg.dev/%GOOGLE_CLOUD_PROJECT%/opentelemetry-sample-apps/hello-autoinstrument-java:latest
           # required for resource detection in GKE environment
           env:
-            - name: NAMESPACE
+            - name: GOOGLE_CLOUD_PROJECT
+              value: %GOOGLE_CLOUD_PROJECT%
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: CONTAINER_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
+              value: hello-autoinstrument-java-container
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE_NAME),k8s.container.name=$(CONTAINER_NAME)
