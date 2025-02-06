@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-CONTAINER_REGISTRY=cloud-run-applications
+CONTAINER_REGISTRY=opentelemetry-sample-apps
 REGISTRY_LOCATION=us-central1
 IMAGE_NAME="${REGISTRY_LOCATION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${CONTAINER_REGISTRY}/hello-autoinstrument-java"
 
@@ -36,7 +36,7 @@ fi
 echo "ENVIRONMENT VARIABLES VERIFIED"
 
 echo "CREATING CLOUD ARTIFACT REPOSITORY"
-gcloud artifacts repositories create ${CONTAINER_REGISTRY} --repository-format=docker --location=${REGISTRY_LOCATION} --description="Sample applications to run on Google Cloud Run"
+gcloud artifacts repositories create ${CONTAINER_REGISTRY} --repository-format=docker --location=${REGISTRY_LOCATION} --description="OpenTelemetry auto-instrumentation sample applications"
 echo "CREATED ${CONTAINER_REGISTRY} in ${REGISTRY_LOCATION}"
 
 echo "BUILDING SAMPLE APP IMAGE"
@@ -44,5 +44,6 @@ gradle clean jib --image "${IMAGE_NAME}"
 
 echo "RUNNING SAMPLE APP ON PORT 8080"
 gcloud run deploy hello-autoinstrument-cloud-run \
+        --set-env-vars="GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}" \
         --image="${IMAGE_NAME}" \
         --region="${GOOGLE_CLOUD_RUN_REGION}"
