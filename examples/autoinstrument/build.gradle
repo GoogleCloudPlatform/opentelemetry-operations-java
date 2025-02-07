@@ -79,6 +79,7 @@ jib {
 		// Configure metrics to be exported via Google cloud exporters
 		'-Dotel.metrics.exporter=google_cloud_monitoring',
 		'-Dotel.logs.exporter=none',
+		'-Dotel.service.name=gcp-autoinstrument-spring-demo',
 		'-Dotel.resource.providers.gcp.enabled=true'
 	]
 }

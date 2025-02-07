@@ -43,7 +43,10 @@ echo "BUILDING SAMPLE APP IMAGE"
 gradle clean jib --image "${IMAGE_NAME}"
 
 echo "RUNNING SAMPLE APP ON PORT 8080"
+# We use --no-cpu-throttling for the sample to ensure that traces can be exported in the background.
+# See https://cloud.google.com/sdk/gcloud/reference/run/deploy#--[no-]cpu-throttling for details.
 gcloud run deploy hello-autoinstrument-cloud-run \
         --set-env-vars="GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}" \
         --image="${IMAGE_NAME}" \
-        --region="${GOOGLE_CLOUD_RUN_REGION}"
+        --region="${GOOGLE_CLOUD_RUN_REGION}" \
+        --no-cpu-throttling
