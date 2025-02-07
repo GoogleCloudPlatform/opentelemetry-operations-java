@@ -24,7 +24,6 @@ Update [`build.gradle`](build.grade) to set the following:
 
 ```
 	'-Dgoogle.cloud.project=your-gcp-project-id',
-	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',,
 ```
 
 ## Running Locally on your machine

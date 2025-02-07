@@ -37,7 +37,7 @@ dependencies {
 // Provide headers from env variable
 def autoconf_config = [
 	'-Dgoogle.cloud.project=your-gcp-project-id',
-	'-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
+	'-Dotel.exporter.otlp.endpoint=https://telemetry.googleapis.com',
 	'-Dotel.traces.exporter=otlp',
 	'-Dotel.logs.exporter=none',
 	'-Dotel.metrics.exporter=none',
