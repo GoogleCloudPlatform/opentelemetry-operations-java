@@ -11,14 +11,10 @@ Executing this command will save your application credentials to default path wh
  - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
  - Windows: `%APPDATA%\gcloud\application_default_credentials.json`
 
-Next, update the `build.gradle` file to modify required JVM arguments:
-
-```groovy
-def autoconf_config = [
-        '-Dgoogle.cloud.project=your-gcp-project-id',
-        '-Dotel.exporter.otlp.endpoint=https://your-api-endpoint:port',
-        // other arguments
-    ]
+Next, export the `GOOGLE_CLOUD_PROJECT` environment variable:
+```shell
+# Use your GCP project ID
+export GOOGLE_CLOUD_PROJECT="your-gcp-project-id"
 ```
 
 Finally, to run the sample from the project root:
