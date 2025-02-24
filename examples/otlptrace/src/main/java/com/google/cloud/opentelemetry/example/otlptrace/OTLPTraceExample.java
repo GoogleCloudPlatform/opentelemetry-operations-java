@@ -20,7 +20,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -63,8 +62,8 @@ public class OTLPTraceExample {
     }
   }
 
-  public static void main(String[] args) throws IOException {
-    // Configure the OpenTelemetry pipeline with CloudTrace exporter
+  public static void main(String[] args) {
+    // Configure the OpenTelemetry pipeline with Auto configuration
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
 
     // Application-specific logic

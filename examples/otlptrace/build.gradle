@@ -20,23 +20,19 @@ plugins {
 // examples are not published, so version can be hardcoded
 version = '0.1.0'
 
-description = 'Example for OTLP exporter'
-
-// the shaded variant name for gcp auth extension is an empty string
-def gcp_auth_extension_shaded_classifier = ''
+description = 'Example showing OTLP exporter being used for traces export to GCP'
 
 dependencies {
 	implementation(libraries.opentelemetry_api)
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_otlp_exporter)
 	implementation(libraries.opentelemetry_sdk_autoconf)
-	implementation("${libraries.opentelemetry_gcp_auth_extension}:${gcp_auth_extension_shaded_classifier}")
+	implementation(libraries.opentelemetry_gcp_auth_extension)
 	implementation(libraries.opentelemetry_gcp_resources)
 }
 
 // Provide headers from env variable
 def autoconf_config = [
-	'-Dgoogle.cloud.project=your-gcp-project-id',
 	'-Dotel.exporter.otlp.endpoint=https://telemetry.googleapis.com',
 	'-Dotel.traces.exporter=otlp',
 	'-Dotel.logs.exporter=none',

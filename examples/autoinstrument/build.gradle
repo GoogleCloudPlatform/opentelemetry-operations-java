@@ -29,8 +29,8 @@ configurations {
 	agent
 }
 
-// the shaded variant name for gcp auth extension is an empty string
-def gcp_auth_extension_shaded_classifier = ''
+// the shaded variant name for gcp auth extension
+def gcp_auth_extension_shaded_classifier = 'shadow'
 
 dependencies {
 	agent agentLibraries.agent
