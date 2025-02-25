@@ -22,3 +22,5 @@ Finally, to run the sample from the project root:
 ```
 cd examples/otlptrace && gradle run
 ```
+
+Running this sample will generate and export Traces to Google Cloud.
