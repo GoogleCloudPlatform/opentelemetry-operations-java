@@ -52,8 +52,8 @@ you can configure the following in `<your-home-directory>/.gradle/gradle.propert
     ```text
     ossrhUsername=<generated-token-user>
     ossrhPassword=<generated-token-key>
-    signingUseGpgCmd=true
 
+    signingUseGpgCmd=true
     signing.gnupg.executable=gpg
     signing.gnupg.keyName=<secret key id (large hash)>
     ```
@@ -61,7 +61,7 @@ Note: You can retrieve the list of previously created GPG keys on your machine b
 
 > [!IMPORTANT]
 > Starting June 2024, due to a change to the OSSRH authentication backend, the maven publish plugin now requires [a user token](https://central.sonatype.org/publish/generate-token/) instead of a typical username and password used in the Nexus UI.
-> Follow the steps in the [link](https://central.sonatype.org/publish/generate-token/) to generate a user token, if not done already - this will provide you with a `tokenuser` and `tokenkey`. Replace the fields `ossrhUsername` and `ossrhPassword` with the values for `tokenuser` and `tokenkey` in your `gradle.properties` file to successfully publish artifacts.
+> Follow the steps in the [link](https://central.sonatype.org/publish/generate-token/) to generate a user token, if not done already - this will provide you with a `tokenuser` and `tokenkey`. Replace `<generated-token-user>` and `<generated-token-key>` with the generated `tokenuser` and `tokenkey` in your `gradle.properties` file to successfully publish artifacts.
 
 ### Ensuring you can push tags to GitHub upstream
 
