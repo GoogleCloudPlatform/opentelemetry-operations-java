@@ -14,7 +14,7 @@
 
 # Configuration to build the un-instrumented version of this quickstart on
 # Google Cloud Build. Also pushes the built image to Google Artifact Registry.
-# REGISTRY_LOCATION, PROJECT_ID, ARTIFACT_REGISTRY environment variables must be
+# REGISTRY_LOCATION, GCLOUD_PROJECT, ARTIFACT_REGISTRY environment variables must be
 # substituted in this file.
 #
 # Using gCloud CLI:
@@ -23,7 +23,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   env:
   - 'DOCKER_BUILDKIT=1'
-  args: [ 'build', '-t', '${REGISTRY_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REGISTRY}/java-quickstart:latest', '-f', 'uninstrumented.Dockerfile', '.' ]
+  args: [ 'build', '-t', '${REGISTRY_LOCATION}-docker.pkg.dev/${GCLOUD_PROJECT}/${ARTIFACT_REGISTRY}/java-quickstart:latest', '-f', 'uninstrumented.Dockerfile', '.' ]
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'push', '${REGISTRY_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REGISTRY}/java-quickstart:latest' ]
-images: ['${REGISTRY_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REGISTRY}/java-quickstart:latest']
+  args: [ 'push', '${REGISTRY_LOCATION}-docker.pkg.dev/${GCLOUD_PROJECT}/${ARTIFACT_REGISTRY}/java-quickstart:latest' ]
+images: ['${REGISTRY_LOCATION}-docker.pkg.dev/${GCLOUD_PROJECT}/${ARTIFACT_REGISTRY}/java-quickstart:latest']
