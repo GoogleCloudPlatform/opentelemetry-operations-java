@@ -62,6 +62,9 @@ public class OTLPMetricExample {
                     .addHeader(
                         "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
 
+        if (credentials.getQuotaProjectId() != null) {
+          builder.addHeader("x-goog-user-project", credentials.getQuotaProjectId());
+        }
         return builder.build();
       } catch (IOException e) {
         System.out.println("error:" + e.getMessage());
@@ -74,6 +77,10 @@ public class OTLPMetricExample {
                 .toBuilder()
                     .addHeader(
                         "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
+
+        if (credentials.getQuotaProjectId() != null) {
+          builder.addHeader("x-goog-user-project", credentials.getQuotaProjectId());
+        }
         return builder.build();
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -109,7 +116,6 @@ public class OTLPMetricExample {
     openTelemetrySdk = setupMetricExporter();
 
     // Application-specific logic
-    myUseCase();
     myUseCase();
 
     // Flush all buffered metrics
