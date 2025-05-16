@@ -54,15 +54,11 @@ public class OTLPMetricExample {
   private static MetricExporter addAuthorizationHeaders(
       MetricExporter exporter, GoogleCredentials credentials) {
     if (exporter instanceof OtlpHttpMetricExporter) {
-        return ((OtlpHttpMetricExporter) exporter)
-                .toBuilder()
-                .setHeaders(() -> getRequiredHeaderMap(credentials))
-                .build();
+      return ((OtlpHttpMetricExporter) exporter)
+          .toBuilder().setHeaders(() -> getRequiredHeaderMap(credentials)).build();
     } else if (exporter instanceof OtlpGrpcMetricExporter) {
-        return ((OtlpGrpcMetricExporter) exporter)
-                .toBuilder()
-                .setHeaders(() -> getRequiredHeaderMap(credentials))
-                .build();
+      return ((OtlpGrpcMetricExporter) exporter)
+          .toBuilder().setHeaders(() -> getRequiredHeaderMap(credentials)).build();
     }
     return exporter;
   }
