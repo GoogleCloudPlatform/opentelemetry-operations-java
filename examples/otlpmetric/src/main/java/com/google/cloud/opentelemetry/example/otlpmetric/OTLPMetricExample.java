@@ -18,14 +18,14 @@ package com.google.cloud.opentelemetry.example.otlpmetric;
 import com.google.auth.oauth2.GoogleCredentials;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -49,44 +49,37 @@ public class OTLPMetricExample {
   }
 
   // Modifies the metric exporter initially auto-configured using environment variables
-  // Note: This adds static authorization headers which are set only at initialization time.
-  // This will stop working after the token expires, since the token is not refreshed.
+  // This will invoke the header supplier function to compute the headers, which takes care of the
+  // refresh.
   private static MetricExporter addAuthorizationHeaders(
       MetricExporter exporter, GoogleCredentials credentials) {
     if (exporter instanceof OtlpHttpMetricExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpHttpMetricExporterBuilder builder =
-            ((OtlpHttpMetricExporter) exporter)
+        return ((OtlpHttpMetricExporter) exporter)
                 .toBuilder()
-                    .addHeader(
-                        "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
-
-        if (credentials.getQuotaProjectId() != null) {
-          builder.addHeader("x-goog-user-project", credentials.getQuotaProjectId());
-        }
-        return builder.build();
-      } catch (IOException e) {
-        System.out.println("error:" + e.getMessage());
-      }
+                .setHeaders(() -> getRequiredHeaderMap(credentials))
+                .build();
     } else if (exporter instanceof OtlpGrpcMetricExporter) {
-      try {
-        credentials.refreshIfExpired();
-        OtlpGrpcMetricExporterBuilder builder =
-            ((OtlpGrpcMetricExporter) exporter)
+        return ((OtlpGrpcMetricExporter) exporter)
                 .toBuilder()
-                    .addHeader(
-                        "Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
-
-        if (credentials.getQuotaProjectId() != null) {
-          builder.addHeader("x-goog-user-project", credentials.getQuotaProjectId());
-        }
-        return builder.build();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+                .setHeaders(() -> getRequiredHeaderMap(credentials))
+                .build();
     }
     return exporter;
+  }
+
+  private static Map<String, String> getRequiredHeaderMap(GoogleCredentials credentials) {
+    Map<String, String> gcpHeaders = new HashMap<>();
+    try {
+      credentials.refreshIfExpired();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    gcpHeaders.put("Authorization", "Bearer " + credentials.getAccessToken().getTokenValue());
+    String configuredQuotaProjectId = credentials.getQuotaProjectId();
+    if (configuredQuotaProjectId != null && !configuredQuotaProjectId.isEmpty()) {
+      gcpHeaders.put("x-goog-user-project", configuredQuotaProjectId);
+    }
+    return gcpHeaders;
   }
 
   private static void myUseCase() {
