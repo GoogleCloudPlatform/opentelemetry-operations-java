@@ -31,7 +31,6 @@ dependencies {
 	implementation(libraries.opentelemetry_gcp_resources)
 }
 
-// Provide headers from env variable
 def autoconf_config = [
 	'-Dotel.exporter.otlp.endpoint=https://telemetry.googleapis.com',
 	'-Dotel.traces.exporter=otlp',

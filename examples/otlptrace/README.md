@@ -16,11 +16,12 @@ Next, export the `GOOGLE_CLOUD_PROJECT` environment variable:
 # Use your GCP project ID
 export GOOGLE_CLOUD_PROJECT="your-gcp-project-id"
 ```
+This environment variable also configures the [OpenTelemetry GCP Auth Extension](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/gcp-auth-extension) that facilitates authentication to GCP.
 
 Finally, to run the sample from the project root:
 
 ```
-cd examples/otlptrace && gradle run
+./gradlew :examples-otlptrace:run
 ```
 
 Running this sample will generate and export Traces to Google Cloud.
