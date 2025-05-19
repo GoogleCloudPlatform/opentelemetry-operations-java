@@ -42,7 +42,11 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
+import io.opentelemetry.semconv.incubating.CloudIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.HostIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -78,15 +82,15 @@ public class FakeData {
   static final Attributes someGceAttributes =
       Attributes.builder()
           .put(
-              ResourceAttributes.CLOUD_PLATFORM,
-              ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE)
-          .put(ResourceAttributes.CLOUD_ACCOUNT_ID, aProjectId)
-          .put(ResourceAttributes.HOST_ID, aHostId)
-          .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, aCloudZone)
-          .put(ResourceAttributes.CLOUD_PROVIDER, "gcp")
-          .put(ResourceAttributes.SERVICE_NAME, "test-gce-service")
-          .put(ResourceAttributes.SERVICE_NAMESPACE, "test-gce-service-ns")
-          .put(ResourceAttributes.SERVICE_INSTANCE_ID, "test-gce-service-id")
+              CloudIncubatingAttributes.CLOUD_PLATFORM,
+              CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_COMPUTE_ENGINE)
+          .put(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID, aProjectId)
+          .put(HostIncubatingAttributes.HOST_ID, aHostId)
+          .put(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, aCloudZone)
+          .put(CloudIncubatingAttributes.CLOUD_PROVIDER, "gcp")
+          .put(ServiceAttributes.SERVICE_NAME, "test-gce-service")
+          .put(ServiceIncubatingAttributes.SERVICE_NAMESPACE, "test-gce-service-ns")
+          .put(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID, "test-gce-service-id")
           .put("extra_info", "extra")
           .put("not_gcp_resource", "value")
           .build();

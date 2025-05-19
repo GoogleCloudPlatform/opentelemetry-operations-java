@@ -27,6 +27,7 @@ dependencies {
 	api(libraries.opentelemetry_sdk_common)
 	annotationProcessor(libraries.auto_value)
 	implementation(libraries.opentelemetry_semconv)
+	implementation(libraries.opentelemetry_semconv_incubating)
 	implementation platform(libraries.opentelemetry_bom)
 	testImplementation(testLibraries.junit5)
 	testImplementation(testLibraries.junit5_params)
