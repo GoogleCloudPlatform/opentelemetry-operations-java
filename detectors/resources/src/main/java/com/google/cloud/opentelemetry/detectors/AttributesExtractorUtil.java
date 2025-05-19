@@ -16,13 +16,15 @@
 package com.google.cloud.opentelemetry.detectors;
 
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.incubating.CloudIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.FaasIncubatingAttributes;
 
 /**
  * A utility class that contains method that facilitate extraction of attributes from environment
  * variables and metadata configurations.
  *
- * <p>This class only adds helper methods to extract {@link ResourceAttributes} that are common
+ * <p>This class only adds helper methods to extract {@link CloudIncubatingAttributes}
+ * and {@link FaasIncubatingAttributes} that are common
  * across all the supported compute environments.
  *
  * @deprecated Not for public use. This class is expected to be retained only as package private.
@@ -37,7 +39,7 @@ public class AttributesExtractorUtil {
    *
    * <ul>
    *   <li>If the availability zone cannot be found, calling this method has no effect.
-   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_AVAILABILITY_ZONE}
+   *   <li>Calling this method will update {@link CloudIncubatingAttributes#CLOUD_AVAILABILITY_ZONE}
    *       attribute.
    * </ul>
    *
@@ -52,7 +54,7 @@ public class AttributesExtractorUtil {
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String zone = metadataConfig.getZone();
     if (zone != null) {
-      attributesBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone);
+      attributesBuilder.put(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, zone);
     }
   }
 
@@ -62,7 +64,7 @@ public class AttributesExtractorUtil {
    *
    * <ul>
    *   <li>If the cloud region cannot be found, calling this method has no effect.
-   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>Calling this method will update {@link CloudIncubatingAttributes#CLOUD_REGION} attribute.
    *   <li>This method uses zone attribute to parse region from it.
    * </ul>
    *
@@ -80,7 +82,7 @@ public class AttributesExtractorUtil {
       // Parsing required to scope up to a region
       String[] splitArr = zone.split("-");
       if (splitArr.length > 2) {
-        attributesBuilder.put(ResourceAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
+        attributesBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
       }
     }
   }
@@ -91,7 +93,7 @@ public class AttributesExtractorUtil {
    *
    * <ul>
    *   <li>If the cloud region cannot be found, calling this method has no effect.
-   *   <li>Calling this method will update {@link ResourceAttributes#CLOUD_REGION} attribute.
+   *   <li>Calling this method will update {@link CloudIncubatingAttributes#CLOUD_REGION} attribute.
    *   <li>This method directly uses the region attribute from the metadata config.
    * </ul>
    *
@@ -106,7 +108,7 @@ public class AttributesExtractorUtil {
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String region = metadataConfig.getRegion();
     if (region != null) {
-      attributesBuilder.put(ResourceAttributes.CLOUD_REGION, region);
+      attributesBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, region);
     }
   }
 
@@ -117,7 +119,7 @@ public class AttributesExtractorUtil {
    *
    * <ul>
    *   <li>If the instance ID cannot be found, calling this method has no effect.
-   *   <li>Calling this method will update {@link ResourceAttributes#FAAS_INSTANCE} attribute.
+   *   <li>Calling this method will update {@link FaasIncubatingAttributes#FAAS_INSTANCE} attribute.
    * </ul>
    *
    * @param attributesBuilder The {@link AttributesBuilder} to which the extracted property needs to
@@ -129,7 +131,7 @@ public class AttributesExtractorUtil {
       AttributesBuilder attributesBuilder, GCPMetadataConfig metadataConfig) {
     String instanceId = metadataConfig.getInstanceId();
     if (instanceId != null) {
-      attributesBuilder.put(ResourceAttributes.FAAS_INSTANCE, instanceId);
+      attributesBuilder.put(FaasIncubatingAttributes.FAAS_INSTANCE, instanceId);
     }
   }
 }
