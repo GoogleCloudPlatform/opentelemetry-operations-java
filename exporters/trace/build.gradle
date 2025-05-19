@@ -27,7 +27,6 @@ dependencies {
 	implementation platform(libraries.google_cloud_bom)
 	implementation platform(libraries.opentelemetry_bom)
 	implementation(libraries.opentelemetry_semconv)
-	implementation(libraries.opentelemetry_semconv_incubating)
 	implementation(project(':shared-resourcemapping'))
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.opentelemetry_sdk_testing)

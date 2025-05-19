@@ -160,12 +160,12 @@ subprojects {
 		googleTraceVersion = '2.51.0'
 		googleCloudBomVersion = '26.48.0'
 		cloudMonitoringVersion = '3.52.0'
-		openTelemetryBomVersion = '1.49.0'
-		openTelemetryVersion = '1.49.0'
-		openTelemetryInstrumentationBomVersion = '2.15.0'
-		openTelemetryInstrumentationVersion = '2.15.0'
-		openTelemetrySemconvVersion = '1.32.0'
-		openTelemetryContribVersion = '1.46.0'
+		openTelemetryBomVersion = '1.47.0'
+		openTelemetryVersion = '1.47.0'
+		openTelemetryInstrumentationBomVersion = '2.12.0'
+		openTelemetryInstrumentationVersion = '2.12.0'
+		openTelemetrySemconvVersion = '1.29.0'
+		openTelemetryContribVersion = '1.44.0'
 		junitVersion = '4.13'
 		junit5Version = '5.10.0'
 		mockitoVersion = '5.2.0'
@@ -204,8 +204,7 @@ subprojects {
 			opentelemetry_context            : "io.opentelemetry:opentelemetry-context:${openTelemetryVersion}",
 			opentelemetry_sdk                : "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}",
 			opentelemetry_sdk_common         : "io.opentelemetry:opentelemetry-sdk-common:${openTelemetryVersion}",
-			opentelemetry_semconv            : "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}",
-			opentelemetry_semconv_incubating : "io.opentelemetry.semconv:opentelemetry-semconv-incubating:${openTelemetrySemconvVersion}-alpha",
+			opentelemetry_semconv            : "io.opentelemetry.semconv:opentelemetry-semconv:${openTelemetrySemconvVersion}-alpha",
 			opentelemetry_sdk_metrics        : "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}",
 			opentelemetry_sdk_autoconf       : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryVersion}",
 			opentelemetry_autoconfigure_spi  : "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${openTelemetryVersion}",

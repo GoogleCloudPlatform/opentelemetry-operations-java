@@ -15,7 +15,7 @@
  */
 package com.google.cloud.opentelemetry.trace;
 
-import static io.opentelemetry.semconv.TelemetryAttributes.TELEMETRY_SDK_VERSION;
+import static io.opentelemetry.semconv.ResourceAttributes.TELEMETRY_SDK_VERSION;
 
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Properties;

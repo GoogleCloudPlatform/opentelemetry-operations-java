@@ -20,7 +20,6 @@ dependencies {
 	implementation(libraries.opentelemetry_sdk)
 	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.opentelemetry_semconv)
-	implementation(libraries.opentelemetry_semconv_incubating)
 	implementation platform(libraries.opentelemetry_bom)
 	implementation project(':detector-resources-support')
 	testImplementation(testLibraries.junit5)

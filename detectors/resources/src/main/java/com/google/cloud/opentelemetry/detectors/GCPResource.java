@@ -24,8 +24,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.incubating.*;
-
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -69,8 +68,8 @@ public class GCPResource implements ResourceProvider {
 
     // This is running on some sort of GCPCompute - figure out the platform
     AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.put(CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP);
-    attrBuilder.put(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID, detectedPlatform.getProjectId());
+    attrBuilder.put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.GCP);
+    attrBuilder.put(ResourceAttributes.CLOUD_ACCOUNT_ID, detectedPlatform.getProjectId());
 
     switch (detectedPlatform.getSupportedPlatform()) {
       case GOOGLE_KUBERNETES_ENGINE:
@@ -108,27 +107,27 @@ public class GCPResource implements ResourceProvider {
    */
   private void addGCEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
-        CloudIncubatingAttributes.CLOUD_PLATFORM,
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_COMPUTE_ENGINE);
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE);
 
     Optional.ofNullable(attributesMap.get(GCE_AVAILABILITY_ZONE))
-        .ifPresent(zone -> attrBuilder.put(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, zone));
+        .ifPresent(zone -> attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone));
     Optional.ofNullable(attributesMap.get(GCE_CLOUD_REGION))
-        .ifPresent(region -> attrBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, region));
+        .ifPresent(region -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, region));
     Optional.ofNullable(attributesMap.get(GCE_INSTANCE_ID))
-        .ifPresent(instanceId -> attrBuilder.put(HostIncubatingAttributes.HOST_ID, instanceId));
+        .ifPresent(instanceId -> attrBuilder.put(ResourceAttributes.HOST_ID, instanceId));
     Optional.ofNullable(attributesMap.get(GCE_INSTANCE_NAME))
         .ifPresent(
             instanceName -> {
-              attrBuilder.put(HostIncubatingAttributes.HOST_NAME, instanceName);
-              attrBuilder.put(GcpIncubatingAttributes.GCP_GCE_INSTANCE_NAME, instanceName);
+              attrBuilder.put(ResourceAttributes.HOST_NAME, instanceName);
+              attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_NAME, instanceName);
             });
     Optional.ofNullable(attributesMap.get(GCE_INSTANCE_HOSTNAME))
         .ifPresent(
             instanceHostname ->
-                attrBuilder.put(GcpIncubatingAttributes.GCP_GCE_INSTANCE_HOSTNAME, instanceHostname));
+                attrBuilder.put(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME, instanceHostname));
     Optional.ofNullable(attributesMap.get(GCE_MACHINE_TYPE))
-        .ifPresent(machineType -> attrBuilder.put(HostIncubatingAttributes.HOST_TYPE, machineType));
+        .ifPresent(machineType -> attrBuilder.put(ResourceAttributes.HOST_TYPE, machineType));
   }
 
   /**
@@ -140,14 +139,14 @@ public class GCPResource implements ResourceProvider {
    */
   private void addGKEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
-        CloudIncubatingAttributes.CLOUD_PLATFORM,
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE);
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE);
 
     Optional.ofNullable(attributesMap.get(GKE_CLUSTER_NAME))
         .ifPresent(
-            clusterName -> attrBuilder.put(K8sIncubatingAttributes.K8S_CLUSTER_NAME, clusterName));
+            clusterName -> attrBuilder.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName));
     Optional.ofNullable(attributesMap.get(GKE_HOST_ID))
-        .ifPresent(hostId -> attrBuilder.put(HostIncubatingAttributes.HOST_ID, hostId));
+        .ifPresent(hostId -> attrBuilder.put(ResourceAttributes.HOST_ID, hostId));
     Optional.ofNullable(attributesMap.get(GKE_CLUSTER_LOCATION_TYPE))
         .ifPresent(
             locationType -> {
@@ -155,11 +154,11 @@ public class GCPResource implements ResourceProvider {
                 switch (locationType) {
                   case GKE_LOCATION_TYPE_REGION:
                     attrBuilder.put(
-                        CloudIncubatingAttributes.CLOUD_REGION, attributesMap.get(GKE_CLUSTER_LOCATION));
+                        ResourceAttributes.CLOUD_REGION, attributesMap.get(GKE_CLUSTER_LOCATION));
                     break;
                   case GKE_LOCATION_TYPE_ZONE:
                     attrBuilder.put(
-                        CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                        ResourceAttributes.CLOUD_AVAILABILITY_ZONE,
                         attributesMap.get(GKE_CLUSTER_LOCATION));
                   default:
                     // TODO: Figure out how to handle unexpected conditions like this - Issue #183
@@ -181,7 +180,7 @@ public class GCPResource implements ResourceProvider {
    */
   private void addGCRAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
-        CloudIncubatingAttributes.CLOUD_PLATFORM, CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_CLOUD_RUN);
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN);
     addCommonAttributesForServerlessCompute(attrBuilder, attributesMap);
   }
 
@@ -194,8 +193,8 @@ public class GCPResource implements ResourceProvider {
    */
   private void addGCFAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
-        CloudIncubatingAttributes.CLOUD_PLATFORM,
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_CLOUD_FUNCTIONS);
+        ResourceAttributes.CLOUD_PLATFORM,
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS);
     addCommonAttributesForServerlessCompute(attrBuilder, attributesMap);
   }
 
@@ -208,20 +207,20 @@ public class GCPResource implements ResourceProvider {
    */
   private void addGAEAttributes(AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     attrBuilder.put(
-        CloudIncubatingAttributes.CLOUD_PLATFORM, CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_APP_ENGINE);
+        ResourceAttributes.CLOUD_PLATFORM, ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE);
     Optional.ofNullable(attributesMap.get(GAE_MODULE_NAME))
-        .ifPresent(appName -> attrBuilder.put(FaasIncubatingAttributes.FAAS_NAME, appName));
+        .ifPresent(appName -> attrBuilder.put(ResourceAttributes.FAAS_NAME, appName));
     Optional.ofNullable(attributesMap.get(GAE_APP_VERSION))
-        .ifPresent(appVersion -> attrBuilder.put(FaasIncubatingAttributes.FAAS_VERSION, appVersion));
+        .ifPresent(appVersion -> attrBuilder.put(ResourceAttributes.FAAS_VERSION, appVersion));
     Optional.ofNullable(attributesMap.get(GAE_INSTANCE_ID))
         .ifPresent(
-            appInstanceId -> attrBuilder.put(FaasIncubatingAttributes.FAAS_INSTANCE, appInstanceId));
+            appInstanceId -> attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, appInstanceId));
     Optional.ofNullable(attributesMap.get(GAE_CLOUD_REGION))
-        .ifPresent(cloudRegion -> attrBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, cloudRegion));
+        .ifPresent(cloudRegion -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, cloudRegion));
     Optional.ofNullable(attributesMap.get(GAE_AVAILABILITY_ZONE))
         .ifPresent(
             cloudAvailabilityZone ->
-                attrBuilder.put(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, cloudAvailabilityZone));
+                attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, cloudAvailabilityZone));
   }
 
   /**
@@ -234,14 +233,14 @@ public class GCPResource implements ResourceProvider {
   private void addCommonAttributesForServerlessCompute(
       AttributesBuilder attrBuilder, Map<String, String> attributesMap) {
     Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_NAME))
-        .ifPresent(name -> attrBuilder.put(FaasIncubatingAttributes.FAAS_NAME, name));
+        .ifPresent(name -> attrBuilder.put(ResourceAttributes.FAAS_NAME, name));
     Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_REVISION))
-        .ifPresent(revision -> attrBuilder.put(FaasIncubatingAttributes.FAAS_VERSION, revision));
+        .ifPresent(revision -> attrBuilder.put(ResourceAttributes.FAAS_VERSION, revision));
     Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_INSTANCE_ID))
-        .ifPresent(instanceId -> attrBuilder.put(FaasIncubatingAttributes.FAAS_INSTANCE, instanceId));
+        .ifPresent(instanceId -> attrBuilder.put(ResourceAttributes.FAAS_INSTANCE, instanceId));
     Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE))
-        .ifPresent(zone -> attrBuilder.put(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, zone));
+        .ifPresent(zone -> attrBuilder.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, zone));
     Optional.ofNullable(attributesMap.get(SERVERLESS_COMPUTE_CLOUD_REGION))
-        .ifPresent(region -> attrBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, region));
+        .ifPresent(region -> attrBuilder.put(ResourceAttributes.CLOUD_REGION, region));
   }
 }

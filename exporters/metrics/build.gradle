@@ -27,7 +27,6 @@ dependencies {
 	implementation(platform(libraries.opentelemetry_bom))
 	implementation(project(':shared-resourcemapping'))
 	implementation(libraries.opentelemetry_semconv)
-	implementation(libraries.opentelemetry_semconv_incubating)
 	testImplementation(testLibraries.junit)
 	testImplementation(testLibraries.mockito)
 	testImplementation(testLibraries.slf4j_simple)

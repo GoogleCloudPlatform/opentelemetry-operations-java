@@ -25,12 +25,11 @@ import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
-
-import io.opentelemetry.semconv.incubating.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -145,7 +144,7 @@ public class GCPResourceTest {
   }
 
   @Test
-  public void testGCECloudIncubatingAttributesMapping() {
+  public void testGCEResourceAttributesMapping() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform = generateMockGCEPlatform();
     Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
@@ -154,39 +153,39 @@ public class GCPResourceTest {
 
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
     assertEquals(
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_COMPUTE_ENGINE,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PLATFORM));
+        ResourceAttributes.CloudPlatformValues.GCP_COMPUTE_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     assertEquals(
-        CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PROVIDER));
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_INSTANCE_ID),
-        gotResource.getAttributes().get(HostIncubatingAttributes.HOST_ID));
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
-        gotResource.getAttributes().get(HostIncubatingAttributes.HOST_NAME));
+        gotResource.getAttributes().get(ResourceAttributes.HOST_NAME));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_INSTANCE_NAME),
-        gotResource.getAttributes().get(GcpIncubatingAttributes.GCP_GCE_INSTANCE_NAME));
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_NAME));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_INSTANCE_HOSTNAME),
-        gotResource.getAttributes().get(GcpIncubatingAttributes.GCP_GCE_INSTANCE_HOSTNAME));
+        gotResource.getAttributes().get(ResourceAttributes.GCP_GCE_INSTANCE_HOSTNAME));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_MACHINE_TYPE),
-        gotResource.getAttributes().get(HostIncubatingAttributes.HOST_TYPE));
+        gotResource.getAttributes().get(ResourceAttributes.HOST_TYPE));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_AVAILABILITY_ZONE),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(
         mockPlatform.getAttributes().get(GCE_CLOUD_REGION),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertEquals(10, gotResource.getAttributes().size());
   }
 
   @Test
-  public void testGKECloudIncubatingAttributesMapping_LocationTypeRegion() {
+  public void testGKEResourceAttributesMapping_LocationTypeRegion() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform = generateMockGKEPlatform(GKE_LOCATION_TYPE_REGION);
     Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
@@ -196,16 +195,16 @@ public class GCPResourceTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertEquals(6, gotResource.getAttributes().size());
   }
 
   @Test
-  public void testGKECloudIncubatingAttributesMapping_LocationTypeZone() {
+  public void testGKEResourceAttributesMapping_LocationTypeZone() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform = generateMockGKEPlatform(GKE_LOCATION_TYPE_ZONE);
     Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
@@ -215,16 +214,16 @@ public class GCPResourceTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertEquals(
         mockPlatform.getAttributes().get(GKE_CLUSTER_LOCATION),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(6, gotResource.getAttributes().size());
   }
 
   @Test
-  public void testGKECloudIncubatingAttributesMapping_LocationTypeInvalid() {
+  public void testGKEResourceAttributesMapping_LocationTypeInvalid() {
     Map<String, String> mockGKEAttributes = new HashMap<>(mockGKECommonAttributes);
     mockGKEAttributes.put(GKE_CLUSTER_LOCATION_TYPE, "INVALID");
     mockGKEAttributes.put(GKE_CLUSTER_LOCATION, "some-location");
@@ -242,14 +241,14 @@ public class GCPResourceTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(5, gotResource.getAttributes().size());
   }
 
   @Test
-  public void testGKECloudIncubatingAttributesMapping_LocationMissing() {
+  public void testGKEResourceAttributesMapping_LocationMissing() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform = generateMockGKEPlatform("");
     Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
@@ -259,29 +258,29 @@ public class GCPResourceTest {
     verifyGKEMapping(gotResource, mockPlatform);
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
-    assertNull(gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
+    assertNull(gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(5, gotResource.getAttributes().size());
   }
 
   private void verifyGKEMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
     assertEquals(
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PLATFORM));
+        ResourceAttributes.CloudPlatformValues.GCP_KUBERNETES_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     assertEquals(
-        CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PROVIDER));
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
     assertEquals(
         detectedPlatform.getAttributes().get(GKE_HOST_ID),
-        gotResource.getAttributes().get(HostIncubatingAttributes.HOST_ID));
+        gotResource.getAttributes().get(ResourceAttributes.HOST_ID));
     assertEquals(
         detectedPlatform.getAttributes().get(GKE_CLUSTER_NAME),
-        gotResource.getAttributes().get(K8sIncubatingAttributes.K8S_CLUSTER_NAME));
+        gotResource.getAttributes().get(ResourceAttributes.K8S_CLUSTER_NAME));
   }
 
   @Test
-  public void testGCRCloudIncubatingAttributesMapping() {
+  public void testGCRResourceAttributesMapping() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform =
         generateMockServerlessPlatform(GCPPlatformDetector.SupportedPlatform.GOOGLE_CLOUD_RUN);
@@ -289,11 +288,11 @@ public class GCPResourceTest {
 
     Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
     assertEquals(
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_CLOUD_RUN,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PLATFORM));
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_RUN,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
     verifyServerlessMapping(gotResource, mockPlatform);
     assertEquals(8, gotResource.getAttributes().size());
   }
@@ -308,34 +307,34 @@ public class GCPResourceTest {
 
     Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
     assertEquals(
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_CLOUD_FUNCTIONS,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PLATFORM));
+        ResourceAttributes.CloudPlatformValues.GCP_CLOUD_FUNCTIONS,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
     verifyServerlessMapping(gotResource, mockPlatform);
     assertEquals(8, gotResource.getAttributes().size());
   }
 
   private void verifyServerlessMapping(Resource gotResource, DetectedPlatform detectedPlatform) {
     assertEquals(
-        CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PROVIDER));
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
     assertEquals(
         detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_NAME),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_NAME));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_NAME));
     assertEquals(
         detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_REVISION),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_VERSION));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_VERSION));
     assertEquals(
         detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_INSTANCE_ID),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_INSTANCE));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_INSTANCE));
     assertEquals(
         detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_AVAILABILITY_ZONE),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(
         detectedPlatform.getAttributes().get(SERVERLESS_COMPUTE_CLOUD_REGION),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
   }
 
   @Test
@@ -346,34 +345,34 @@ public class GCPResourceTest {
 
     Resource gotResource = new GCPResource(mockDetector).createResource(mockConfigProps);
     assertEquals(
-        CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_APP_ENGINE,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PLATFORM));
+        ResourceAttributes.CloudPlatformValues.GCP_APP_ENGINE,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM));
     assertEquals(
-        CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP,
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_PROVIDER));
+        ResourceAttributes.CloudProviderValues.GCP,
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_PROVIDER));
     assertEquals(
         mockPlatform.getProjectId(),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_ACCOUNT_ID));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_ACCOUNT_ID));
     assertEquals(
         mockPlatform.getAttributes().get(GAE_MODULE_NAME),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_NAME));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_NAME));
     assertEquals(
         mockPlatform.getAttributes().get(GAE_APP_VERSION),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_VERSION));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_VERSION));
     assertEquals(
         mockPlatform.getAttributes().get(GAE_INSTANCE_ID),
-        gotResource.getAttributes().get(FaasIncubatingAttributes.FAAS_INSTANCE));
+        gotResource.getAttributes().get(ResourceAttributes.FAAS_INSTANCE));
     assertEquals(
         mockPlatform.getAttributes().get(GAE_AVAILABILITY_ZONE),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_AVAILABILITY_ZONE));
     assertEquals(
         mockPlatform.getAttributes().get(GAE_CLOUD_REGION),
-        gotResource.getAttributes().get(CloudIncubatingAttributes.CLOUD_REGION));
+        gotResource.getAttributes().get(ResourceAttributes.CLOUD_REGION));
     assertEquals(8, gotResource.getAttributes().size());
   }
 
   @Test
-  public void testUnknownPlatformCloudIncubatingAttributesMapping() {
+  public void testUnknownPlatformResourceAttributesMapping() {
     GCPPlatformDetector mockDetector = Mockito.mock(GCPPlatformDetector.class);
     DetectedPlatform mockPlatform = generateMockUnknownPlatform();
     Mockito.when(mockDetector.detectPlatform()).thenReturn(mockPlatform);
