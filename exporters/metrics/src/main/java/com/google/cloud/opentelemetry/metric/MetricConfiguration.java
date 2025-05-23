@@ -27,7 +27,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
+import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -63,9 +64,9 @@ public abstract class MetricConfiguration {
    */
   public static final Predicate<AttributeKey<?>> DEFAULT_RESOURCE_ATTRIBUTES_FILTER =
       attributeKey ->
-          (attributeKey.equals(ResourceAttributes.SERVICE_NAME)
-                  || attributeKey.equals(ResourceAttributes.SERVICE_NAMESPACE)
-                  || attributeKey.equals(ResourceAttributes.SERVICE_INSTANCE_ID))
+          (attributeKey.equals(ServiceAttributes.SERVICE_NAME)
+                  || attributeKey.equals(ServiceIncubatingAttributes.SERVICE_NAMESPACE)
+                  || attributeKey.equals(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID))
               && !attributeKey.getKey().isEmpty();
 
   MetricConfiguration() {}
@@ -141,9 +142,9 @@ public abstract class MetricConfiguration {
    * Returns the {@link Predicate} based filter that determines which resource attributes to add as
    * metric labels.
    *
-   * <p>The default filter adds {@link ResourceAttributes#SERVICE_NAME}, {@link
-   * ResourceAttributes#SERVICE_NAMESPACE}, and {@link ResourceAttributes#SERVICE_INSTANCE_ID} as
-   * metric labels.
+   * <p>The default filter adds {@link ServiceAttributes#SERVICE_NAME}, {@link
+   * ServiceIncubatingAttributes#SERVICE_NAMESPACE}, and {@link
+   * ServiceIncubatingAttributes#SERVICE_INSTANCE_ID} as metric labels.
    *
    * @return a {@link Predicate} that acts as a resource attribute filter.
    * @see Builder#setResourceAttributesFilter(Predicate) for details.
