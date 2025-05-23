@@ -29,7 +29,6 @@ import io.opentelemetry.semconv.incubating.FaasIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.GcpIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.HostIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.K8sIncubatingAttributes;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;

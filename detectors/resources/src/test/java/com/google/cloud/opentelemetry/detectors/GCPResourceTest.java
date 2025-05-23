@@ -25,17 +25,15 @@ import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 import io.opentelemetry.semconv.incubating.CloudIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.FaasIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.GcpIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.HostIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.K8sIncubatingAttributes;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
