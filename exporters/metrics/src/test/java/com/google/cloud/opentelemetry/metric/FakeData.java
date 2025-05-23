@@ -46,7 +46,6 @@ import io.opentelemetry.semconv.ServiceAttributes;
 import io.opentelemetry.semconv.incubating.CloudIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.HostIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;

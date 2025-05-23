@@ -21,13 +21,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.ServiceAttributes;
+import io.opentelemetry.semconv.incubating.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import io.opentelemetry.semconv.ServiceAttributes;
-import io.opentelemetry.semconv.incubating.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,7 +47,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE),
@@ -62,7 +62,8 @@ public class ResourceTranslatorTest {
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "GKE-cluster-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_NAMESPACE_NAME, "GKE-testNameSpace"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_POD_NAME, "GKE-testHostName"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName")),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CONTAINER_NAME, "GKE-testContainerName")),
             "k8s_container",
             Map.ofEntries(
                 new SimpleEntry<>("location", "country-region-zone"),
@@ -73,7 +74,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.AWS_EKS),
@@ -82,7 +84,8 @@ public class ResourceTranslatorTest {
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "EKS-cluster-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_NAMESPACE_NAME, "EKS-namespace-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_POD_NAME, "EKS-pod-name"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CONTAINER_NAME, "EKS-container-name")),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CONTAINER_NAME, "EKS-container-name")),
             "k8s_container",
             Map.ofEntries(
                 new SimpleEntry<>("cluster_name", "EKS-cluster-name"),
@@ -103,7 +106,8 @@ public class ResourceTranslatorTest {
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "AKS-cluster-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_NAMESPACE_NAME, "AKS-namespace-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_POD_NAME, "AKS-pod-name"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CONTAINER_NAME, "AKS-container-name")),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CONTAINER_NAME, "AKS-container-name")),
             "k8s_container",
             Map.ofEntries(
                 new SimpleEntry<>("cluster_name", "AKS-cluster-name"),
@@ -115,7 +119,8 @@ public class ResourceTranslatorTest {
             Map.ofEntries(
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
                 new SimpleEntry<>(
                     K8sIncubatingAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_POD_NAME, "non-cloud-pod-name"),
@@ -132,7 +137,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE),
@@ -152,7 +158,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.AWS_EKS),
@@ -190,7 +197,8 @@ public class ResourceTranslatorTest {
             Map.ofEntries(
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
                 new SimpleEntry<>(
                     K8sIncubatingAttributes.K8S_NAMESPACE_NAME, "non-cloud-namespace-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_POD_NAME, "non-cloud-pod-name")),
@@ -204,7 +212,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE),
@@ -222,7 +231,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.AWS_EKS),
@@ -256,7 +266,8 @@ public class ResourceTranslatorTest {
             Map.ofEntries(
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name"),
                 new SimpleEntry<>(K8sIncubatingAttributes.K8S_NODE_NAME, "non-cloud-node-name")),
             "k8s_node",
             Map.ofEntries(
@@ -267,7 +278,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_KUBERNETES_ENGINE),
@@ -283,7 +295,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.AWS_EKS),
@@ -313,7 +326,8 @@ public class ResourceTranslatorTest {
             Map.ofEntries(
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, "country-region-zone"),
-                new SimpleEntry<>(K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name")),
+                new SimpleEntry<>(
+                    K8sIncubatingAttributes.K8S_CLUSTER_NAME, "non-cloud-cluster-name")),
             "k8s_cluster",
             Map.ofEntries(
                 new SimpleEntry<>("cluster_name", "non-cloud-cluster-name"),
@@ -322,7 +336,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.GCP),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.GCP_COMPUTE_ENGINE),
@@ -341,7 +356,8 @@ public class ResourceTranslatorTest {
         generateOTelResourceMappingTestArgs(
             Map.ofEntries(
                 new SimpleEntry<>(
-                    CloudIncubatingAttributes.CLOUD_PROVIDER, CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
+                    CloudIncubatingAttributes.CLOUD_PROVIDER,
+                    CloudIncubatingAttributes.CloudProviderIncubatingValues.AWS),
                 new SimpleEntry<>(
                     CloudIncubatingAttributes.CLOUD_PLATFORM,
                     CloudIncubatingAttributes.CloudPlatformIncubatingValues.AWS_EC2),

@@ -19,7 +19,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ServiceAttributes;
 import io.opentelemetry.semconv.incubating.*;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +99,8 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION)),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", K8sIncubatingAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", K8sIncubatingAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("container_name", K8sIncubatingAttributes.K8S_CONTAINER_NAME),
@@ -110,7 +110,8 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION)),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", K8sIncubatingAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("namespace_name", K8sIncubatingAttributes.K8S_NAMESPACE_NAME),
           AttributeMapping.create("pod_name", K8sIncubatingAttributes.K8S_POD_NAME));
@@ -119,7 +120,8 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION)),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", K8sIncubatingAttributes.K8S_CLUSTER_NAME),
           AttributeMapping.create("node_name", K8sIncubatingAttributes.K8S_NODE_NAME));
   private static final List<AttributeMapping> K8S_CLUSTER_LABELS =
@@ -127,7 +129,8 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION)),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION)),
           AttributeMapping.create("cluster_name", K8sIncubatingAttributes.K8S_CLUSTER_NAME));
   private static final List<AttributeMapping> AWS_EC2_INSTANCE_LABELS =
       Arrays.asList(
@@ -145,7 +148,8 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION),
               "global"),
           AttributeMapping.create("namespace", ServiceIncubatingAttributes.SERVICE_NAMESPACE, ""),
           AttributeMapping.create(
@@ -155,14 +159,16 @@ public class ResourceTranslator {
           AttributeMapping.create(
               "task_id",
               Arrays.asList(
-                  ServiceIncubatingAttributes.SERVICE_INSTANCE_ID, FaasIncubatingAttributes.FAAS_INSTANCE),
+                  ServiceIncubatingAttributes.SERVICE_INSTANCE_ID,
+                  FaasIncubatingAttributes.FAAS_INSTANCE),
               ""));
   private static final List<AttributeMapping> GENERIC_NODE_LABELS =
       Arrays.asList(
           AttributeMapping.create(
               "location",
               Arrays.asList(
-                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE, CloudIncubatingAttributes.CLOUD_REGION),
+                  CloudIncubatingAttributes.CLOUD_AVAILABILITY_ZONE,
+                  CloudIncubatingAttributes.CLOUD_REGION),
               "global"),
           AttributeMapping.create("namespace", ServiceIncubatingAttributes.SERVICE_NAMESPACE, ""),
           AttributeMapping.create(

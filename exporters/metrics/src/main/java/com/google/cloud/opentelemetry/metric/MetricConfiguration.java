@@ -29,7 +29,6 @@ import com.google.common.base.Suppliers;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.semconv.ServiceAttributes;
 import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -144,8 +143,8 @@ public abstract class MetricConfiguration {
    * metric labels.
    *
    * <p>The default filter adds {@link ServiceAttributes#SERVICE_NAME}, {@link
-   * ServiceIncubatingAttributes#SERVICE_NAMESPACE}, and {@link ServiceIncubatingAttributes#SERVICE_INSTANCE_ID} as
-   * metric labels.
+   * ServiceIncubatingAttributes#SERVICE_NAMESPACE}, and {@link
+   * ServiceIncubatingAttributes#SERVICE_INSTANCE_ID} as metric labels.
    *
    * @return a {@link Predicate} that acts as a resource attribute filter.
    * @see Builder#setResourceAttributesFilter(Predicate) for details.
