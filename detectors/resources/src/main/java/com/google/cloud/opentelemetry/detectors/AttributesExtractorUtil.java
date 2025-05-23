@@ -23,9 +23,8 @@ import io.opentelemetry.semconv.incubating.FaasIncubatingAttributes;
  * A utility class that contains method that facilitate extraction of attributes from environment
  * variables and metadata configurations.
  *
- * <p>This class only adds helper methods to extract {@link CloudIncubatingAttributes}
- * and {@link FaasIncubatingAttributes} that are common
- * across all the supported compute environments.
+ * <p>This class only adds helper methods to extract {@link CloudIncubatingAttributes} and {@link
+ * FaasIncubatingAttributes} that are common across all the supported compute environments.
  *
  * @deprecated Not for public use. This class is expected to be retained only as package private.
  */
@@ -82,7 +81,8 @@ public class AttributesExtractorUtil {
       // Parsing required to scope up to a region
       String[] splitArr = zone.split("-");
       if (splitArr.length > 2) {
-        attributesBuilder.put(CloudIncubatingAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
+        attributesBuilder.put(
+            CloudIncubatingAttributes.CLOUD_REGION, splitArr[0] + "-" + splitArr[1]);
       }
     }
   }
