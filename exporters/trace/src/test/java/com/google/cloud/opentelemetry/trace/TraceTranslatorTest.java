@@ -35,7 +35,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
+import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,9 +78,9 @@ public class TraceTranslatorTest {
     Resource resource =
         Resource.create(
             Attributes.builder()
-                .put(ResourceAttributes.SERVICE_NAME, "my-service-name")
-                .put(ResourceAttributes.SERVICE_NAMESPACE, "qa")
-                .put(ResourceAttributes.SERVICE_INSTANCE_ID, "23")
+                .put(ServiceAttributes.SERVICE_NAME, "my-service-name")
+                .put(ServiceIncubatingAttributes.SERVICE_NAMESPACE, "qa")
+                .put(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID, "23")
                 .build());
     TraceTranslator.insertResourceAttributes(resource, resourceAttributes);
     assertTrue(resourceAttributes.containsKey("g.co/r/generic_task/job"));
