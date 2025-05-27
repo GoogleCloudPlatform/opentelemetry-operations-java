@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.IOException;
 import java.util.ArrayList;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +59,7 @@ public class EndToEndTest {
   @Rule public CloudOperationsMockContainer mockContainer = new CloudOperationsMockContainer();
 
   @Test
-  public void testExportMockMetricsDataList() throws IOException {
+  public void testExportMockMetricsDataList() {
     exporter =
         GoogleCloudMetricExporter.createWithConfiguration(
             MetricConfiguration.builder()
@@ -73,7 +72,7 @@ public class EndToEndTest {
   }
 
   @Test
-  public void testExportEmptyMetricsList() throws IOException {
+  public void testExportEmptyMetricsList() {
     exporter =
         GoogleCloudMetricExporter.createWithConfiguration(
             MetricConfiguration.builder()

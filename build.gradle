@@ -170,7 +170,7 @@ subprojects {
 		junit5Version = '5.10.0'
 		mockitoVersion = '5.2.0'
 		pubSubVersion = '1.133.0'
-		testContainersVersion = '1.15.1'
+		testContainersVersion = '1.15.3'
 		wiremockVersion = '2.35.0'
 		springVersion = '2.7.18'
 		springWebVersion = '2.4.5'
