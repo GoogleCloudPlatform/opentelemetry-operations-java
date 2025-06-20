@@ -21,48 +21,25 @@ account to publish via the Central Portal.
     - Contact an OpenTelemetry Operations Java maintainer to add your account
       after you have created it.
 
-### Setup artifact signing
+## Setup artifact signing
 
+### Generate the GPG key
 The artifacts must be signed before being published for consumption. Follow
 these steps to set up artifact signing:
- - [Install
-   GnuPG](http://central.sonatype.org/pages/working-with-pgp-signatures.html#installing-gnupg)
-   and [generate your key
-   pair](http://central.sonatype.org/pages/working-with-pgp-signatures.html#generating-a-key-pair).
- - You'll also need to [publish your public
-   key](http://central.sonatype.org/pages/working-with-pgp-signatures.html#distributing-your-public-key)
-   to make it visible to the Sonatype servers. For gpg 2.1 or newer, you also
-   need to [export the
-   keys](https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials)
-   with command
-     `gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg`.
- -  Put your GnuPG key password and Central Portal account information in
-   `<your-home-directory>/.gradle/gradle.properties`:
+- [Install
+  GnuPG](http://central.sonatype.org/pages/working-with-pgp-signatures.html#installing-gnupg)
+  and [generate your key
+  pair](http://central.sonatype.org/pages/working-with-pgp-signatures.html#generating-a-key-pair).
+- You'll also need to [publish your public
+  key](http://central.sonatype.org/pages/working-with-pgp-signatures.html#distributing-your-public-key)
+  to make it visible to the Sonatype servers.
 
-    ```text
-    # You need the signing properties only if you are making release deployment
-    signing.keyId=<8-character-public-key-id>
-    signing.password=<key-password>
-    signing.secretKeyRingFile=<your-home-directory>/.gnupg/secring.gpg
-
-    centralPortalUsername=<ossrh-username>
-    centralPortalPassword=<ossrh-password>
-    checkstyle.ignoreFailures=false
-    ```
-
-> [!TIP]
-> If your key-generation is failing, checkout the
-> [help section](#help-timeout-during-key-generation-process) at the bottom of
-> this document.
-
-### Using GPG-Agent for artifact signing
+### Configuring Gradle to use GPG
 
 > [!NOTE]
 > These instructions are for modern linux where `gpg` refers to the 2.0 version.
 
-If you're running in linux and would like to use the GPG agent to remember your
-PGP key passwords instead of keeping them in a plain-text file on your home
-directory, you can configure the following in
+You can configure Gradle to use GPG by adding the following in
 `<your-home-directory>/.gradle/gradle.properties`:
 
     ```text
@@ -72,15 +49,16 @@ directory, you can configure the following in
     signingUseGpgCmd=true
     signing.gnupg.executable=gpg
     signing.gnupg.keyName=<secret key id (large hash)>
+
+    checkstyle.ignoreFailures=false
     ```
 
 Note: You can retrieve the list of previously created GPG keys on your machine
-by using `gpg --list-secret-keys`. Additionally, you might still be asked for
-the GPG key's passphrase while signing the artifact, you can store the key in a
-password manager (or in the built-in Keyring) to avoid entering the password
+by using `gpg --list-secret-keys`. Additionally, you can use a GPG Agent and/or
+a password manager (or the built-in Keyring) to avoid entering the password
 manually.\
 For more details, checkout the
-[help section](#help-timeout-while-singing-during-release-process) on the bottom
+[help section](#help-timeout-with-gpg-operations) on the bottom
 of this guide.
 
 > [!IMPORTANT]
@@ -222,7 +200,7 @@ qualifiers (like 'alpha') which are set. Make sure that:
  - The generated POM files for the individual module have the correct version 
    number.
  - The dependencies for an individual module in the POM file are the expected
-   ones & they dependencies have the correct versions.
+   ones & the dependencies have the correct versions.
  - The module content includes all the artifacts that are expected to be
    published - for instance, sourcesJar, javadocs, additional variants like a
    shaded JAR in some cases, etc.
@@ -252,28 +230,7 @@ $ COMMIT=1224f0a # Set the right commit hash.
 $ git cherry-pick -x $COMMIT
 ```
 
-### Help: Timeout during key-generation process
-If you see timeout errors when you run `gpg --gen-key` to generate your keys,
-it maybe because you are running the command on a server and do not have access
-to a UI.\ 
-A common example is - running this command on a remote machine over ssh. 
-
-The issue here is that this command opens up a UI dialog asking for you to set a
-passphrase, waiting for input for a fixed time.
-
-The easiest way to fix this is to run it on a machine for which you have UI
-access.
-
-### Help: Timeout while signing during release process
-If you see timeout errors when you run `./gradlew snapshot` or 
-`./gradlew candidate` this could be because the process is expecting your GPGKey
-passphrase and timed out waiting on it.
-This is expected if you do not have access to the UI of the machine which runs
-the gradle task.\
-A common example is - running this command on a remote machine over ssh.
-
-The issue here is that this command opens up a UI dialog asking for you to set a
-passphrase, waiting for input for a fixed time.
-
-The easiest way to fix this is to run it on a machine for which you have UI
-access.
+### Help: Timeout with gpg operations
+If you see a timeout error when running `gpg` commands, then you probably have a
+graphical session with a gpg agent that is prompting you for a password. Check
+your graphical sessions for a password prompt.
