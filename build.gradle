@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import nebula.plugin.release.git.opinion.Strategies
 
 import java.net.http.HttpClient
