@@ -202,24 +202,20 @@ on the UI.
 
 ## Releasing on Maven Central
 
-Once all the artifacts have been pushed to the staging repository, the
-repository must first be `closed`, which will trigger several sanity checks on
-the repository. If this completes successfully, the repository can then be
-`released`, which will begin the process of pushing the new artifacts to Maven
-Central (the staging repository will be destroyed in the process).
+Once all the artifacts have been pushed to the Central Portal, a `deployment`
+will be created in the Central Portal. This deployment is visible under the
+"Deployments" tab on https://central.sonatype.com/publishing (you will have to
+log in with your account).\
+At this point, you can either manually 'Drop' or 'Publish' the deployment.
+ - Publishing the deployment will make the new release available on Maven
+   Central.
+ - Dropping the deployment will close the deployment and abandon the release.
+   You should drop the deployment if you do not wish to proceed with release
+   process for any reason.
 
-These are manual steps which must be performed from the Central Portal's UI,
-which can be accessed by logging into https://central.sonatype.com/publishing.
-You should see a deployment under the "Deployments" tab. 
+### Things to check before 'Publishing' on Maven Central
 
-You can see the complete process for publishing & releasing to Maven Central on
-[Central Portal site](https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#publishing-by-using-the-portal-ossrh-staging-api).
-
-Note: This can/will be automated in the future.
-
-### Things to check before 'closing' on Maven Central
-
-Before closing the staging repository, it is important to verify that the
+Before publishing the release, it is important to verify that the
 contents of all the published modules are looking good. Particularly, the
 version numbers should be what are expected, and they include any custom release
 qualifiers (like 'alpha') which are set. Make sure that:
