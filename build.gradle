@@ -15,6 +15,10 @@
  */
 import nebula.plugin.release.git.opinion.Strategies
 
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+
 plugins {
 	id "com.diffplug.spotless"
 	id 'nebula.release'
@@ -314,12 +318,14 @@ subprojects {
 			}
 			repositories {
 				maven {
-					def ossrhRelease = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-					def ossrhSnapshot = "https://oss.sonatype.org/content/repositories/snapshots/"
+					// Publish using Portal OSSRH Staging API.
+					// For more information see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#publishing-by-using-the-portal-ossrh-staging-api
+					def ossrhRelease = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+					def ossrhSnapshot = "https://central.sonatype.com/repository/maven-snapshots/"
 					url = isReleaseVersion ? ossrhRelease : ossrhSnapshot
 					credentials {
-						username = rootProject.hasProperty('ossrhUsername') ? rootProject.ossrhUsername : "Unknown user"
-						password = rootProject.hasProperty('ossrhPassword') ? rootProject.ossrhPassword : "Unknown password"
+						username = rootProject.hasProperty('centralPortalUsername') ? rootProject.centralPortalUsername : "Unknown user"
+						password = rootProject.hasProperty('centralPortalPassword') ? rootProject.centralPortalPassword : "Unknown password"
 					}
 				}
 			}
@@ -332,6 +338,50 @@ subprojects {
 				useGpgCmd()
 			}
 			sign publishing.publications.maven
+		}
+	}
+}
+
+tasks.register('sonatypeUploadDefaultRepository') {
+	group = 'Deployment'
+	description = 'Uploads the artifact repository published by the maven publish plugin to Central Portal so that it is visible in the UI.'
+
+	if (!rootProject.hasProperty('centralPortalUsername') || !rootProject.hasProperty('centralPortalPassword')) {
+		throw new GradleException("Unable to find the username and password. Please check ~/.gradle/gradle.properties file.")
+	}
+
+	// The logic is placed in a doLast block to ensure it runs during the execution phase.
+	doLast {
+		// Create authentication string to be used in the bearer token for the API.
+		// See https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#manual-api-endpoints
+		String authString = "${rootProject.centralPortalUsername}:${rootProject.centralPortalPassword}"
+
+		// Encode the auth string and construct the bearer token to be passed in the auth header.
+		String encodedAuthString = Base64.getEncoder().encodeToString(authString.getBytes('UTF-8'))
+
+		String centralPortalUploadEndpoint = 'https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/com.google.cloud.opentelemetry?publishing_type=user_managed'
+
+		// Make a manual POST request to the Central Portal Endpoint
+		def client = HttpClient.newHttpClient()
+		def request = HttpRequest.newBuilder()
+				.uri(URI.create(centralPortalUploadEndpoint))
+				.header('Authorization', "Bearer ${encodedAuthString}")
+				.header('accept', '*/*')
+				.POST(HttpRequest.BodyPublishers.ofString(''))
+				.build()
+
+		println "Sending POST request to: ${centralPortalUploadEndpoint}"
+
+		// The response body will be handled as a String.
+		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString())
+		println "Response Status Code: ${response.statusCode()}"
+		println "Response Body: ${response.body()}"
+
+		// Optionally, fail the build if the request was not successful
+		if (response.statusCode() >= 400) {
+			throw new GradleException("Deployment failed! Received HTTP status ${response.statusCode()}")
+		} else {
+			println "Default repository uploaded successfully! Please visit https://central.sonatype.com/publishing to complete release process."
 		}
 	}
 }
