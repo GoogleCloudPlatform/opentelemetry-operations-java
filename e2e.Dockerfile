@@ -19,7 +19,7 @@ COPY --chown=gradle:gradle . /app/src
 WORKDIR /app/src
 RUN gradle :e2e-test-server:build
 
-FROM openjdk:11-jre-slim
+FROM openjdk:26-ea-11-jdk-slim
 COPY --from=builder /app/src/e2e-test-server/build/libs/*-all.jar /app/app.jar
 WORKDIR /app
 CMD java -jar app.jar

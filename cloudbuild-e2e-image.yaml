@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 steps:
-  - name: docker
+  - name: docker:28
     entrypoint: "sh"
     args:
       - -c
