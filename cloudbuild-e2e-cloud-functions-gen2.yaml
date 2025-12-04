@@ -39,7 +39,7 @@ steps:
     args:
       - cloud-functions-gen2
       - --functionsource=/workspace/e2e-test-server/build/libs/function-source.zip
-      - --runtime=java11
+      - --runtime=java17
       - --entrypoint=com.google.cloud.opentelemetry.endtoend.CloudFunctionHandler
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
