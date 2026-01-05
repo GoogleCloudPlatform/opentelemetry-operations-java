@@ -17,8 +17,10 @@ package com.google.cloud.opentelemetry.example.otlptrace;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+// [START opentelemetry_autoconf_essential_imports]
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+// [END opentelemetry_autoconf_essential_imports]
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -63,8 +65,10 @@ public class OTLPTraceExample {
   }
 
   public static void main(String[] args) {
+    // [START opentelemetry_autoconf_configure_sdk]
     // Configure the OpenTelemetry pipeline with Auto configuration
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
+    // [END opentelemetry_autoconf_configure_sdk]
 
     // Application-specific logic
     myUseCase("One");
