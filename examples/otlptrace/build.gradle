@@ -29,7 +29,9 @@ dependencies {
 	implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.56.0")
 	implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.56.0")
 	// [END opentelemetry_autoconf_otlp_required_deps]
-	implementation(libraries.opentelemetry_gcp_auth_extension)
+	// [START opentelemetry_otlp_auth_deps]
+	implementation("io.opentelemetry.contrib:opentelemetry-gcp-auth-extension:1.52.0-alpha")
+	// [END opentelemetry_otlp_auth_deps]
 	implementation(libraries.opentelemetry_gcp_resources)
 }
 
