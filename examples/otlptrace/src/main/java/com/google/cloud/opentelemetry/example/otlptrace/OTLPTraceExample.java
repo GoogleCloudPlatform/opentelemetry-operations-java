@@ -64,12 +64,12 @@ public class OTLPTraceExample {
     }
   }
 
+  // [START opentelemetry_autoconf_configure_sdk]
   public static void main(String[] args) {
-    // [START opentelemetry_autoconf_configure_sdk]
     // Configure the OpenTelemetry pipeline with Auto configuration
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
-    // [END opentelemetry_autoconf_configure_sdk]
 
+    // [START_EXCLUDE]
     // Application-specific logic
     myUseCase("One");
     myUseCase("Two");
@@ -79,5 +79,7 @@ public class OTLPTraceExample {
         openTelemetrySdk.getSdkTracerProvider().shutdown();
     // wait till export finishes
     completableResultCode.join(10000, TimeUnit.MILLISECONDS);
+    // [END_EXCLUDE]
   }
+  // [END opentelemetry_autoconf_configure_sdk]
 }
