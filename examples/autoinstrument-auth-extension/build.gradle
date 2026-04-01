@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // No external dependencies for the server itself!
+    // Using built-in com.sun.net.httpserver.HttpServer
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}
+
+application {
+    mainClassName = 'com.example.App'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
