@@ -43,6 +43,7 @@ include ":examples-spring-sleuth"
 include ":examples-spring"
 include ":propagators-gcp"
 include ":shared-resourcemapping"
+include ":examples-autoinstrument-auth-extension"
 
 def javaVersion = Jvm.current().javaVersion
 
@@ -107,3 +108,6 @@ project(':examples-otlpmetrics-function').projectDir =
 
 project(':examples-otlpmetric').projectDir =
 		"$rootDir/examples/otlpmetric" as File
+
+project(':examples-autoinstrument-auth-extension').projectDir =
+		"$rootDir/examples/autoinstrument-auth-extension" as File
