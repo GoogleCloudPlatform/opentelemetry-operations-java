@@ -27,12 +27,7 @@ Ensure you have Java 17 set in your environment:
 ```shell
 # This step might look different for your machine. Ensure by running java --version
 export PATH="/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH"
-```
-
-#### Configure the Auth Extension
-
-TODO
-
+``` 
 
 ### Building and Running Locally
 
