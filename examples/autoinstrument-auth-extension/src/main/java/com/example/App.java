@@ -28,7 +28,8 @@ import okhttp3.Response;
 public class App {
 
   public static void main(String[] args) throws IOException {
-    int port = 8080;
+    String portEnv = System.getenv("PORT");
+    int port = (portEnv != null) ? Integer.parseInt(portEnv) : 8080;
     HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
     server.createContext("/", new MyHandler());
     server.createContext("/makeRequest", new MakeRequestHandler());

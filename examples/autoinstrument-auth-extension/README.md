@@ -13,7 +13,7 @@ Executing this command will save your application credentials to default path wh
 - Linux, macOS: `$HOME/.config/gcloud/application_default_credentials.json`
 - Windows: `%APPDATA%\gcloud\application_default_credentials.json`
 
-**NOTE: This method of authentication is not recommended for production environments.**
+**NOTE: This method of authentication is not recommended for production environments. For production environments, refer to the [Authentication Decision Tree](https://docs.cloud.google.com/docs/authentication#auth-decision-tree?) to identify the right authentication method for your use case.**
 
 Next, export the credentials to `GOOGLE_APPLICATION_CREDENTIALS` environment variable -
 
@@ -99,6 +99,44 @@ The server will be accessible at `http://localhost:8080/`. You can test it using
 
 ```shell
 curl http://localhost:8080/
+```
+
+### Deploying to Google Cloud Run
+
+You can deploy this application to Google Cloud Run using the provided `run_in_cloud-run.sh` script.
+
+#### Prerequisites
+
+Ensure you have the following environment variables set:
+- `GOOGLE_CLOUD_PROJECT`: Your Google Cloud Project ID.
+- `GOOGLE_CLOUD_RUN_REGION`: The region to deploy to (e.g., `us-central1`).
+
+#### Deployment
+
+Run the script from the root of the repository, passing the name of the Artifact Registry repository you want to use (it will be created if it doesn't exist):
+
+```shell
+./examples/autoinstrument-auth-extension/run_in_cloud-run.sh <artifact-registry-repo-name>
+```
+
+The script will:
+1. Build the application using `./gradlew installDist`.
+2. Build the Docker image using the `Dockerfile`.
+3. Push the image to Artifact Registry.
+4. Deploy the service to Cloud Run.
+
+#### Authentication on Cloud Run
+
+When running on Cloud Run, the application uses the associated Service Account for authentication. The `gcp-auth-extension` automatically uses these credentials (via Application Default Credentials) to authenticate OTel exports.
+
+> [!IMPORTANT]
+> The Service Account used by Cloud Run must have the following permissions:
+> - `roles/cloudtrace.agent` (to export traces)
+> - `roles/monitoring.metricWriter` (to export metrics)
+
+If you wish to use a custom service account, you can modify the `gcloud run deploy` command in the script to include the `--service-account` flag:
+```shell
+--service-account="<service-account-email>"
 ```
 
 ### Clean up
