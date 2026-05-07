@@ -20,10 +20,20 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(ConfigurableMetricExporterProvider.class)
 @Deprecated
 public class GoogleCloudMetricExporterFactory implements ConfigurableMetricExporterProvider {
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleCloudMetricExporterFactory.class);
+
+  static {
+    logger.warn(
+        "Google Cloud OpenTelemetry Auto exporter for Java is deprecated. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+  }
+
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
     return GoogleCloudMetricExporter.createWithDefaultConfiguration();

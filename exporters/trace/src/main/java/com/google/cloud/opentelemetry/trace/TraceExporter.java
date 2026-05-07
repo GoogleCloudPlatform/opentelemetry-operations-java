@@ -32,6 +32,11 @@ public class TraceExporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(TraceExporter.class);
 
+  static {
+    logger.warn(
+        "Google Cloud OpenTelemetry Trace exporter for Java is deprecated. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+  }
+
   private final Supplier<SpanExporter> internalTraceExporterSupplier;
 
   private TraceExporter(TraceConfiguration configuration) {
@@ -65,7 +70,6 @@ public class TraceExporter implements SpanExporter {
    */
   @Deprecated
   public static SpanExporter createWithDefaultConfiguration() {
-    logger.warn("TraceExporter is deprecated and will be removed in a future release.");
     return new TraceExporter(TraceConfiguration.builder().build());
   }
 
@@ -84,7 +88,6 @@ public class TraceExporter implements SpanExporter {
    */
   @Deprecated
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
-    logger.warn("TraceExporter is deprecated and will be removed in a future release.");
     return new TraceExporter(configuration);
   }
 
