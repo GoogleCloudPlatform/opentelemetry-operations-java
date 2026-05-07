@@ -91,7 +91,7 @@ public class ScenarioHandlerManager {
     Resource gcpResource =
         new GCPResourceProvider()
             .createResource(
-                DefaultConfigProperties.create(
+                DefaultConfigProperties.createFromMap(
                     Map.of("otel.traces.exporter", "none", "otel.metrics.exporter", "none")));
     Resource resource =
         Resource.getDefault()
