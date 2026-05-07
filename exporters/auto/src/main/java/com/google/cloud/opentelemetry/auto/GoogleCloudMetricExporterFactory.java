@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporter
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 @AutoService(ConfigurableMetricExporterProvider.class)
+@Deprecated
 public class GoogleCloudMetricExporterFactory implements ConfigurableMetricExporterProvider {
   @Override
   public MetricExporter createExporter(ConfigProperties config) {

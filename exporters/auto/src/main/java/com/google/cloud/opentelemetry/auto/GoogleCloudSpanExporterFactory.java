@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 @AutoService(ConfigurableSpanExporterProvider.class)
+@Deprecated
 public class GoogleCloudSpanExporterFactory implements ConfigurableSpanExporterProvider {
 
   @Override

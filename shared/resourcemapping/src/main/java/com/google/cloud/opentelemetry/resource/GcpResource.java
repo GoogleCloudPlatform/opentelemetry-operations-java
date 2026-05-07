@@ -23,6 +23,7 @@ import com.google.auto.value.AutoValue;
  * <p>Unlike pure OpenTelemetry, GCP adds a "type" to a raw bundle of labels.
  */
 @AutoValue
+@Deprecated
 public abstract class GcpResource {
   /** The type of resource, e.g. gce_instance. */
   public abstract String getResourceType();

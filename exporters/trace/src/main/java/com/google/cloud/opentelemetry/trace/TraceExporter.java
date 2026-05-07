@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class TraceExporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(TraceExporter.class);
@@ -62,7 +63,9 @@ public class TraceExporter implements SpanExporter {
    * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
    *     {@link TraceExporter#export(Collection)} is called.
    */
+  @Deprecated
   public static SpanExporter createWithDefaultConfiguration() {
+    logger.warn("TraceExporter is deprecated and will be removed in a future release.");
     return new TraceExporter(TraceConfiguration.builder().build());
   }
 
@@ -79,7 +82,9 @@ public class TraceExporter implements SpanExporter {
    *     for trace.
    * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
    */
+  @Deprecated
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
+    logger.warn("TraceExporter is deprecated and will be removed in a future release.");
     return new TraceExporter(configuration);
   }
 

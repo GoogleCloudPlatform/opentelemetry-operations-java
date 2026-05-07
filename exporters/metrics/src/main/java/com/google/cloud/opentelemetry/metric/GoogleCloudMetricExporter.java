@@ -29,6 +29,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class GoogleCloudMetricExporter implements MetricExporter {
   private static final Logger logger = LoggerFactory.getLogger(GoogleCloudMetricExporter.class);
 
@@ -64,7 +65,9 @@ public class GoogleCloudMetricExporter implements MetricExporter {
    *     which gets initialized lazily once {@link GoogleCloudMetricExporter#export(Collection)} is
    *     called.
    */
+  @Deprecated
   public static MetricExporter createWithDefaultConfiguration() {
+    logger.warn("GoogleCloudMetricExporter is deprecated and will be removed in a future release.");
     return new GoogleCloudMetricExporter(MetricConfiguration.builder().build());
   }
 
@@ -81,7 +84,9 @@ public class GoogleCloudMetricExporter implements MetricExporter {
    *     preferences for metrics.
    * @return An instance of {@link GoogleCloudMetricExporter} as a {@link MetricExporter} object.
    */
+  @Deprecated
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {
+    logger.warn("GoogleCloudMetricExporter is deprecated and will be removed in a future release.");
     return new GoogleCloudMetricExporter(configuration);
   }
 

@@ -26,6 +26,7 @@ import java.util.Map;
  * Guice for collections.
  */
 @AutoValue
+@Deprecated
 public abstract class ResourceLabels {
   public abstract Map<String, String> getLabels();
 

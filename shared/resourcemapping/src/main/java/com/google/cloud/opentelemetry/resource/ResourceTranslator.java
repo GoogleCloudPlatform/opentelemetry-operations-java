@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /** Translates from OpenTelemetry Resource into Google Cloud's notion of resource. */
+@Deprecated
 public class ResourceTranslator {
 
   private static final String UNKNOWN_SERVICE_PREFIX = "unknown_service";

@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * @see OneWayXCloudTraceConfigurablePropagatorProvider
  */
 @AutoService(ConfigurablePropagatorProvider.class)
+@Deprecated
 public class XCloudTraceConfigurablePropagatorProvider implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator(ConfigProperties config) {

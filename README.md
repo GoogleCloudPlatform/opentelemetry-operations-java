@@ -1,5 +1,8 @@
 # Open-Telemetry Operations Exporters for Java
 
+> [!WARNING]
+> **DEPRECATION NOTICE**: This project and all its published artifacts are deprecated. No new features will be added, and this repository may be archived in the future.
+
 [![Maven Central][maven-image]][maven-url]
 
 Provides OpenTelemetry Exporters for Google Cloud Operations. 
