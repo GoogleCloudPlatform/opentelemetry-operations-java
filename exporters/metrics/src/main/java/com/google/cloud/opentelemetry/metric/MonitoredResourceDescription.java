@@ -24,6 +24,7 @@ import javax.annotation.concurrent.Immutable;
  * identifying the given monitored resource type.
  */
 @Immutable
+@Deprecated
 public final class MonitoredResourceDescription {
   private final String mrType;
   private final Set<String> mrLabels;

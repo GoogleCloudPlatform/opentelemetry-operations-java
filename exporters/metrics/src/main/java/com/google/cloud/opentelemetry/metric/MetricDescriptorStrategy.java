@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /** The strategy for how to handle metric descriptors. */
+@Deprecated
 public interface MetricDescriptorStrategy {
   /**
    * Determines what to do with metric descriptors.

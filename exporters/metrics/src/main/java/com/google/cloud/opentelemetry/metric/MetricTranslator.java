@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Utility methods to translate metrics from OTEL to GCM format. */
+@Deprecated
 public final class MetricTranslator {
 
   private static final Logger logger = LoggerFactory.getLogger(MetricTranslator.class);

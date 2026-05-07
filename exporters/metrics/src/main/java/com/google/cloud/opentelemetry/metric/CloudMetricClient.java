@@ -22,6 +22,7 @@ import com.google.monitoring.v3.TimeSeries;
 import java.util.List;
 
 /** Wrapper interface for writing to Google Cloud Monitoring. */
+@Deprecated
 public interface CloudMetricClient {
   /**
    * Construct a metric descriptor.

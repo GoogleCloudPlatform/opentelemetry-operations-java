@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 
 /** An interface that denotes how we build our API calls from metric data. */
+@Deprecated
 public interface MetricTimeSeriesBuilder {
   /** Records a LongPoint of the given metric. */
   void recordPoint(MetricData metric, LongPointData point);

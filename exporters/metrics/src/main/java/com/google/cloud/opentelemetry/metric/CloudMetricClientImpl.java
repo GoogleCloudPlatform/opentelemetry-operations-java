@@ -23,6 +23,7 @@ import com.google.monitoring.v3.TimeSeries;
 import java.util.List;
 
 /** Directly talks to Cloud Monitoring. */
+@Deprecated
 public final class CloudMetricClientImpl implements CloudMetricClient {
   private final MetricServiceClient metricServiceClient;
 
