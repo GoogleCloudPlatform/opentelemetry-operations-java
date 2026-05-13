@@ -50,7 +50,7 @@ The following table maps the configurations available in `TraceConfiguration` to
 | :--- | :--- | :--- |
 | `setProjectId(String)` | Use resource attribute: `gcp.project_id` | If using the `opentelemetry-gcp-auth-extension`, the project ID can be inferred from the credentials or the environment. |
 | `setCredentials(Credentials)` | Pass the bearer token as Authorization Header in the exporter | Handled automatically by `opentelemetry-gcp-auth-extension`. |
-| `setTraceServiceEndpoint(String)` | `otel.exporter.otlp.endpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Default is `https://telemetry.googleapis.com`. |
+| `setTraceServiceEndpoint(String)` | `otel.exporter.otlp.endpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Set it to `https://telemetry.googleapis.com` to send traces to Google Cloud. |
 | `setFixedAttributes(Map)` | `otel.resource.attributes` / `OTEL_RESOURCE_ATTRIBUTES` | Maps to Resource attributes in OTel, which are added to all telemetry data, not just spans. |
 | `setDeadline(Duration)` | `otel.exporter.otlp.timeout` / `OTEL_EXPORTER_OTLP_TIMEOUT` | Default is 10 seconds. |
 
@@ -96,45 +96,66 @@ OTEL_METRICS_EXPORTER=otlp
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ```
 
-#### 3. Code Walkthrough
+For more information, see [OpenTelemetry environment variables and system properties](https://opentelemetry.io/docs/languages/java/configuration/#environment-variables-and-system-properties).
 
-##### Legacy Configuration
+#### 3. Initialize the SDK in Code
 
-In the legacy setup using `GoogleCloudMetricExporter`, you typically configured it using `MetricConfiguration` as shown in [MetricsExporterExample.java](file:///usr/local/google/home/sharmapranav/Projects/opentelemetry-operations-java/examples/metrics/src/main/java/com/google/cloud/opentelemetry/example/metrics/MetricsExporterExample.java):
-
-```java
-MetricConfiguration configuration = MetricConfiguration.builder()
-    // Configure project ID, credentials, etc.
-    .build();
-MetricExporter metricExporter = GoogleCloudMetricExporter.createWithConfiguration(configuration);
-```
-
-##### OTLP Configuration
-
-With the OTLP exporter, you can use the `AutoConfiguredOpenTelemetrySdk` to automatically pick up configuration from environment variables or system properties. If you need to manually add authorization headers (e.g., if not using the `gcp-auth-extension`), you can customize the exporter as shown in [OTLPMetricExample.java](file:///usr/local/google/home/sharmapranav/Projects/opentelemetry-operations-java/examples/otlpmetric/src/main/java/com/google/cloud/opentelemetry/example/otlpmetric/OTLPMetricExample.java):
+With the OTLP exporter and the `opentelemetry-gcp-auth-extension` added to your dependencies, you can initialize the OpenTelemetry SDK using `AutoConfiguredOpenTelemetrySdk`. The extension automatically handles authentication, so you don't need to write custom code to add authorization headers.
 
 ```java
-AutoConfiguredOpenTelemetrySdk autoConfOTelSdk =
-    AutoConfiguredOpenTelemetrySdk.builder()
-        .addMetricExporterCustomizer(
-            (exporter, configProperties) -> addAuthorizationHeaders(exporter, credentials))
-        .build();
-```
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import java.util.concurrent.TimeUnit;
 
-The `addAuthorizationHeaders` method computes the headers required for Google Cloud, including the `Authorization` bearer token:
+public class MyApplication {
+  private static OpenTelemetrySdk openTelemetrySdk;
 
-```java
-private static MetricExporter addAuthorizationHeaders(
-    MetricExporter exporter, GoogleCredentials credentials) {
-  if (exporter instanceof OtlpHttpMetricExporter) {
-    return ((OtlpHttpMetricExporter) exporter)
-        .toBuilder().setHeaders(() -> getRequiredHeaderMap(credentials)).build();
-  } else if (exporter instanceof OtlpGrpcMetricExporter) {
-    return ((OtlpGrpcMetricExporter) exporter)
-        .toBuilder().setHeaders(() -> getRequiredHeaderMap(credentials)).build();
+  public static void main(String[] args) {
+    // Configure the OpenTelemetry pipeline with Auto configuration
+    openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
+
+    // Application-specific logic here
+
+    // Flush all buffered metrics on shutdown
+    openTelemetrySdk.getSdkMeterProvider().shutdown().join(10, TimeUnit.SECONDS);
   }
-  return exporter;
 }
+```
+
+#### 4. Adding Attributes
+
+OpenTelemetry uses **Resource Attributes** to describe the entity producing telemetry (e.g., service name, host) and **Metric Attributes** to describe the specific measurement (e.g., HTTP method, status code).
+
+##### Resource Attributes
+
+You can set resource attributes using the `OTEL_RESOURCE_ATTRIBUTES` environment variable or system property. This is a good replacement for:
+*   `setProjectId(String)`: Use the `gcp.project_id` resource attribute. Note that if you are using `opentelemetry-gcp-auth-extension`, you do not need to set this explicitly.
+
+Example:
+```bash
+export OTEL_RESOURCE_ATTRIBUTES="service.name=my-service,gcp.project_id=my-project"
+# Or pass as a system property flag to the JVM
+-Dotel.resource.attributes=gcp.project_id=my-project
+```
+
+##### Metric Attributes
+
+Add attributes to individual metrics when recording measurements. This is the standard way to add dimensions to your metrics.
+
+```java
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
+
+// ... inside your method ...
+
+Meter meter = openTelemetrySdk.getMeter("my-instrumentation");
+LongCounter counter = meter.counterBuilder("processed_jobs").build();
+
+// Add attributes to the measurement
+Attributes attributes = Attributes.of(AttributeKey.stringKey("job_type"), "import");
+counter.add(1, attributes);
 ```
 
 ### Mapping and Limitations
@@ -147,7 +168,7 @@ The following table maps the configurations available in `MetricConfiguration` t
 | :--- | :--- | :--- |
 | `setProjectId(String)` | Use resource attribute: `gcp.project_id` | If using the `opentelemetry-gcp-auth-extension`, the project ID can be inferred from the credentials or the environment. |
 | `setCredentials(Credentials)` | Pass the bearer token as Authorization Header in the exporter | Handled automatically by `opentelemetry-gcp-auth-extension`. |
-| `setMetricServiceEndpoint(String)` | `otel.exporter.otlp.endpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Default is `https://telemetry.googleapis.com`. |
+| `setMetricServiceEndpoint(String)` | `otel.exporter.otlp.endpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Set it to `https://telemetry.googleapis.com` to send metrics to Google Cloud. |
 | `setDeadline(Duration)` | `otel.exporter.otlp.timeout` / `OTEL_EXPORTER_OTLP_TIMEOUT` | Default is 10 seconds. |
 | `setPrefix(String)` | N/A | The Telemetry API automatically prefixes metrics with `workload.googleapis.com/` by default. Custom prefixes are not directly supported via OTLP exporter configuration. |
 
