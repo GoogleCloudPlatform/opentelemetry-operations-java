@@ -5,6 +5,25 @@ This guide provides instructions on how to migrate from the custom exporters in 
 ## Overview
 Google Cloud now supports native OTLP (OpenTelemetry Protocol) ingestion for Cloud Trace and Cloud Monitoring via the [Telemetry API](https://docs.cloud.google.com/stackdriver/docs/reference/telemetry/overview). This allows you to use the standard OpenTelemetry OTLP exporters for sending telemetry data to Google Cloud.
 
+## Before you begin
+
+Before you migrate your application to send trace data to the OTLP endpoint, ensure you have completed the following steps:
+
+### Enable billing and the Telemetry API
+
+1.  In the Google Cloud console, on the project selector page, select or create a Google Cloud project.
+2.  Verify that billing is enabled for your Google Cloud project.
+3.  Enable the Telemetry, Cloud Logging, Cloud Monitoring, and Cloud Trace APIs.
+
+### Configure permissions
+
+Grant the following IAM roles to the service account that your application uses:
+
+*   **Cloud Telemetry Traces Writer** (`roles/telemetry.tracesWriter`)
+*   **Cloud Telemetry Metrics Writer** (`roles/telemetry.metricsWriter`)
+*   **Logs Writer** (`roles/logging.logWriter`)
+*   **Monitoring Metric Writer** (`roles/monitoring.metricWriter`)
+
 ## Migrate from OpenTelemetry Google Cloud Trace Exporter to OTLP exporter
 
 To migrate from the deprecated Google Cloud Trace exporter to the standard OpenTelemetry OTLP exporter, follow these steps:
