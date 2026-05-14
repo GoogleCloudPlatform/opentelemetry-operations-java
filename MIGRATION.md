@@ -151,7 +151,14 @@ import io.opentelemetry.api.metrics.Meter;
 // ... inside your method ...
 
 Meter meter = openTelemetrySdk.getMeter("my-instrumentation");
+
+// Metrics without prefix will be sent to the default domain - prometheus.googleapis.com
+// and will be stored in Google Managed Prometheus with prometheus_target as the Monitored Resource.
 LongCounter counter = meter.counterBuilder("processed_jobs").build();
+
+// Metrics with custom prefix will be sent to the custom domain.
+// In this case, Monitored Resource is determined by the attached OpenTelemetry Resource Attributes.
+LongCounter customCounter = meter.counterBuilder("custom.googleapis.com/my_counter").build();
 
 // Add attributes to the measurement
 Attributes attributes = Attributes.of(AttributeKey.stringKey("job_type"), "import");
@@ -170,7 +177,7 @@ The following table maps the configurations available in `MetricConfiguration` t
 | `setCredentials(Credentials)` | Pass the bearer token as Authorization Header in the exporter | Handled automatically by `opentelemetry-gcp-auth-extension`. |
 | `setMetricServiceEndpoint(String)` | `otel.exporter.otlp.endpoint` / `OTEL_EXPORTER_OTLP_ENDPOINT` | Set it to `https://telemetry.googleapis.com` to send metrics to Google Cloud. |
 | `setDeadline(Duration)` | `otel.exporter.otlp.timeout` / `OTEL_EXPORTER_OTLP_TIMEOUT` | Default is 10 seconds. |
-| `setPrefix(String)` | N/A | The Telemetry API automatically prefixes metrics with `workload.googleapis.com/` by default. Custom prefixes are not directly supported via OTLP exporter configuration. |
+| `setPrefix(String)` | N/A | The Telemetry API automatically prefixes metrics with `prometheus.googleapis.com/` by default and will be stored in Google Managed Prometheus with `prometheus_target` as the Monitored Resource. Custom prefixes are not directly supported via OTLP exporter configuration.<br>If you want your metric to keep appearing under your previous prefix (e.g., `workload.googleapis.com`), you must include the full prefix in the metric name you define in your OpenTelemetry instrumentation. |
 
 #### Unsupported Features
 
