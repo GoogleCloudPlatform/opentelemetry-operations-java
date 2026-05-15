@@ -31,7 +31,7 @@ public class GoogleCloudSpanExporterFactory implements ConfigurableSpanExporterP
 
   static {
     logger.warn(
-        "Google Cloud OpenTelemetry Auto exporter for Java is deprecated. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+        "Google Cloud OpenTelemetry Auto exporter for Java is deprecated and will be archived after September 30th, 2026. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
   }
 
   @Override
