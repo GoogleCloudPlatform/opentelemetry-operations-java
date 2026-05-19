@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
  * Builds GCM TimeSeries from each OTEL metric point, creating metric descriptors based on the
  * "first" seen point for any given metric.
  */
+@Deprecated
 public final class AggregateByLabelMetricTimeSeriesBuilder implements MetricTimeSeriesBuilder {
 
   public static final String LABEL_INSTRUMENTATION_SOURCE =

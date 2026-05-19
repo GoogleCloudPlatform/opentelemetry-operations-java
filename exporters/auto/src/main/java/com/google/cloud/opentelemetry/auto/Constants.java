@@ -15,6 +15,7 @@
  */
 package com.google.cloud.opentelemetry.auto;
 
+@Deprecated
 public class Constants {
 
   static final String CLOUD_TRACE_NAME = "google_cloud_trace";

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /** Translates from OpenTelemetry Resource into Google Cloud Monitoring's MonitoredResource. */
+@Deprecated
 public class ResourceTranslator {
   private static final String CUSTOM_MR_KEY = "gcp.resource_type";
   private static final Logger LOGGER =

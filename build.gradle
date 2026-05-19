@@ -311,7 +311,7 @@ subprojects {
 						}
 						afterEvaluate {
 							// description is not available until evaluated.
-							description = project.description
+							description = "DEPRECATED: " + project.description
 						}
 					}
 				}

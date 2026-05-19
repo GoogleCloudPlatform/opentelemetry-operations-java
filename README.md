@@ -1,4 +1,8 @@
-# Open-Telemetry Operations Exporters for Java
+# OpenTelemetry Operations Exporters for Java
+
+> [!WARNING]
+> **DEPRECATION NOTICE**: This project and all its published artifacts are deprecated. No new features will be added, and this repository may be archived in the future.\
+Please refer to [Migration Guide](MIGRATION.md) for migration instructions to move to the standard OpenTelemetry exporters.
 
 [![Maven Central][maven-image]][maven-url]
 

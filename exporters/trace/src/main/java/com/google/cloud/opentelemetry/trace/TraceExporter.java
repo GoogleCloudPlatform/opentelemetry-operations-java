@@ -27,9 +27,15 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class TraceExporter implements SpanExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(TraceExporter.class);
+
+  static {
+    logger.warn(
+        "Google Cloud OpenTelemetry Trace exporter for Java is deprecated and will be archived after September 30th, 2026. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+  }
 
   private final Supplier<SpanExporter> internalTraceExporterSupplier;
 
@@ -62,6 +68,7 @@ public class TraceExporter implements SpanExporter {
    * @return A configured instance of {@link TraceExporter} which gets initialized lazily once
    *     {@link TraceExporter#export(Collection)} is called.
    */
+  @Deprecated
   public static SpanExporter createWithDefaultConfiguration() {
     return new TraceExporter(TraceConfiguration.builder().build());
   }
@@ -79,6 +86,7 @@ public class TraceExporter implements SpanExporter {
    *     for trace.
    * @return An instance of {@link TraceExporter} as a {@link SpanExporter} object
    */
+  @Deprecated
   public static SpanExporter createWithConfiguration(TraceConfiguration configuration) {
     return new TraceExporter(configuration);
   }

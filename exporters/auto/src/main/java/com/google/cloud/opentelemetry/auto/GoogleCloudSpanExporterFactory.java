@@ -20,9 +20,19 @@ import com.google.cloud.opentelemetry.trace.TraceExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(ConfigurableSpanExporterProvider.class)
+@Deprecated
 public class GoogleCloudSpanExporterFactory implements ConfigurableSpanExporterProvider {
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleCloudSpanExporterFactory.class);
+
+  static {
+    logger.warn(
+        "Google Cloud OpenTelemetry Auto exporter for Java is deprecated and will be archived after September 30th, 2026. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+  }
 
   @Override
   public SpanExporter createExporter(ConfigProperties config) {

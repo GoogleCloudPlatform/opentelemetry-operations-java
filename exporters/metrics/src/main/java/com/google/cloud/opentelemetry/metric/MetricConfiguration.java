@@ -44,6 +44,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
+@Deprecated
 public abstract class MetricConfiguration {
   static final String DEFAULT_PREFIX = "workload.googleapis.com";
 
@@ -224,6 +225,7 @@ public abstract class MetricConfiguration {
 
   /** Builder for {@link MetricConfiguration}. */
   @AutoValue.Builder
+  @Deprecated
   public abstract static class Builder {
 
     Builder() {}

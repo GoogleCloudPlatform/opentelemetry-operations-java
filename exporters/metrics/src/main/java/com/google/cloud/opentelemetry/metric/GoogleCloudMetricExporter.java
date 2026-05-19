@@ -29,8 +29,14 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class GoogleCloudMetricExporter implements MetricExporter {
   private static final Logger logger = LoggerFactory.getLogger(GoogleCloudMetricExporter.class);
+
+  static {
+    logger.warn(
+        "Google Cloud OpenTelemetry Metric exporter for Java is deprecated and will be archived after September 30th, 2026. Please migrate to the OpenTelemetry OTLP exporters. For migration details, see https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md");
+  }
 
   private final Supplier<MetricExporter> internalMetricExporterSupplier;
 
@@ -64,6 +70,7 @@ public class GoogleCloudMetricExporter implements MetricExporter {
    *     which gets initialized lazily once {@link GoogleCloudMetricExporter#export(Collection)} is
    *     called.
    */
+  @Deprecated
   public static MetricExporter createWithDefaultConfiguration() {
     return new GoogleCloudMetricExporter(MetricConfiguration.builder().build());
   }
@@ -81,6 +88,7 @@ public class GoogleCloudMetricExporter implements MetricExporter {
    *     preferences for metrics.
    * @return An instance of {@link GoogleCloudMetricExporter} as a {@link MetricExporter} object.
    */
+  @Deprecated
   public static MetricExporter createWithConfiguration(MetricConfiguration configuration) {
     return new GoogleCloudMetricExporter(configuration);
   }

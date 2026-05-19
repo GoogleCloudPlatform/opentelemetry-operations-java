@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * propagation.
  */
 @AutoService(ConfigurablePropagatorProvider.class)
+@Deprecated
 public class OneWayXCloudTraceConfigurablePropagatorProvider
     implements ConfigurablePropagatorProvider {
   @Override

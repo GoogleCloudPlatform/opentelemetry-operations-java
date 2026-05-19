@@ -37,6 +37,7 @@ import javax.annotation.concurrent.Immutable;
 /** Configurations for {@link TraceExporter}. */
 @AutoValue
 @Immutable
+@Deprecated
 public abstract class TraceConfiguration {
 
   @VisibleForTesting static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10, 0);
@@ -149,6 +150,7 @@ public abstract class TraceConfiguration {
 
   /** Builder for {@link TraceConfiguration}. */
   @AutoValue.Builder
+  @Deprecated
   public abstract static class Builder {
 
     @VisibleForTesting static final Duration ZERO = Duration.ZERO;

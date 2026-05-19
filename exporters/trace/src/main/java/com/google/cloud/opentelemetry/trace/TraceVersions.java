@@ -22,6 +22,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 /** Helper to grab version numbers from builds. */
+@Deprecated
 public class TraceVersions {
 
   public static final String SDK_VERSION = readSdkVersion();

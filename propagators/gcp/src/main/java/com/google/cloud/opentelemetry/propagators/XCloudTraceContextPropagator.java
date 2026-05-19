@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
  * <p>See: <a href="https://cloud.google.com/trace/docs/setup#force-trace">Google Cloud Trace
  * Documentation</a> for details.
  */
+@Deprecated
 public final class XCloudTraceContextPropagator implements TextMapPropagator {
 
   private static final String FIELD = "x-cloud-trace-context";
@@ -53,7 +54,10 @@ public final class XCloudTraceContextPropagator implements TextMapPropagator {
    *
    * @param oneway boolean to configure if the trace should propagate in a single direction.
    */
+  @Deprecated
   public XCloudTraceContextPropagator(boolean oneway) {
+    LOGGER.warning(
+        "XCloudTraceContextPropagator is deprecated and will be removed in a future release.");
     this.oneway = oneway;
   }
 
