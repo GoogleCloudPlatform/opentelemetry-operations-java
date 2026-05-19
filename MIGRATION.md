@@ -21,8 +21,6 @@ Grant the following IAM roles to the service account that your application uses:
 
 *   **Cloud Telemetry Traces Writer** (`roles/telemetry.tracesWriter`)
 *   **Cloud Telemetry Metrics Writer** (`roles/telemetry.metricsWriter`)
-*   **Logs Writer** (`roles/logging.logWriter`)
-*   **Monitoring Metric Writer** (`roles/monitoring.metricWriter`)
 
 ## Migrate from OpenTelemetry Google Cloud Trace Exporter to OTLP exporter
 
@@ -203,9 +201,9 @@ The following table maps the configurations available in `MetricConfiguration` t
 The following features of the `GoogleCloudMetricExporter` are not supported by the standard OTLP exporter:
 
 *   **Metric Descriptor Strategy (`setDescriptorStrategy`)**: OTLP exporters do not send metric descriptors separately. Metadata is handled automatically by the backend.
-*   **Custom Monitored Resource Mapping (`setMonitoredResourceDescription`)**: OTLP relies on standard OTel resources. GCP maps these to monitored resources automatically.
+*   **Custom Monitored Resource Mapping (`setMonitoredResourceDescription`)**: OTLP relies on standard OTel resources. GCP maps these to monitored resources automatically. This feature was added to support internal use-cases only.
 *   **Predicate-based Resource Attribute Filtering (`setResourceAttributesFilter`)**: OTLP exporters send all resource attributes by default. If you need to filter them, you must do so before they reach the exporter (e.g., via resource configuration or a processor if using a collector).
-*   **Use Service Time Series (`setUseServiceTimeSeries`)**: This option is specific to the Cloud Monitoring API and is not available in OTLP exporters.
+*   **Use Service Time Series (`setUseServiceTimeSeries`)**: This option is specific to the Cloud Monitoring API and is not available in OTLP exporters. This feature is for supporting internal use-cases only.
 *   **Instrumentation Library Labels Toggle (`setInstrumentationLibraryLabelsEnabled`)**: OTLP exporters send instrumentation scope information by default. Disabling it requires dropping the attributes via views or processors.
 *   **Custom Metric Service Settings (`setMetricServiceSettings`)**: You cannot pass `MetricServiceSettings` to OTLP exporters. If you need custom channel or client configuration, you must use programmatic configuration with `OtlpGrpcMetricExporter.builder()` or `OtlpHttpMetricExporter.builder()`.
 
