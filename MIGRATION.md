@@ -1,6 +1,6 @@
 # Migration Guide
 
-This guide provides instructions on how to migrate from the custom exporters in this repository to the standard OpenTelemetry OTLP exporters.
+This guide provides instructions on how to migrate from the custom exporters and propagators in this repository to standard OpenTelemetry OTLP exporters and W3C Trace Context propagation.
 
 ## Overview
 Google Cloud now supports native OTLP (OpenTelemetry Protocol) ingestion for Cloud Trace and Cloud Monitoring via the [Telemetry API](https://docs.cloud.google.com/stackdriver/docs/reference/telemetry/overview). This allows you to use the standard OpenTelemetry OTLP exporters for sending telemetry data to Google Cloud.
@@ -485,3 +485,101 @@ For a complete sample demonstrating how to export metrics to Google Cloud using 
 The Auto exporter allowed the [auto-configuration module](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#opentelemetry-sdk-autoconfigure) of OpenTelemetry Java to work with OpenTelemetry Google Cloud Trace and Monitoring exporters in this repository.
 
 The standard OpenTelemetry OTLP exporters natively support auto-configuration and are the recommended way to send telemetry to Google Cloud. You can configure the OTLP exporters using the standard [exporter properties](https://opentelemetry.io/docs/languages/java/configuration/#properties-exporters) that are supported by the autoconfiguration module.
+
+## Migrate from X-Cloud-Trace-Context Propagator to W3C Trace Context Propagator
+
+Google Cloud infrastructure now natively supports standard W3C Trace Context headers (`traceparent` and `tracestate`). The `propagators/gcp` package is deprecated and will be archived after October 30th, 2026. You should migrate to standard OpenTelemetry W3C Trace Context propagation.
+
+### Why Migrate?
+
+*   **Standardization:** W3C Trace Context is the industry standard for distributed tracing context propagation and is natively supported across cloud providers, libraries, and frameworks.
+*   **Native GCP Support:** Google Cloud services (such as Cloud Run, Cloud Functions, App Engine, Google Kubernetes Engine, Cloud Trace, and Google Cloud Load Balancers) natively support W3C Trace Context headers without requiring proprietary headers.
+*   **Built-in OpenTelemetry Support:** W3C Trace Context propagation is built into the core OpenTelemetry Java SDK and is enabled by default.
+
+---
+
+### Migration Steps
+
+#### 1. Remove Legacy Dependency
+
+Remove the `propagators-gcp` dependency from your `build.gradle` file:
+
+```groovy
+// Remove:
+// implementation("com.google.cloud.opentelemetry:propagators-gcp:<version>")
+```
+
+If you are using the OpenTelemetry Java Agent, remove the propagator JAR from the `-Dotel.javaagent.extensions` flag.
+
+#### 2. Update Configuration (Autoconfigure / Java Agent)
+
+The standard OpenTelemetry SDK Autoconfigure module and the Java Agent use W3C Trace Context (`tracecontext`) and Baggage (`baggage`) by default (`otel.propagators=tracecontext,baggage`).
+
+If you explicitly configured `otel.propagators` to include `gcp` or `oneway-gcp`, update it to remove them:
+
+```bash
+# System Properties
+-Dotel.propagators=tracecontext,baggage
+
+# Or Environment Variables
+OTEL_PROPAGATORS=tracecontext,baggage
+```
+
+#### 3. Update Manual Configuration in Code
+
+If you manually registered `XCloudTraceContextPropagator` in your application code, replace it with the standard OpenTelemetry `W3CTraceContextPropagator`:
+
+##### Before (Legacy GCP Propagator)
+
+```java
+import com.google.cloud.opentelemetry.propagators.XCloudTraceContextPropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+
+public class MyApplication {
+  public static void main(String[] args) {
+    ContextPropagators propagators =
+        ContextPropagators.create(
+            TextMapPropagator.composite(
+                W3CTraceContextPropagator.getInstance(),
+                new XCloudTraceContextPropagator(/*oneway=*/ true)));
+
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setPropagators(propagators)
+            // Other setup...
+            .build();
+  }
+}
+```
+
+##### After (Standard W3C Trace Context Propagator)
+
+```java
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+
+public class MyApplication {
+  public static void main(String[] args) {
+    ContextPropagators propagators =
+        ContextPropagators.create(
+            TextMapPropagator.composite(
+                W3CTraceContextPropagator.getInstance(),
+                W3CBaggagePropagator.getInstance()));
+
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder()
+            .setPropagators(propagators)
+            // Other setup...
+            .build();
+  }
+}
+```
+
+> [!NOTE]
+> If you are using `AutoConfiguredOpenTelemetrySdk`, `W3CTraceContextPropagator` and `W3CBaggagePropagator` are configured automatically by default without requiring manual code setup.
