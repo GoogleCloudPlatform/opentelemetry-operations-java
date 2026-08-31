@@ -1,5 +1,8 @@
 # Google X-Cloud-Trace-Context propagtors
 
+> [!WARNING]
+> This package is deprecated and will be archived after October 30th, 2026. Google Cloud infrastructure now natively supports standard W3C Trace Context headers. Please use standard W3C Trace Context propagation instead. See the [Migration Guide](https://github.com/GoogleCloudPlatform/opentelemetry-operations-java/blob/main/MIGRATION.md) for details.
+
 [![Maven Central][maven-image]][maven-url]
 
 *NOTE: While OpenTelemetry SDK is stable, the Autoconfigure SDK extension is still Alpha in OpenTelemetry, and some features are not guaranteed to work across versions.*
