@@ -29,16 +29,33 @@ jib {
 	containerizingMode = 'packaged'
 }
 
-mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
+def autoconf_config = [
+	'-Dotel.exporter.otlp.endpoint=https://telemetry.googleapis.com',
+	'-Dotel.resource.attributes=gcp.project_id=<YOUR_PROJECT_ID>',
+	'-Dotel.metrics.exporter=otlp',
+	'-Dotel.logs.exporter=none',
+	'-Dotel.traces.exporter=none',
+	'-Dotel.service.name=metrics-example',
+	'-Dotel.exporter.otlp.protocol=http/protobuf',
+	'-Dotel.java.global-autoconfigure.enabled=true',
+]
+
+application {
+	mainClassName = 'com.google.cloud.opentelemetry.example.metrics.MetricsExporterExample'
+	applicationDefaultJvmArgs = autoconf_config
+}
 
 description = 'Examples for Cloud Monitoring Exporter'
 
 dependencies {
 	implementation(libraries.opentelemetry_api)
-	implementation(libraries.opentelemetry_sdk_metrics)
+	implementation(libraries.opentelemetry_sdk)
+	implementation(libraries.opentelemetry_sdk_autoconf)
 	implementation(libraries.google_cloud_monitoring)
 	implementation project(':exporter-metrics')
 	implementation(libraries.opentelemetry_gcp_resources)
+	implementation(libraries.opentelemetry_otlp_exporter)
+	implementation(libraries.opentelemetry_gcp_auth_extension)
 	// required by resource detection
 	implementation(libraries.opentelemetry_autoconfigure_spi)
 	// this helps in debugging as it outputs all export to std out
