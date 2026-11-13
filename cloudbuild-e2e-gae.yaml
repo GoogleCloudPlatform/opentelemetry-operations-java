@@ -16,7 +16,7 @@ steps:
   - name: docker:28
     id: wait-for-image
     entrypoint: "sh"
-    timeout: 3m
+    timeout: 6m
     env: [ "_TEST_SERVER_IMAGE=${_TEST_SERVER_IMAGE}" ]
     args:
       - e2e-test-server/wait-for-image.sh
@@ -33,8 +33,9 @@ steps:
       - --skip-cleanup
 
 logsBucket: gs://opentelemetry-ops-e2e-cloud-build-logs
+timeout: 20m
 substitutions:
-  _TEST_RUNNER_IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/e2e-testing/opentelemetry-operations-e2e-testing:0.22.0
+  _TEST_RUNNER_IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/e2e-testing/opentelemetry-operations-e2e-testing:0.23.0
   _TEST_SERVER_IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/e2e-testing/opentelemetry-operations-java-e2e-test-server:${SHORT_SHA}
 
 options:

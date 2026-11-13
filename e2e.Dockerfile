@@ -13,13 +13,13 @@
 # limitations under the License.
 
 # Build relative to root of repository i.e. `docker build --file e2e.Dockerfile --tag=$tag ..`
-FROM gradle:8.0.2-jdk11 as builder
+FROM mirror.gcr.io/library/gradle:8.0.2-jdk11 as builder
 
 COPY --chown=gradle:gradle . /app/src
 WORKDIR /app/src
 RUN gradle :e2e-test-server:build
 
-FROM openjdk:26-ea-11-jdk-slim
+FROM mirror.gcr.io/library/eclipse-temurin:21-jre-noble
 COPY --from=builder /app/src/e2e-test-server/build/libs/*-all.jar /app/app.jar
 WORKDIR /app
-CMD java -jar app.jar
+CMD ["java", "-XX:+UseSerialGC", "-Xmx128m", "-XX:MaxDirectMemorySize=64m", "-XX:ReservedCodeCacheSize=48m", "-jar", "app.jar"]
