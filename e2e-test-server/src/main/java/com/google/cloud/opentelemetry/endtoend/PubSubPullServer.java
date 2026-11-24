@@ -58,17 +58,9 @@ public class PubSubPullServer implements PubSubServer {
    *     incoming {@link com.google.pubsub.v1.PubsubMessage}s.
    */
   public PubSubPullServer(PubSubMessageHandler pubSubMessageHandler) {
-    this(
-        pubSubMessageHandler,
-        createSubscriber(pubSubMessageHandler),
-        createHealthCheckServerIfConfigured(Constants.PUSH_PORT, Constants.PORT));
-  }
-
-  PubSubPullServer(
-      PubSubMessageHandler pubSubMessageHandler, Subscriber subscriber, HttpServer httpServer) {
     this.pubSubMessageHandler = pubSubMessageHandler;
-    this.subscriber = subscriber;
-    this.httpServer = httpServer;
+    this.subscriber = createSubscriber(pubSubMessageHandler);
+    this.httpServer = createHealthCheckServerIfConfigured(Constants.PUSH_PORT, Constants.PORT);
   }
 
   private static Subscriber createSubscriber(PubSubMessageHandler pubSubMessageHandler) {
@@ -99,7 +91,7 @@ public class PubSubPullServer implements PubSubServer {
     return subscriber;
   }
 
-  static HttpServer createHealthCheckServerIfConfigured(String pushPort, String port) {
+  private static HttpServer createHealthCheckServerIfConfigured(String pushPort, String port) {
     String portValue = resolvePort(pushPort, port);
     if (portValue.isEmpty()) {
       return null;
@@ -107,7 +99,7 @@ public class PubSubPullServer implements PubSubServer {
     return createHealthCheckServer(Integer.parseInt(portValue));
   }
 
-  static String resolvePort(String pushPort, String port) {
+  private static String resolvePort(String pushPort, String port) {
     if (pushPort != null && !pushPort.isEmpty()) {
       return pushPort;
     }
@@ -117,7 +109,7 @@ public class PubSubPullServer implements PubSubServer {
     return "";
   }
 
-  static HttpServer createHealthCheckServer(int port) {
+  private static HttpServer createHealthCheckServer(int port) {
     try {
       HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
       server.createContext("/ready", createStandardStringResponseHandler("Server Ready"));
