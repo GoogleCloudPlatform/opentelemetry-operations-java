@@ -28,20 +28,20 @@ import com.google.cloud.opentelemetry.metric.MetricConfiguration;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.contrib.gcp.resource.GCPResourceProvider;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class MetricsExporterExample {
-  private static SdkMeterProvider METER_PROVIDER;
+  private static OpenTelemetrySdk OPEN_TELEMETRY_SDK;
 
   private static Meter METER;
   private static final Random RANDOM = new Random();
@@ -81,25 +81,28 @@ public class MetricsExporterExample {
   }
 
   private static void setupMetricExporter(MetricConfiguration metricConfiguration) {
-    GCPResourceProvider resourceProvider = new GCPResourceProvider();
     MetricExporter metricExporter =
         GoogleCloudMetricExporter.createWithConfiguration(metricConfiguration);
     MetricExporter metricDebugExporter = LoggingMetricExporter.create();
-    METER_PROVIDER =
-        SdkMeterProvider.builder()
-            .setResource(Resource.create(resourceProvider.getAttributes()))
-            .registerMetricReader(
-                PeriodicMetricReader.builder(metricExporter)
-                    .setInterval(Duration.ofSeconds(30))
-                    .build())
-            .registerMetricReader(
-                PeriodicMetricReader.builder(metricDebugExporter)
-                    .setInterval(Duration.ofSeconds(30))
-                    .build())
-            .build();
+
+    OPEN_TELEMETRY_SDK =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addMeterProviderCustomizer(
+                (meterProviderBuilder, configProperties) ->
+                    meterProviderBuilder
+                        .registerMetricReader(
+                            PeriodicMetricReader.builder(metricExporter)
+                                .setInterval(Duration.ofSeconds(30))
+                                .build())
+                        .registerMetricReader(
+                            PeriodicMetricReader.builder(metricDebugExporter)
+                                .setInterval(Duration.ofSeconds(30))
+                                .build()))
+            .build()
+            .getOpenTelemetrySdk();
 
     METER =
-        METER_PROVIDER
+        OPEN_TELEMETRY_SDK
             .meterBuilder("instrumentation-library-name")
             .setInstrumentationVersion("semver:1.0.0")
             .build();
@@ -148,7 +151,7 @@ public class MetricsExporterExample {
     } finally {
       System.out.println("Shutting down the metrics-example application");
 
-      CompletableResultCode resultCode = METER_PROVIDER.shutdown();
+      CompletableResultCode resultCode = OPEN_TELEMETRY_SDK.getSdkMeterProvider().shutdown();
       // Wait upto 60 seconds for job to complete
       resultCode.join(60, TimeUnit.SECONDS);
       if (resultCode.isSuccess()) {
