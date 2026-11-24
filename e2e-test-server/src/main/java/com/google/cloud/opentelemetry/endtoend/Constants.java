@@ -37,6 +37,7 @@ public class Constants {
   public static String RESPONSE_TOPIC_NAME =
       System.getenv().getOrDefault("RESPONSE_TOPIC_NAME", "");
   public static String PUSH_PORT = System.getenv().getOrDefault("PUSH_PORT", "");
+  public static String PORT = System.getenv().getOrDefault("PORT", "");
 
   public static ProjectSubscriptionName getRequestSubscription() {
     return ProjectSubscriptionName.of(PROJECT_ID, REQUEST_SUBSCRIPTION_NAME);
